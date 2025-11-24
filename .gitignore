@@ -6,4 +6,8 @@ outputs/
 data/
 data/EuroSATallBands.zip
 lightning_logs/
+!data/Bella_626_R_712b_5843_9069.csv
+.mlruns/
+169598754887774203/
+569168382427355460/
 

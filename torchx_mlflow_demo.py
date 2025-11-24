@@ -56,7 +56,7 @@ def main(cfg: DictConfig):
 
         # --- 3. Initialize the Model using Hydra Config ---
         # Instantiate the LightningModule with the learning rate from the config.
-        model = TinyImageNetModel(lr=cfg.model.lr)
+        model = TinyImageNetModel(lr=cfg.model.learning_rate)
         print("TinyImageNetModel initialized.")
 
         # --- 4. Configure and Run the Trainer using Hydra Config ---

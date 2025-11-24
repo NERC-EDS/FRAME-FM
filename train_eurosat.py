@@ -1,4 +1,6 @@
 import os
+import hydra
+from omegaconf import DictConfig
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -90,28 +92,33 @@ class EuroSATDataModule(pl.LightningDataModule):
     def val_dataloader(self):
         return DataLoader(self.val_dataset, batch_size=self.batch_size, num_workers=4)
 
+@hydra.main(config_path="conf", config_name="config", version_base="1.3")
+def main(cfg: DictConfig):
+    pl.seed_everything(cfg.trainer.seed)
 
-# -----------------------------
-# 3. Main training with MLflow
-# -----------------------------
-if __name__ == "__main__":
-    pl.seed_everything(42)
-
+    tracking_uri = cfg.mlflow.tracking_uri
+    experiment_name = cfg.mlflow.experiment_name
+   
     # MLflow setup
-    mlflow.set_tracking_uri("file:./mlruns")  # Local tracking
-    mlflow.set_experiment("EuroSAT-ResNet")
+    mlflow.set_tracking_uri(tracking_uri)  # Local tracking
+    mlflow.set_experiment(experiment_name)
 
-    datamodule = EuroSATDataModule(batch_size=32)
-    model = EuroSATResNet(num_classes=10, lr=1e-3)
+    datamodule = EuroSATDataModule(cfg.data.batch_size)
+    model = EuroSATResNet(num_classes=cfg.model.num_classes, lr=cfg.model.learning_rate)
 
     # MLflow autologging
     mlflow.pytorch.autolog(log_models=True)
 
     with mlflow.start_run():
         trainer = pl.Trainer(
-            max_epochs=5,
-            accelerator="cpu",
-            devices=[1,1] if torch.cuda.is_available() else 1,
-            log_every_n_steps=10
+            max_epochs=cfg.trainer.max_epochs,
+            accelerator=cfg.trainer.accelerator,
+            log_every_n_steps=cfg.trainer.log_every_n_steps,
         )
         trainer.fit(model, datamodule=datamodule)
+
+# -----------------------------
+# 3. Main training with MLflow
+# -----------------------------
+if __name__ == "__main__":
+   main
