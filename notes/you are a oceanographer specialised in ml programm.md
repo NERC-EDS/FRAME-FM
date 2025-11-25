@@ -1,5 +1,3 @@
-<img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
-
 # you are a oceanographer specialised in ml programming, you have been tasked with building a framework for taking geospatial and time series data that make be used to train a foundation model.
 
 - you will be using pytorch-lighting
@@ -312,8 +310,6 @@ if __name__ == "__main__":
 
 This framework provides the foundation for training geospatial-temporal models with uncertainty quantification through GPs while maintaining the organizational benefits of PyTorch Lightning and the scalability of Slurm clusters [^7][^1][^2].
 <span style="display:none">[^13][^14][^15][^16][^17][^18][^19][^20]</span>
-
-<div align="center">⁂</div>
 
 [^1]: https://arxiv.org/html/2503.20563v1
 

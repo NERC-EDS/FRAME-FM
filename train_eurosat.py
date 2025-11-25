@@ -103,7 +103,7 @@ def main(cfg: DictConfig):
     mlflow.set_tracking_uri(tracking_uri)  # Local tracking
     mlflow.set_experiment(experiment_name)
 
-    datamodule = EuroSATDataModule(cfg.data.batch_size)
+    datamodule = EuroSATDataModule(batch_size=cfg.data.batch_size)
     model = EuroSATResNet(num_classes=cfg.model.num_classes, lr=cfg.model.learning_rate)
 
     # MLflow autologging
@@ -121,4 +121,4 @@ def main(cfg: DictConfig):
 # 3. Main training with MLflow
 # -----------------------------
 if __name__ == "__main__":
-   main
+   main()

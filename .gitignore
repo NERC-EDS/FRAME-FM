@@ -3,10 +3,11 @@ mlruns/
 outputs/
 .venv/
 .linux-venv/
-data/
-data/EuroSATallBands.zip
+
+data/ds
+data/eurosat-*
+data/EuroSAT*
 lightning_logs/
-!data/Bella_626_R_712b_5843_9069.csv
 .mlruns/
 169598754887774203/
 569168382427355460/

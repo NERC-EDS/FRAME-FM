@@ -1,0 +1,108 @@
+name: Framework Review
+description: File a framework review report.
+title: "[framework]: "
+labels: ["documentation"]
+projects: ["British-Oceanographic-Data-Centre/3"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reviewing this framework!
+  - type: input
+    id: framework-name
+    attributes:
+      label: Framework Name
+      description: What is this framework called
+    validations:
+      required: true
+  - type: input
+    id: framework-location
+    attributes:
+      label: Framework documentation
+      description: Where can we find the official documentation for this framework
+    validations:
+      required: false
+  - type: input
+    id: language
+    attributes:
+      label: language-details
+      description: what language(s) can interact with this framework
+      placeholder: ex. python
+    validations:
+      required: false
+  - type: textarea
+    id: intro
+    attributes:
+      label: brief intro
+      description: Summarises this framework in less than 500 words
+      placeholder: Tell us what you see!
+      value: "It does some cool stuff, guys"
+    validations:
+      required: false
+  - type: markdown
+    attributes:
+      value: |
+        --------
+  - type: dropdown
+    id: version-control
+    attributes:
+      label: code location
+      description: Where is the framework's code stored?
+      options:
+        - github
+        - gitlab
+        - bitbucket
+        - svn
+      default: 0
+    validations:
+      required: false
+  - type: input
+    id: code-location
+    attributes:
+      label: Framework's code
+      description: Where can we find the code for this framework
+    validations:
+      required: false
+  - type: input
+    id: liked
+    attributes:
+      label: How liked is the framework
+      description: I.E, how many stars on GitHub / likes on GitLab
+    validations:
+      required: false
+  - type: input
+    id: supported
+    attributes:
+      label: Is the project/framework stable and supported?
+      description: Looking at the most recent releases and commits, latest python version, background history.
+    validations:
+      required: false
+  - type: input
+    id: environmental
+    attributes:
+      label: Are there example uses of the framework within the environmental domain?
+      description: Are people already using it in our community? Examples.
+    validations:
+      required: false
+  - type: checkboxes
+    id: works-with
+    attributes:
+      label: This framework runs on
+      description: please select all options that fit
+      options:
+        - label: HPC
+        - label: kubernetes
+  - type: checkboxes
+    id: general-questions
+    attributes:
+      label: This framework can
+      description: please select all options that fit
+      options:
+        - label: train foundation models
+        - label: fine-tune models
+        - label: evaluate a model over some benchmarks
+  - type: textarea
+    id: notes
+    attributes:
+      label: Relevant additional information
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.

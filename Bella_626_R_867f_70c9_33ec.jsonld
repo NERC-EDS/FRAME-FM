@@ -1,0 +1,3003 @@
+{
+  "@context":  {
+    "@language": "en",
+    "@vocab": "https://schema.org/",
+    "sc": "https://schema.org/",
+    "cr": "http://mlcommons.org/croissant/",
+    "rai": "http://mlcommons.org/croissant/RAI/",
+    "dct": "http://purl.org/dc/terms/",
+    "citeAs": "cr:citeAs",
+    "column": "cr:column",
+    "conformsTo": "dct:conformsTo",
+    "data": {
+      "@id": "cr:data",
+      "@type": "@json"
+    },
+    "dataType": {
+      "@id": "cr:dataType",
+      "@type": "@vocab"
+    },
+    "examples": {
+      "@id": "cr:examples",
+      "@type": "@json"
+    },
+    "extract": "cr:extract",
+    "field": "cr:field",
+    "fileProperty": "cr:fileProperty",
+    "fileObject": "cr:fileObject",
+    "fileSet": "cr:fileSet",
+    "format": "cr:format",
+    "includes": "cr:includes",
+    "isLiveDataset": "cr:isLiveDataset",
+    "jsonPath": "cr:jsonPath",
+    "key": "cr:key",
+    "md5": "cr:md5",
+    "parentField": "cr:parentField",
+    "path": "cr:path",
+    "recordSet": "cr:recordSet",
+    "references": "cr:references",
+    "regex": "cr:regex",
+    "repeated": "cr:repeated",
+    "replace": "cr:replace",
+    "separator": "cr:separator",
+    "source": "cr:source",
+    "subField": "cr:subField",
+    "transform": "cr:transform"  },
+  "@type": "sc:Dataset",
+  "conformsTo": "http://mlcommons.org/croissant/1.0",
+  "name": "PICCOLO Bella (deployment 626 ) real-time glider data",
+  "headline": "Bella_626_R",
+  "isLiveDataset": true,
+  "distribution": [
+  {
+    "@type": "cr:FileObject",
+    "@id": "Bella_626_RFiles",
+    "contentSize": "21754702 B",
+    "contentUrl": "data/Bella_626_R_712b_5843_9069.csv",
+    "encodingFormat": "text/csv"
+  },
+  {
+    "@type": "cr:FileSet",
+    "@id": "Bella_626_RFiles.nc",
+    "description": "Files that contain the data.",
+    "encodingFormat": "application/csv",
+    "includes": "http://livbodcdapdev.bodc.me/erddap/tabledap/Bella_626_R.csv"
+  }
+  ],
+  "recordSet": [
+    {
+      "@type": "cr:RecordSet",
+      "@id": "dataRecordSet",
+      "field": [
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/longitude",
+          "description": "Longitude east",
+          "dataType": "cr:Float64",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "longitude"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/latitude",
+          "description": "Latitude north",
+          "dataType": "cr:Float64",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "latitude"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/CNDC",
+          "description": "Electrical conductivity of the water body by CTD",
+          "dataType": "cr:Float32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "CNDC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/CNDC_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "CNDC_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/DEPLOYMENT_LATITUDE",
+          "description": "latitude of deployment",
+          "dataType": "sc:Text",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "DEPLOYMENT_LATITUDE"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/DEPLOYMENT_LONGITUDE",
+          "description": "longitude of deployment",
+          "dataType": "sc:Text",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "DEPLOYMENT_LONGITUDE"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/DEPLOYMENT_TIME",
+          "description": "Date of deployment",
+          "dataType": "sc:DateTime",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "DEPLOYMENT_TIME"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/DPHASE_DOXY",
+          "description": "Phase angle of D phase by optode",
+          "dataType": "cr:Float32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "DPHASE_DOXY"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/DPHASE_DOXY_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "DPHASE_DOXY_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/FLUORESCENCE_CHLA",
+          "description": "Raw signal (counts) of instrument output by in-situ chlorophyll fluorometer",
+          "dataType": "cr:Float32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "FLUORESCENCE_CHLA"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/FLUORESCENCE_CHLA_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "FLUORESCENCE_CHLA_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/GLIDER_DEPTH",
+          "description": "Depth (spatial coordinate) relative to water surface in the water body",
+          "dataType": "cr:Float32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "GLIDER_DEPTH"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/GLIDER_DEPTH_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "GLIDER_DEPTH_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/GLIDER_PITCH",
+          "description": "Orientation (pitch) of measurement platform by triaxial fluxgate compass",
+          "dataType": "cr:Float32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "GLIDER_PITCH"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/GLIDER_PITCH_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "GLIDER_PITCH_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/GLIDER_ROLL",
+          "description": "Orientation (roll angle) of measurement platform by triaxial fluxgate compass",
+          "dataType": "cr:Float32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "GLIDER_ROLL"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/GLIDER_ROLL_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "GLIDER_ROLL_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/INSTRUMENT_DATA_LOGGERS_sg558",
+          "description": "Seaglider logger sg558",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "INSTRUMENT_DATA_LOGGERS_sg558"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/INSTRUMENT_DISSOLVED_GAS_SENSORS_590",
+          "description": "Aanderaa optode 4831 590",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "INSTRUMENT_DISSOLVED_GAS_SENSORS_590"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/INSTRUMENT_RADIOMETERS_8519",
+          "description": "ECO Puck BBFL2-IRB 8519",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "INSTRUMENT_RADIOMETERS_8519"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/INSTRUMENT_WATER_TEMPERATURE_SENSOR_0363",
+          "description": "Seaglider CT sail 0363",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "INSTRUMENT_WATER_TEMPERATURE_SENSOR_0363"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/LATITUDE_GPS",
+          "description": "Latitude north relative to WGS84 by unspecified GPS system",
+          "dataType": "cr:Float32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "LATITUDE_GPS"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/LATITUDE_GPS_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "LATITUDE_GPS_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/LATITUDE_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "LATITUDE_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/LONGITUDE_GPS",
+          "description": "Longitude east relative to WGS84 by unspecified GPS system",
+          "dataType": "cr:Float32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "LONGITUDE_GPS"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/LONGITUDE_GPS_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "LONGITUDE_GPS_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/LONGITUDE_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "LONGITUDE_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/MOLAR_DOXY",
+          "description": "Concentration of oxygen {O2 CAS 7782-44-7} per unit volume of the water body [dissolved plus reactive particulate phase] by optode",
+          "dataType": "cr:Float32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "MOLAR_DOXY"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/MOLAR_DOXY_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "MOLAR_DOXY_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/OXYSAT_DOXY",
+          "description": "Saturation of oxygen {O2 CAS 7782-44-7} in the water body [dissolved plus reactive particulate phase] by in-situ oxygen optode and computation from concentration",
+          "dataType": "cr:Float32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "OXYSAT_DOXY"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/OXYSAT_DOXY_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "OXYSAT_DOXY_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/PHASE",
+          "description": "behaviour of the glider at sea",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "PHASE"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/PHASE_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "PHASE_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/PLATFORM_MODEL",
+          "description": "model of the glider",
+          "dataType": "sc:Text",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "PLATFORM_MODEL"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/PLATFORM_TYPE",
+          "description": "type of glider",
+          "dataType": "sc:Text",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "PLATFORM_TYPE"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/PRES",
+          "description": "Pressure (spatial coordinate) exerted by the water body by profiling pressure sensor and correction to read zero at sea level",
+          "dataType": "cr:Float32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "PRES"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/PRES_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "PRES_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/PSAL",
+          "description": "Practical salinity of the water body by CTD and computation using UNESCO 1983 algorithm",
+          "dataType": "cr:Float32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "PSAL"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/PSAL_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "PSAL_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/SIGMA_T",
+          "description": "Sigma-T of the water body by computation from salinity and temperature using UNESCO algorithm",
+          "dataType": "cr:Float32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "SIGMA_T"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/SIGMA_T_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "SIGMA_T_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/TEMP",
+          "description": "Temperature of the water body by CTD or STD",
+          "dataType": "cr:Float32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "TEMP"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/TEMP_CPU_CHLA",
+          "description": "Raw signal (counts) of CPU temperature determination",
+          "dataType": "cr:Float32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "TEMP_CPU_CHLA"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/TEMP_CPU_CHLA_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "TEMP_CPU_CHLA_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/TEMP_DOXY",
+          "description": "Temperature of oxygen determination by optode",
+          "dataType": "cr:Float32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "TEMP_DOXY"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/TEMP_DOXY_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "TEMP_DOXY_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/TEMP_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "TEMP_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/time",
+          "description": "time of measurement and gps location",
+          "dataType": "sc:DateTime",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "time"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/TIME_GPS",
+          "description": "time of each gps locations",
+          "dataType": "sc:DateTime",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "TIME_GPS"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/TIME_GPS_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "TIME_GPS_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/TPHASE_DOXY",
+          "description": "Phase angle (temperature compensated) of D phase by optode",
+          "dataType": "cr:Float32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "TPHASE_DOXY"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/TPHASE_DOXY_QC",
+          "description": "quality flag",
+          "dataType": "cr:Int32",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "TPHASE_DOXY_QC"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/TRAJECTORY",
+          "description": "trajectory name",
+          "dataType": "sc:Text",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "TRAJECTORY"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "dataRecordSet/WMO_IDENTIFIER",
+          "description": "wmo id",
+          "dataType": "sc:Text",
+          "source": {
+            "fileSet": {
+              "@id": "Bella_626_RFiles"
+            },
+            "extract": {
+              "column": "WMO_IDENTIFIER"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "description": "https://api.linked-systems.uk/api/meta/v2/deployments/info/626\n_NCProperties=version=2,netcdf=4.7.4,hdf5=1.12.0,\nagency=UEA\nagency_id=1390\nagency_id_vocabulary=EDMO\nagency_role=contact point\nagency_role_vocabulary=https://edmo.seadatanet.org/report/1390\ncdm_data_type=Trajectory\ncdm_trajectory_variables=TRAJECTORY\ncontributor_email=k.heywood@uea.ac.uk\ncontributor_name=Karen Heywood\ncontributor_role=Principal investigator\ncontributor_role_vocabulary=BODC person database\nConventions=CF-1.8, ACDD-1.3, OG-1.0\ndata_url=https://gliders.bodc.ac.uk/inventory/\ndefaultDataQuery=&time>=min(time)\nEasternmost_Easting=-51.54048\nfeatureType=Trajectory\ngeospatial_bounds=POLYGON ((-53.34490203857422, -51.54198455810547, -63.72288131713867, -63.34503936767578))\ngeospatial_bounds_crs=EPSG:4326\ngeospatial_bounds_vertical_crs=EPSG:5831\ngeospatial_lat_max=-63.34504\ngeospatial_lat_min=-63.72288\ngeospatial_lat_units=degrees_north\ngeospatial_lon_max=-51.54048\ngeospatial_lon_min=-53.3449\ngeospatial_lon_units=degrees_east\ngeospatial_vertical_max=751.8447\ngeospatial_vertical_min=-0.14951755\ngeospatial_vertical_positive=down\ngeospatial_vertical_units=m\nid=Bella_20240206T000000_R\ninfoUrl=https://www.bodc.ac.uk/\ninstitution=NOC\ninstrument=['WET Labs {Sea-Bird WETLabs} ECO Puck Triplet BBFL2-IRB scattering fluorescence sensor', 'Oxygen optode 4831', 'Unpumped CT sail CTD', 'Seaglider M1 Glider data logger']\ninternal_mission_identifier=626\nmetadata_link=https://api.linked-systems.uk/api/meta/v2/deployments/info/626\nmission=PICCOLO\nnaming_authority=BODC\nNorthernmost_Northing=-63.34504\nplatform=Autonomous Underwater Vehicle\nplatform_vocabulary=https://vocab.nerc.ac.uk/collection/B76/current/B7600002\nprocessing_level=No quality control applied to the data.\nproject=PICCOLO\nrtqc_method=Raw data, no QC applied.\nrtqc_method_doi=Raw data, no QC applied.\nsourceUrl=(local files)\nSouthernmost_Northing=-63.72288\nstandard_name_vocabulary=https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html\ntime_coverage_end=2024-02-23T20:47:34Z\ntime_coverage_start=2024-02-06T17:05:05Z\ntrajectory=Bella_20240206\nWesternmost_Easting=-53.3449\nwmoid=8901054\nxglider_type=trajectoryObs",
+  "url": "https://dev.linkedsystems.uk/erddap/tabledap/Bella_626_R.html",
+  "includedInDataCatalog": {
+    "@type": "DataCatalog",
+    "name": "ERDDAP Data Server at British oceanographic Data Centre",
+    "sameAs": "https://dev.linkedsystems.uk/erddap"
+  },
+  "keywords": [
+    "atmosphere",
+    "biology",
+    "biosphere",
+    "earth science",
+    "environment",
+    "ocean"
+  ],
+  "license": "Open Government Licence You are encouraged to use and re-use the Information that is available under this licence, the Open Government Licence, freely and flexibly, with only a few conditions. Using information under this licence Use of copyright and database right material expressly made available under this licence (the 'Information') indicates your acceptance of the terms and conditions below. The Licensor grants you a worldwide, royalty-free, perpetual, non-exclusive licence to use the Information subject to the conditions below. This licence does not affect your freedom under fair dealing or fair use or any other copyright or database right exceptions and limitations. You are free to: copy, publish, distribute and transmit the Information; adapt the Information; exploit the Information commercially for example, by combining it with other Information, or by including it in your own product or application. You must, where you do any of the above: acknowledge the source of the Information by including any attribution statement specified by the Information Provider(s) and, where possible, provide a link to this licence; If the Information Provider does not provide a specific attribution statement, or if you are using Information from several Information Providers and multiple attributions are not practical in your product or application, you may consider using the following: Contains public sector information licensed under the Open Government Licence v1.0. ensure that you do not use the Information in a way that suggests any official status or that the Information Provider endorses you or your use of the Information; ensure that you do not mislead others or misrepresent the Information or its source; ensure that your use of the Information does not breach the Data Protection Act 1998 or the Privacy and Electronic Communications (EC Directive) Regulations 2003. These are important conditions of this licence and if you fail to comply with them the rights granted to you under this licence, or any similar licence granted by the Licensor, will end automatically. Exemptions This licence does not cover the use of: personal data in the Information; Information that has neither been published nor disclosed under information access legislation (including the Freedom of Information Acts for the UK and Scotland) by or with the consent of the Information Provider; departmental or public sector organisation logos, crests and the Royal Arms except where they form an integral part of a document or dataset; military insignia; third party rights the Information Provider is not authorised to license; Information subject to other intellectual property rights, including patents, trademarks, and design rights; identity documents such as the British Passport. No warranty The Information is licensed 'as is' and the Information Provider excludes all representations, warranties, obligations and liabilities in relation to the Information to the maximum extent permitted by law. The Information Provider is not liable for any errors or omissions in the Information and shall not be liable for any loss, injury or damage of any kind caused by its use. The Information Provider does not guarantee the continued supply of the Information. Governing Law This licence is governed by the laws of the jurisdiction in which the Information Provider has its principal place of business, unless otherwise specified by the Information Provider. Definitions In this licence, the terms below have the following meanings: 'Information' means information protected by copyright or by database right (for example, literary and artistic works, content, data and source code) offered for use under the terms of this licence. 'Information Provider' means the person or organisation providing the Information under this licence. 'Licensor' means any Information Provider which has the authority to offer Information under the terms of this licence or the Controller of Her Majesty's Stationery Office, who has the authority to offer Information subject to Crown copyright and Crown database rights and Information subject to copyright and database right that has been assigned to or acquired by the Crown, under the terms of this licence. 'Use' as a verb, means doing any act which is restricted by copyright or database right, whether in the original medium or in any other medium, and includes without limitation distributing, copying, adapting, modifying as may be technically necessary to use it in a different mode or format. 'You' means the natural or legal person, or body of persons corporate or incorporate, acquiring rights under this licence. About the Open Government Licence The Controller of Her Majesty's Stationery Office (HMSO) has developed this licence as a tool to enable Information Providers in the public sector to license the use and re-use of their Information under a common open licence. The Controller invites public sector bodies owning their own copyright and database rights to permit the use of their Information under this licence. The Controller of HMSO has authority to license Information subject to copyright and database right owned by the Crown. The extent of the Controller's offer to license this Information under the terms of this licence is set out in the UK Government Licensing Framework . This is version 1.0 of the Open Government Licence. The Controller of HMSO may, from time to time, issue new versions of the Open Government Licence. However, you may continue to use Information licensed under this version should you wish to do so. These terms have been aligned to be interoperable with any Creative Commons Attribution Licence, which covers copyright, and Open Data Commons Attribution License, which covers database rights and applicable copyrights. Further context, best practice and guidance can be found in the UK Government Licensing Framework section on The National Archives website.",
+  "variableMeasured": [
+    {
+      "@type": "PropertyValue",
+      "name": "longitude",
+      "alternateName": "Longitude east",
+      "description": "Longitude east",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 1023
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_CoordinateAxisType",
+          "value": "Lon"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": 99999
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "LONGITUDE_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "axis",
+          "value": "X"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ioos_category",
+          "value": "Location"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Longitude east"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "sensor",
+          "value": "INSTRUMENT_DATA LOGGERS_sg558"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "standard_name",
+          "value": "longitude"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "valid_max",
+          "value": 180
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "valid_min",
+          "value": -180
+        }
+      ],
+      "maxValue": -51.54048,
+      "minValue": -53.3449,
+      "propertyID": "longitude",
+      "unitText": "degrees_east"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "latitude",
+      "alternateName": "Latitude north",
+      "description": "Latitude north",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 1023
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_CoordinateAxisType",
+          "value": "Lat"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": 99999
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "LATITUDE_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "axis",
+          "value": "Y"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ioos_category",
+          "value": "Location"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Latitude north"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "sensor",
+          "value": "INSTRUMENT_DATA LOGGERS_sg558"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "standard_name",
+          "value": "latitude"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "valid_max",
+          "value": 90
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "valid_min",
+          "value": -90
+        }
+      ],
+      "maxValue": -63.34504,
+      "minValue": -63.72288,
+      "propertyID": "latitude",
+      "unitText": "degrees_north"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "CNDC",
+      "alternateName": "Electrical conductivity of the water body by CTD",
+      "description": "Electrical conductivity of the water body by CTD",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 1023
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": 99999
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "CNDC_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Electrical conductivity of the water body by CTD"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "sensor",
+          "value": "INSTRUMENT_WATER TEMPERATURE SENSOR_0363"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "standard_name",
+          "value": "sea_water_electrical_conductivity"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/OG1/current/"
+        }
+      ],
+      "maxValue": 2.963436,
+      "minValue": 2.634796,
+      "propertyID": "sea_water_electrical_conductivity",
+      "unitText": "mhos/m"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "CNDC_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ],
+      "maxValue": 0,
+      "minValue": 0
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "DEPLOYMENT_LATITUDE",
+      "alternateName": "latitude of deployment",
+      "description": "latitude of deployment",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "latitude of deployment"
+        }
+      ]
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "DEPLOYMENT_LONGITUDE",
+      "alternateName": "longitude of deployment",
+      "description": "longitude of deployment",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "longitude of deployment"
+        }
+      ]
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "DEPLOYMENT_TIME",
+      "alternateName": "Date of deployment",
+      "description": "Date of deployment",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "axis",
+          "value": "T"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "calendar",
+          "value": "gregorian"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ioos_category",
+          "value": "Time"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Date of deployment"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "standard_name",
+          "value": "time"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "time_origin",
+          "value": "01-JAN-1970 00:00:00"
+        }
+      ],
+      "propertyID": "time",
+      "unitText": "seconds since 1970-01-01T00:00:00Z"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "DPHASE_DOXY",
+      "alternateName": "Phase angle of D phase by optode",
+      "description": "Phase angle of D phase by optode",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 1023
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": 99999
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "DPHASE_DOXY_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Phase angle of D phase by optode"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "sensor",
+          "value": "INSTRUMENT_DISSOLVED GAS SENSORS_590"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/OG1/current/"
+        }
+      ],
+      "unitText": "degree"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "DPHASE_DOXY_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ]
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "FLUORESCENCE_CHLA",
+      "alternateName": "Raw signal (counts) of instrument output by in-situ chlorophyll fluorometer",
+      "description": "Raw signal (counts) of instrument output by in-situ chlorophyll fluorometer",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 1023
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": 99999
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "FLUORESCENCE_CHLA_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Raw signal (counts) of instrument output by in-situ chlorophyll fluorometer"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "sensor",
+          "value": "INSTRUMENT_RADIOMETERS_8519"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/OG1/current/"
+        }
+      ],
+      "maxValue": 278,
+      "minValue": 49,
+      "unitText": "count"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "FLUORESCENCE_CHLA_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ],
+      "maxValue": 0,
+      "minValue": 0
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "GLIDER_DEPTH",
+      "alternateName": "Depth (spatial coordinate) relative to water surface in the water body",
+      "description": "Depth (spatial coordinate) relative to water surface in the water body",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 1023
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": 99999
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "GLIDER_DEPTH_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Depth (spatial coordinate) relative to water surface in the water body"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "sensor",
+          "value": "INSTRUMENT_DATA LOGGERS_sg558"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/OG1/current/"
+        }
+      ],
+      "maxValue": 751.8447,
+      "minValue": -0.1495176,
+      "unitText": "m"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "GLIDER_DEPTH_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ],
+      "maxValue": 0,
+      "minValue": 0
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "GLIDER_PITCH",
+      "alternateName": "Orientation (pitch) of measurement platform by triaxial fluxgate compass",
+      "description": "Orientation (pitch) of measurement platform by triaxial fluxgate compass",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 1023
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": 99999
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "GLIDER_PITCH_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Orientation (pitch) of measurement platform by triaxial fluxgate compass"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "sensor",
+          "value": "INSTRUMENT_DATA LOGGERS_sg558"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/OG1/current/"
+        }
+      ],
+      "maxValue": 58.4,
+      "minValue": -75.9,
+      "unitText": "deg"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "GLIDER_PITCH_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ],
+      "maxValue": 0,
+      "minValue": 0
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "GLIDER_ROLL",
+      "alternateName": "Orientation (roll angle) of measurement platform by triaxial fluxgate compass",
+      "description": "Orientation (roll angle) of measurement platform by triaxial fluxgate compass",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 1023
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": 99999
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "GLIDER_ROLL_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Orientation (roll angle) of measurement platform by triaxial fluxgate compass"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "sensor",
+          "value": "INSTRUMENT_DATA LOGGERS_sg558"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/OG1/current/"
+        }
+      ],
+      "maxValue": 29.1,
+      "minValue": -37.3,
+      "unitText": "deg"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "GLIDER_ROLL_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ],
+      "maxValue": 0,
+      "minValue": 0
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "INSTRUMENT_DATA_LOGGERS_sg558",
+      "alternateName": "Seaglider logger sg558",
+      "description": "Seaglider logger sg558",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -1
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Seaglider logger sg558"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "maker",
+          "value": "Kongsberg Maritime"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "maker_vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/L35/current/MAN0015/"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "model",
+          "value": "Seaglider M1 Glider data logger"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "model_vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/L22/current/TOOL1185"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "serial_number",
+          "value": "sg558"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "type",
+          "value": "data loggers"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "type_vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/L05/current/DLOG/"
+        }
+      ]
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "INSTRUMENT_DISSOLVED_GAS_SENSORS_590",
+      "alternateName": "Aanderaa optode 4831 590",
+      "description": "Aanderaa optode 4831 590",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -1
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Aanderaa optode 4831 590"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "maker",
+          "value": "Aanderaa"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "maker_vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/L35/current/MAN0007/"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "model",
+          "value": "Oxygen optode 4831"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "model_vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/L22/current/TOOL1239"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "serial_number",
+          "value": "590"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "type",
+          "value": "dissolved gas sensors"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "type_vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/L05/current/351/"
+        }
+      ]
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "INSTRUMENT_RADIOMETERS_8519",
+      "alternateName": "ECO Puck BBFL2-IRB 8519",
+      "description": "ECO Puck BBFL2-IRB 8519",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -1
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "ECO Puck BBFL2-IRB 8519"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "maker",
+          "value": "WET Labs"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "maker_vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/L35/current/MAN0026/"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "model",
+          "value": "WET Labs {Sea-Bird WETLabs} ECO Puck Triplet BBFL2-IRB scattering fluorescence sensor"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "model_vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/L22/current/TOOL1311"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "serial_number",
+          "value": "8519"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "type",
+          "value": "radiometers"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "type_vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/L05/current/"
+        }
+      ]
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "INSTRUMENT_WATER_TEMPERATURE_SENSOR_0363",
+      "alternateName": "Seaglider CT sail 0363",
+      "description": "Seaglider CT sail 0363",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -1
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Seaglider CT sail 0363"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "maker",
+          "value": "Sea-Bird Scientific"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "maker_vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/L35/current/MAN0013/"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "model",
+          "value": "Unpumped CT sail CTD"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "model_vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/L22/current/TOOL1188"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "serial_number",
+          "value": "0363"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "type",
+          "value": "water temperature sensor"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "type_vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/L05/current/"
+        }
+      ]
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "LATITUDE_GPS",
+      "alternateName": "Latitude north relative to WGS84 by unspecified GPS system",
+      "description": "Latitude north relative to WGS84 by unspecified GPS system",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 1023
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": 99999
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "LATITUDE_GPS_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Latitude north relative to WGS84 by unspecified GPS system"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "sensor",
+          "value": "INSTRUMENT_DATA LOGGERS_sg558"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "valid_max",
+          "value": 90
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "valid_min",
+          "value": -90
+        }
+      ],
+      "maxValue": -63.34564,
+      "minValue": -63.72268,
+      "unitText": "degree_north"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "LATITUDE_GPS_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ],
+      "maxValue": 0,
+      "minValue": 0
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "LATITUDE_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ],
+      "maxValue": 0,
+      "minValue": 0
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "LONGITUDE_GPS",
+      "alternateName": "Longitude east relative to WGS84 by unspecified GPS system",
+      "description": "Longitude east relative to WGS84 by unspecified GPS system",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 1023
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": 99999
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "LONGITUDE_GPS_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Longitude east relative to WGS84 by unspecified GPS system"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "sensor",
+          "value": "INSTRUMENT_DATA LOGGERS_sg558"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "valid_max",
+          "value": 180
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "valid_min",
+          "value": -180
+        }
+      ],
+      "maxValue": -51.54048,
+      "minValue": -53.33514,
+      "unitText": "degree_east"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "LONGITUDE_GPS_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ],
+      "maxValue": 0,
+      "minValue": 0
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "LONGITUDE_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ],
+      "maxValue": 0,
+      "minValue": 0
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "MOLAR_DOXY",
+      "alternateName": "Concentration of oxygen {O2 CAS 7782-44-7} per unit volume of the water body [dissolved plus reactive particulate phase] by optode",
+      "description": "Concentration of oxygen {O2 CAS 7782-44-7} per unit volume of the water body [dissolved plus reactive particulate phase] by optode",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 1023
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": 99999
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "MOLAR_DOXY_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Concentration of oxygen {O2 CAS 7782-44-7} per unit volume of the water body [dissolved plus reactive particulate phase] by optode"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "sensor",
+          "value": "INSTRUMENT_DISSOLVED GAS SENSORS_590"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "standard_name",
+          "value": "mole_concentration_of_dissolved_molecular_oxygen_in_sea_water"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/OG1/current/"
+        }
+      ],
+      "propertyID": "mole_concentration_of_dissolved_molecular_oxygen_in_sea_water",
+      "unitText": "micromole/l"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "MOLAR_DOXY_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ]
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "OXYSAT_DOXY",
+      "alternateName": "Saturation of oxygen {O2 CAS 7782-44-7} in the water body [dissolved plus reactive particulate phase] by in-situ oxygen optode and computation from concentration",
+      "description": "Saturation of oxygen {O2 CAS 7782-44-7} in the water body [dissolved plus reactive particulate phase] by in-situ oxygen optode and computation from concentration",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 1023
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": 99999
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "OXYSAT_DOXY_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Saturation of oxygen {O2 CAS 7782-44-7} in the water body [dissolved plus reactive particulate phase] by in-situ oxygen optode and computation from concentration"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "sensor",
+          "value": "INSTRUMENT_DISSOLVED GAS SENSORS_590"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/OG1/current/"
+        }
+      ],
+      "unitText": "%"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "OXYSAT_DOXY_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ]
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "PHASE",
+      "alternateName": "behaviour of the glider at sea",
+      "description": "behaviour of the glider at sea",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "PHASE_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "behaviour of the glider at sea"
+        }
+      ]
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "PHASE_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ]
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "PLATFORM_MODEL",
+      "alternateName": "model of the glider",
+      "description": "model of the glider",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "model of the glider"
+        }
+      ]
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "PLATFORM_TYPE",
+      "alternateName": "type of glider",
+      "description": "type of glider",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "type of glider"
+        }
+      ]
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "PRES",
+      "alternateName": "Pressure (spatial coordinate) exerted by the water body by profiling pressure sensor and correction to read zero at sea level",
+      "description": "Pressure (spatial coordinate) exerted by the water body by profiling pressure sensor and correction to read zero at sea level",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 1023
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": 99999
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "PRES_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Pressure (spatial coordinate) exerted by the water body by profiling pressure sensor and correction to read zero at sea level"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "sensor",
+          "value": "INSTRUMENT_WATER TEMPERATURE SENSOR_0363"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "standard_name",
+          "value": "sea_water_pressure"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/OG1/current/"
+        }
+      ],
+      "maxValue": 760.6075,
+      "minValue": -0.1509801,
+      "propertyID": "sea_water_pressure",
+      "unitText": "decibar"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "PRES_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ],
+      "maxValue": 0,
+      "minValue": 0
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "PSAL",
+      "alternateName": "Practical salinity of the water body by CTD and computation using UNESCO 1983 algorithm",
+      "description": "Practical salinity of the water body by CTD and computation using UNESCO 1983 algorithm",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 1023
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": 99999
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "PSAL_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Practical salinity of the water body by CTD and computation using UNESCO 1983 algorithm"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "sensor",
+          "value": "INSTRUMENT_WATER TEMPERATURE SENSOR_0363"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "standard_name",
+          "value": "sea_water_practical_salinity"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/OG1/current/"
+        }
+      ],
+      "maxValue": 34.7579,
+      "minValue": 33.08286,
+      "propertyID": "sea_water_practical_salinity",
+      "unitText": "psu"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "PSAL_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ],
+      "maxValue": 0,
+      "minValue": 0
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "SIGMA_T",
+      "alternateName": "Sigma-T of the water body by computation from salinity and temperature using UNESCO algorithm",
+      "description": "Sigma-T of the water body by computation from salinity and temperature using UNESCO algorithm",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 1023
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": 99999
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "SIGMA_T_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Sigma-T of the water body by computation from salinity and temperature using UNESCO algorithm"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "sensor",
+          "value": "INSTRUMENT_WATER TEMPERATURE SENSOR_0363"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "standard_name",
+          "value": "sea_water_sigma_t"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/OG1/current/"
+        }
+      ],
+      "maxValue": 27.90191,
+      "minValue": 26.61508,
+      "propertyID": "sea_water_sigma_t",
+      "unitText": "kg/m^3"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "SIGMA_T_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ],
+      "maxValue": 0,
+      "minValue": 0
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "TEMP",
+      "alternateName": "Temperature of the water body by CTD or STD",
+      "description": "Temperature of the water body by CTD or STD",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 1023
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": 99999
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "TEMP_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Temperature of the water body by CTD or STD"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "sensor",
+          "value": "INSTRUMENT_WATER TEMPERATURE SENSOR_0363"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "standard_name",
+          "value": "sea_water_temperature"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/OG1/current/"
+        }
+      ],
+      "maxValue": 0.7304451,
+      "minValue": -1.901684,
+      "propertyID": "sea_water_temperature",
+      "unitText": "degree_Celsius"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "TEMP_CPU_CHLA",
+      "alternateName": "Raw signal (counts) of CPU temperature determination",
+      "description": "Raw signal (counts) of CPU temperature determination",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 1023
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": 99999
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "TEMP_CPU_CHLA_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Raw signal (counts) of CPU temperature determination"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "sensor",
+          "value": "INSTRUMENT_RADIOMETERS_8519"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/OG1/current/"
+        }
+      ],
+      "maxValue": 579,
+      "minValue": 574,
+      "unitText": "count"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "TEMP_CPU_CHLA_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ],
+      "maxValue": 0,
+      "minValue": 0
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "TEMP_DOXY",
+      "alternateName": "Temperature of oxygen determination by optode",
+      "description": "Temperature of oxygen determination by optode",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 1023
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": 99999
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "TEMP_DOXY_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Temperature of oxygen determination by optode"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "sensor",
+          "value": "INSTRUMENT_DISSOLVED GAS SENSORS_590"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "standard_name",
+          "value": "temperature_of_sensor_for_oxygen_in_sea_water"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/OG1/current/"
+        }
+      ],
+      "propertyID": "temperature_of_sensor_for_oxygen_in_sea_water",
+      "unitText": "degree_Celsius"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "TEMP_DOXY_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ]
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "TEMP_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ],
+      "maxValue": 0,
+      "minValue": 0
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "time",
+      "alternateName": "time of measurement and gps location",
+      "description": "time of measurement and gps location",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 512
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_CoordinateAxisType",
+          "value": "Time"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "axis",
+          "value": "T"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "calendar",
+          "value": "gregorian"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ioos_category",
+          "value": "Time"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "time of measurement and gps location"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "standard_name",
+          "value": "time"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "time_origin",
+          "value": "01-JAN-1970 00:00:00"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "valid_max",
+          "value": 4.0E9
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "valid_min",
+          "value": 1.0E9
+        }
+      ],
+      "maxValue": "2024-02-23T20:47:34Z",
+      "minValue": "2024-02-06T17:05:05Z",
+      "propertyID": "time"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "TIME_GPS",
+      "alternateName": "time of each gps locations",
+      "description": "time of each gps locations",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 512
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "TIME_GPS_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "calendar",
+          "value": "gregorian"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ioos_category",
+          "value": "Time"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "time of each gps locations"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "time_origin",
+          "value": "01-JAN-1970 00:00:00"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "valid_max",
+          "value": 4.0E9
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "valid_min",
+          "value": 1.0E9
+        }
+      ],
+      "maxValue": 1.7087213E9,
+      "minValue": 1.7072392E9,
+      "unitText": "seconds since 1970-01-01T00:00:00Z"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "TIME_GPS_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ],
+      "maxValue": 0,
+      "minValue": 0
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "TPHASE_DOXY",
+      "alternateName": "Phase angle (temperature compensated) of D phase by optode",
+      "description": "Phase angle (temperature compensated) of D phase by optode",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 1023
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": 99999
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "ancillary_variables",
+          "value": "TPHASE_DOXY_QC"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "Phase angle (temperature compensated) of D phase by optode"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "sensor",
+          "value": "INSTRUMENT_DISSOLVED GAS SENSORS_590"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "vocabulary",
+          "value": "https://vocab.nerc.ac.uk/collection/OG1/current/"
+        }
+      ],
+      "unitText": "degree"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "TPHASE_DOXY_QC",
+      "alternateName": "quality flag",
+      "description": "quality flag",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_ChunkSizes",
+          "value": 4092
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "_FillValue",
+          "value": -128
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "quality flag"
+        }
+      ]
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "TRAJECTORY",
+      "alternateName": "trajectory name",
+      "description": "trajectory name",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "cf_role",
+          "value": "trajectory_id"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "trajectory name"
+        }
+      ]
+    },
+    {
+      "@type": "PropertyValue",
+      "name": "WMO_IDENTIFIER",
+      "alternateName": "wmo id",
+      "description": "wmo id",
+      "valueReference": [
+        {
+          "@type": "PropertyValue",
+          "name": "axisOrDataVariable",
+          "value": "data"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "long_name",
+          "value": "wmo id"
+        }
+      ]
+    }
+  ],
+  "creator": {
+    "@type": "Organization",
+    "name": "NOC",
+    "email": "glidersbodc@bodc.ac.uk",
+    "sameAs": "https://www.noc.ac.uk"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "NOC",
+    "email": "glidersbodc@bodc.ac.uk",
+    "sameAs": "https://www.bodc.ac.uk"
+  },
+  "dateCreated": "2024-02-23T21:28:09.593920",
+  "dateModified": "2024-02-23T21:28:09.593932",
+  "identifier": "BODC/Bella_20240206T000000_R",
+  "temporalCoverage": "2024-02-06T17:05:05Z/2024-02-23T20:47:34Z",
+  "spatialCoverage": {
+    "@type": "Place",
+    "geo": {
+      "@type": "GeoShape",
+      "box": "-63.72288 -53.3449 -63.34504 -51.54048"
+    }
+  }
+}
