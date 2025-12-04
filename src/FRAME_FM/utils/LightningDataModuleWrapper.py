@@ -1,4 +1,4 @@
-# src/FRAME_FM/dataloaders/base_datamodule.py
+# src/FRAME_FM/utils/LightningDataModuleWrapper.py
 from __future__ import annotations
 
 from typing import Optional, Any, Sequence
