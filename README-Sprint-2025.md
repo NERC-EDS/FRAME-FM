@@ -61,45 +61,70 @@ mkdir -p $mydir
 cd $mydir/
 ```
 
-**GPU Access**
+**Software environments: in the SSH world**
 
-If you want 
+If you have connected via SSH, then you will use a Python virtual environment which can be set up with 
+by running:
+
+```bash
+source /gws/ssde/j25b/eds_ai/frame-fm/setup-sprint.sh
+```
+
+This command will give you access to the environment listed in the [pyproject.toml](https://github.com/NERC-EDS/FRAME-FM/blob/sprint-dec-2025/pyproject.toml#L8-L30) file.
+
+**Software environments: in the Notebook world**
+
+In the Notebook Service, you have to set up the environment as an `ipython kernel` within your own 
+Notebook configuration. Here is how you do it:
+
+1. Select `File --> New --> Terminal` from the menu.
+2. Within your `bash` terminal, run these commands:
+
+```bash
+source /gws/ssde/j25b/eds_ai/frame-fm/code/envs/sprint_env_nb/bin/activate
+python -m ipykernel install --user --name sprint_env_nb
+```
+
+It should look like this:
+
+<img width="1016" height="337" alt="image" src="https://github.com/user-attachments/assets/98c2e098-f863-41f4-885c-a0cb8ad5f3b3" />
+
+You may need to reload the web page at this point.
+
+Now, when you click the blue "+" button, you should see `sprint_env_nb` offered as kernel that you can 
+select to start a Notebook:
+
+<img width="1010" height="616" alt="image" src="https://github.com/user-attachments/assets/d9e7041c-3d78-416a-b5b9-9837e842eb03" />
+
+**Datasets**
+
+The input data for the sprint is found at:
+
+```
+/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/
+```
+
+**GPU Access: interactive**
+
+If you want to work on an interactive GPU node in the SSH world, make sure you are on a `sci` server and 
+type this command:
+
+```bash
+srun --gres=gpu:1 --mem=64g --partition=orchid --account=orchid --qos=orchid --time=01:00:00 --pty /bin/bash
+```
+
+This will typically take about a minute to queue an interactive slot, and log you in to one of the GPU hosts. 
+The settings mean: 1 GPU, 64GB RAM, for a duration of 1 hour.
 
 **JASMIN Accounts**
 
 Once you have a JASMIN account, please check that you have access to the `orchid` and `eds_ai` roles in 
 the JASMIN accounts portal, at: https://accounts.jasmin.ac.uk/services/my_services/
 
+**Note about creating your own environments**
 
-
-Through both SSH access and the Jupyter Notebook access, you will arrive within your $HOME directory. When working on the sprint we plan to use the eds_ai Group Workspace which currently has 10TB of free space. It is located here on the file system:
-
-    
-
-    Please check you can navigate in to this directory, and check you can create your own user directory within it using:
-
-    mkdir /gws/ssde/j25b/eds_ai/frame-fm/users/$USER
-
-    Diane and Adrian have been busy pulling in the required datasets to this sub-directory:
-
-    /gws/ssde/j25b/eds_ai/frame-fm/data/inputs/
-
-If you are working in the SSH environment, you can can use the srun command on a sci server to connect interactively to a GPU node on the "ORCHID" cluster, using this command:
-
-    srun --gres=gpu:1 --mem=64g --partition=orchid --account=orchid --qos=orchid --time=01:00:00 --pty /bin/bash
-
-    This will typically take about a minute to queue an interactive slot, and log you in to one of the GPU hosts. The settings mean: 1 GPU, 64GB RAM, for a duration of 1 hour.
-
-Software environment: we are working on setting up a software environment from this recipe:
-
-    https://github.com/NERC-EDS/FRAME-FM/blob/feature/toms-examples/pyproject.toml
-
-    We will use the UV package to install it, following Tom's excellent instructions here: 
+You may want to explore and build your own software environments. If so, we recommend using the UV package, 
+as documented in Tom's excellent instructions here: 
 
     https://github.com/NERC-EDS/FRAME-FM/blob/feature/toms-examples/uv-intro.md
 
-We are working out of this repository:
-
-    https://github.com/NERC-EDS/FRAME-FM
-
-    We will create a branch for the sprint and install the software environment before Thursday.
