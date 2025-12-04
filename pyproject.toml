@@ -24,6 +24,10 @@ dependencies = [
     "tensorflow-metadata>=1.10",
     "gpytorch>=1.14.2",
     "lightning-fabric>=2.5.6",
+    "tensorboard>=2.20.0",
+    "xarray>=2025.6.1",
+    "pandas>=2.3.3",
+    "polars>=1.35.2",
 ]
 
 [tool.ruff]
