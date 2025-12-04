@@ -13,11 +13,10 @@ Here is our plan for the sprint.
 1. Introduction to the sprint (this document)
 2. Quick review of an example PyTorch-Lightning workflow (as a visual cue)
 3. Plan sprint teams, include a lead and scribe for each:
-   - Models 1: Spatial auto-encoders (static data)
-   - Models 2: Temporal auto-encoders (temporal and spatial)
+   - Models: Spatial auto-encoders (static data) & Temporal auto-encoders (temporal and spatial)
    - Data: Building the data loaders
-   - Monitoring: Testing and deciding on monitoring/visualisation tools
-4. Review what we have learnt							
+   - Monitoring (later): Testing and deciding on monitoring/visualisation tools
+4. Inter-team discussions						
 
 **Afternoon session (1330-1600)**
 
