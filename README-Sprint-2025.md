@@ -155,9 +155,70 @@ as documented in Tom's excellent instructions here:
 
     https://github.com/NERC-EDS/FRAME-FM/blob/feature/toms-examples/uv-intro.md
 
+**How to use CFA and xarray**
+
+Aggregated datasets have been created for chess-met per covariate (/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/chess-met/aggregations) and . These aggregations include . They are lazily loaded so the covariates are shown as empty, but you can view metadata and the spatial and temporal extent of the data.
+
+
+These can be read either using the `cfapyx` library:
+
+```
+- $ pip install cfapyx==2025.12.3
+```
+
+in python shell or script)
+
+```
+import xarray
+ds = xarray.open_dataset('file.nca', engine='CFA)
+```
+
+or alternatively using the cf-python version that comes as standard in the jaspy module:
+```
+module load jaspy
+```
+In python shell or script:
+
+```
+import cf
+ds = cf.read('file.nca')
+```
+
+Please report any issues with this at https://github.com/cedadev/CFAPyX/issues or to daniel.westwood@stfc.ac.uk
+
+To view the aggregated contents you can then either view in a debugger or output to a notebook:
+```
+ds
+```
+
+The example below shows how to load the chess-met aggregated file and do some very simple analysis:
+
+```
+import xarray as xr
+
+cfa_file = "/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/chess-met/aggregations/chess-met_dtr_gb_1km_daily_19610101-20191231.nca"
+ds = xr.open_dataset(cfa_file, engine='CFA')
+
+air_temp = ds.dtr
+
+air_temp.size # size of entire array (14941904208)
+
+subset = air_temp.isel(time=slice(0, 1))  # Select a time slice for initial static geospatial modelling.
+subset.size # (693392)
+
+# To numpy and in plotting format
+s = subset.squeeze()
+arr = s.to_numpy().reshape([1057, 656])
+arr.shape # (1057, 656)
+
+# Plot data
+import matplotlib.pyplot as plt
+plt.contour(arr)
+```
 
 **Teams for the sprint:**
-Data Loaders:
+
+**Data Loaders:**
 
 .csv loading with metadata - Colin
 
@@ -168,7 +229,7 @@ intermediary cached data - Matthew
 shapefile loading - Michael
 
 
-Modelling:
+**Modelling:**
 
 logging intermediary classes: Adam 
 
