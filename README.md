@@ -47,3 +47,14 @@ source .venv/bin/activate
 pip install uv
 uv sync
 ```
+
+
+
+
+
+---
+
+<sub>⚠️ Some README files in this repository were generated using ChatGPT.  
+All generated text has been manually reviewed to ensure accuracy and project-specific relevance.</sub>
+
+
