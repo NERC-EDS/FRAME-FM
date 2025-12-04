@@ -6,12 +6,26 @@ This README covers:
 
 ## Agenda
 
-Here is our plan for the sprint:
+Here is our plan for the sprint.
 
+**Morning session (0900-1230)**
 
-The notes of about the plans are in this spreadsheet:
+1. Introduction to the sprint (this document)
+2. Quick review of an example PyTorch-Lightning workflow (as a visual cue)
+3. Plan sprint teams, include a lead and scribe for each:
+   - Models 1: Spatial auto-encoders (static data)
+   - Models 2: Temporal auto-encoders (temporal and spatial)
+   - Data: Building the data loaders
+   - Monitoring: Testing and deciding on monitoring/visualisation tools
+4. Review what we have learnt							
 
-    ​FRAME-FM-WP3-Roadmap.xlsx​
+**Afternoon session (1330-1600)**
+
+1. Recap what was learnt
+2. Plan the afternoon
+3. Regroup at 1500:
+  - Record key findings
+  - Write down plans and next steps
 
 ## Logistics - working on JASMIN
 
