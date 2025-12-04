@@ -26,6 +26,7 @@ class MyModel(LightningModuleWrapper):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.net(x)
 
+    #### OVERRIDE *_body METHODS #### NOT THE MAIN STEP METHODS (validation/training_step)
     def training_step_body(self, batch: Any, batch_idx: int):
         x, y = batch
         y_hat = self(x)
