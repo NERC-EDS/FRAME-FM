@@ -60,7 +60,7 @@ class BaseDataModule(pl.LightningDataModule, ABC):
         # Optional: hold raw data representation (e.g. GeoDataFrame, DataFrame)
         self._raw_data: Any = None
 
-    # -- Subclasses must implement this to create datasets ----
+    # --- Subclasses must implement this to create datasets ----
     @abstractmethod
     def _create_datasets(self, stage: Optional[str] = None) -> None:
         """
@@ -135,7 +135,7 @@ class BaseDataModule(pl.LightningDataModule, ABC):
             persistent_workers=self.persistent_workers and self.num_workers > 0,
         )
 
-    # Public PyTorch Lightning Hooks
+    # --- Public PyTorch Lightning Hooks ----
     def train_dataloader(self) -> DataLoader[Any]:
         if self.train_dataset is None:
             raise RuntimeError(
