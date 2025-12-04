@@ -10,20 +10,32 @@ Here is our plan for the sprint.
 
 **Morning session (0900-1230)**
 
-1. Introduction to the sprint (this document)
-2. Quick review of an example PyTorch-Lightning workflow (as a visual cue)
-3. Plan sprint teams, include a lead and scribe for each:
+- 0900-0920: Introduction to the sprint (this document)
+- 0920-0930: Quick review of an example PyTorch-Lightning workflow (as a visual cue)
+- 0930-1000: Plan sprint teams, include a lead and scribe for each:
    - Models: Spatial auto-encoders (static data) & Temporal auto-encoders (temporal and spatial)
    - Data: Building the data loaders
    - Monitoring (later): Testing and deciding on monitoring/visualisation tools
-4. Inter-team discussions						
+- 1030-1210: Investigations:
+     - **Data Loaders**:
+       - `.csv` loading with metadata - Colin
+       - transformations - Matt
+       - intermediary cached data - Matthew
+       - Shapefile loading - Michael
+       - Explore how Anemoi is using Zarr for its intermediate data 
+     - **Modelling**:
+       - logging intermediary classes: Adam
+       - Modelling from Nature paper: Anastasia and Jeremy
+       - Geospatial data sampling research : Tom
+- 1210-1230: Discuss of our findings
 
 **Afternoon session (1330-1600)**
 
-1. Recap what was learnt
-2. Plan the afternoon
-3. Regroup at 1500:
+- 1330-1345: Plan the afternoon
+- 1345-1500: Further work
+- 1500-1600: Summarisation
   - Record key findings
+  - What are some of the big issues we found out today
   - Write down plans and next steps
 
 ## Logistics - working on JASMIN
@@ -116,6 +128,8 @@ The input data for the sprint is found at:
 ```
 /gws/ssde/j25b/eds_ai/frame-fm/data/inputs/
 ```
+
+More information 
 
 **GPU Access: interactive**
 
