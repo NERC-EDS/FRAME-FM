@@ -142,16 +142,23 @@ as documented in Tom's excellent instructions here:
     https://github.com/NERC-EDS/FRAME-FM/blob/feature/toms-examples/uv-intro.md
 
 
-** Teams for the sprint:**
+**Teams for the sprint:**
 Data Loaders:
+
 .csv loading with metadata - Colin
+
 transformations - Matt
+
 intermediary cached data - Matthew
+
 shapefile loading - Michael
 
 
 Modelling:
+
 logging intermediary classes: Adam 
+
 Modelling from Nature paper: Anastasia and Jeremy
+
 Geospatial data sampling research : Tom
 
