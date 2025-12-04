@@ -1,0 +1,14 @@
+### Virtual Environment
+.venv
+uv.*
+.python-version
+### Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+### Jupyter Notebook Checkpoints
+.ipynb_checkpoints
+### VSCode Settings
+.vscode/
+### MacOS Files
+.DS_Store
