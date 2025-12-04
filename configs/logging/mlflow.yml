@@ -1,0 +1,6 @@
+# Logging configuration for MLflow
+
+mlflow:
+  tracking_uri: ${env:MLFLOW_TRACKING_URI, "http://localhost:5000"}
+  experiment_name: "frame-fm"
+  run_name: "dev-run"

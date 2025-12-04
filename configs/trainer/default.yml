@@ -1,0 +1,7 @@
+# Default trainer configuration
+
+_target_: pytorch_lightning.Trainer
+
+max_epochs: 10
+accelerator: "cpu"
+log_every_n_steps: 10

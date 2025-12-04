@@ -1,0 +1,7 @@
+# Simple model configuration (DEMO)
+
+_target_: frame_fm.model_code.simple_module.SimpleModule
+
+input_dim: 10
+hidden_dim: 64
+lr: 1e-3

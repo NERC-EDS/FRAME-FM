@@ -1,0 +1,10 @@
+# Hydra main configuration file
+
+defaults:
+  - model: simple      # -> configs/model/simple.yml
+  - data: dummy        # -> configs/data/dummy.yml
+  - trainer: default   # -> configs/trainer/default.yml
+  - logging: mlflow    # -> configs/logging/mlflow.yml
+  - experiment: base   # -> configs/experiment/base.yml
+
+seed: 42
