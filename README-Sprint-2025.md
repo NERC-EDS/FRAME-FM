@@ -191,7 +191,7 @@ To view the aggregated contents you can then either view in a debugger or output
 ds
 ```
 
-The example below shows how to load the chess-met aggregated file and do some very simple analysis:
+The example below shows how to load the chess-met aggregated file and do some very simple analysis, the example notebook can be found at https://github.com/NERC-EDS/FRAME-FM/blob/sprint-dec-2025/notebooks/sprint_nb_1.ipynb:
 
 ```
 import xarray as xr
