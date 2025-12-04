@@ -7,17 +7,17 @@ Initially this will contain thin wrapper classes for pytorch lightning to ensure
 
 ### Lightning Wrappers
 
-- `LightningModuleWrapper`: A wrapper around PyTorch Lightning's LightningModule to enforce consistent logging and provide a clear structure for model training and validation steps.
+- `BaseModule`: A wrapper around PyTorch Lightning's LightningModule to enforce consistent logging and provide a clear structure for model training and validation steps.
 
 #### Example Usage
 
-In the model code, you can extend the `LightningModuleWrapper` to create your own model:
+In the model code, you can extend the `BaseModule` to create your own model:
 
 ```python
 import torch
 ....
-from FRAME_FM.utils.lightning_wrappers import LightningModuleWrapper
-class MyModel(LightningModuleWrapper):
+from FRAME_FM.utils.LightningModuleWrapper import BaseModule
+class MyModel(BaseModule):
     def __init__(self, config):
         super().__init__(config)
         # Define your model architecture here

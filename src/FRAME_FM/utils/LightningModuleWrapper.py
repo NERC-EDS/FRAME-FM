@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional
 import pytorch_lightning as pl
 
 
-class LightningModuleWrapper(pl.LightningModule):
+class BaseModule(pl.LightningModule):
     """
     A thin wrapper around PyTorch Lightning's LightningModule to allow for future extensions
     and customizations specific to FRAME-FM project needs.
