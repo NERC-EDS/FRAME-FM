@@ -1,6 +1,5 @@
 ### Virtual Environment
 .venv
-uv.*
 .python-version
 ### Python Cache
 __pycache__/
