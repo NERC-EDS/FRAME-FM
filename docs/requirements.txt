@@ -1,0 +1,10 @@
+sphinx
+sphinx-copybutton
+sphinx_last_updated_by_git
+sphinx-codeautolink
+sphinx-design
+nbsphinx
+numpydoc
+myst-parser
+IPython
+groundwork-sphinx-theme
