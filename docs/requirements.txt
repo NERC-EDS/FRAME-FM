@@ -9,4 +9,5 @@ myst-parser
 IPython
 sphinx-autoapi
 
-groundwork-sphinx-theme
+sphinx_rtd_theme
+sphinx_rtd_dark_mode

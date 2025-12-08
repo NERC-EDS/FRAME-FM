@@ -42,6 +42,7 @@ extensions = [
     "sphinx_last_updated_by_git",
     "sphinx_codeautolink",
     "sphinx_design",
+    "sphinx_rtd_dark_mode",
 ]
 
 templates_path = ["_templates"]
@@ -67,7 +68,8 @@ autoapi_options = [
 
 # -- Options for HTML output -------------------------------------------------
 
-html_theme = "groundwork"
+html_theme = "sphinx_rtd_theme"
+default_dark_mode = True
 html_static_path = ["_static"]
 html_last_updated_fmt = "%b %d, %Y"
 
