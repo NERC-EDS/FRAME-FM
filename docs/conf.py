@@ -37,7 +37,7 @@ extensions = [
     "IPython.sphinxext.ipython_console_highlighting",
     "nbsphinx",
     "numpydoc",
-    # "autoapi.extension",  # Uncomment if you want autoapi instead of manual autodoc
+    "autoapi.extension",  # Uncomment if you want autoapi instead of manual autodoc
     "myst_parser",
     "sphinx_last_updated_by_git",
     "sphinx_codeautolink",
