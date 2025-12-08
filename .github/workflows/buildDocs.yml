@@ -8,6 +8,10 @@ on:
     branches:
       - sprint/adamwa
 
+permissions:
+  contents: write
+
+
 jobs:
   build-docs:
     runs-on: ubuntu-latest
@@ -50,5 +54,5 @@ jobs:
         with:
           branch: gh-pages  # Deploy to the root of gh-pages
           folder: docs/_build/html  # Ensure this points to the html folder
-          token: ${{ secrets.GH_PAT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           clean: true  # Deletes old files before deployment
