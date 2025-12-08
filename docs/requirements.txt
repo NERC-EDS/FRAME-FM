@@ -7,5 +7,6 @@ nbsphinx
 numpydoc
 myst-parser
 IPython
+autoapi
 
 groundwork-sphinx-theme
