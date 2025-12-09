@@ -13,7 +13,7 @@ import torch
 import torch.nn as nn
 from torchmetrics import Accuracy
 
-from src.FRAME_FM.utils.LightningModuleWrapper import BaseModule
+from FRAME_FM.utils.LightningModuleWrapper import BaseModule
 
 
 class BaselineConvAE(BaseModule):
