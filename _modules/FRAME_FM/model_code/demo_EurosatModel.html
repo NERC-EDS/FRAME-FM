@@ -1,0 +1,295 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FRAME_FM.model_code.demo_EurosatModel &mdash; FRAME-FM 0.0.0a documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d75fae25" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-codeautolink.css?v=b2176991" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/dark_mode_css/general.css?v=c0a7eb24" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/dark_mode_css/dark.css?v=70edf1c7" />
+
+  
+    <link rel="canonical" href="https://NERC-EDS.github.io/FRAME-FM/_modules/FRAME_FM/model_code/demo_EurosatModel.html" />
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=e8454e50"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=df1a032d"></script>
+      <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script src="../../../_static/dark_mode_js/default_dark.js?v=fd565c74"></script>
+      <script src="../../../_static/dark_mode_js/theme_switcher.js?v=358d3910"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            FRAME-FM
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">FRAME-FM</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">FRAME_FM.model_code.demo_EurosatModel</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for FRAME_FM.model_code.demo_EurosatModel</h1><div class="highlight"><pre>
+<span></span><span class="c1"># src/FRAME_FM/model_code/demo_EurosatModel.py</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Example Model code for processing EuroSAT dataset</span>
+
+<span class="sd">Two models are available.</span>
+<span class="sd">1. a Pretrained ResNet18 with weights from PyTorch Model Zoo</span>
+<span class="sd">2. An autoencoder from a [Nature Paper on Flood Analysis](https://www.nature.com/articles/s41598-025-96781-2)</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchmetrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">Accuracy</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.FRAME_FM.utils.LightningModuleWrapper</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModule</span>
+
+
+<div class="viewcode-block" id="BaselineConvAE">
+<a class="viewcode-back" href="../../../api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BaselineConvAE</span><span class="p">(</span><span class="n">BaseModule</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This model consists of a convolutional encoder that progressively increases feature channels through stacked Conv-ReLU blocks,</span>
+<span class="sd">      followed by a latent projection layer that compresses the final feature map into a fixed-size vector via adaptive average pooling</span>
+<span class="sd">      and a linear layer. A corresponding inverse mapping (`self.from_latent`) expands latent vectors back into channel-first feature tensors,</span>
+<span class="sd">      supporting downstream decoding or reconstruction.</span>
+
+<span class="sd">    &gt; Thappitla, R.S., Villuri, V.G.K. &amp; Kumar, S. An autoencoder driven deep learning geospatial approach to flood vulnerability analysis</span>
+<span class="sd">      in the upper and middle basin of river Damodar. Sci Rep 15, 33741 (2025). https://doi.org/10.1038/s41598-025-96781-2</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">13</span><span class="p">,</span>
+        <span class="n">base_ch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+        <span class="n">k_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="n">latent_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span>
+        <span class="n">num_classes</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_hyperparameters</span><span class="p">()</span>
+        <span class="c1"># encoder part - 4 conv layers with ReLU and maxpooling</span>
+        <span class="n">chs</span> <span class="o">=</span> <span class="p">[</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">base_ch</span><span class="p">,</span> <span class="n">base_ch</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">base_ch</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="n">base_ch</span> <span class="o">*</span> <span class="mi">8</span><span class="p">]</span>
+
+        <span class="c1"># assume input is the tensor size (B, in_channels, W, H)</span>
+<div class="viewcode-block" id="BaselineConvAE.encoder">
+<a class="viewcode-back" href="../../../api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.encoder">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="o">=</span><span class="n">chs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">out_channels</span><span class="o">=</span><span class="n">chs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="n">k_size</span><span class="p">,</span>
+                <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="p">),</span>  <span class="c1"># expected output size (B, base_ch, W - k_size + 1, H - k_size + 1)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="o">=</span><span class="n">chs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">out_channels</span><span class="o">=</span><span class="n">chs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="n">k_size</span><span class="p">,</span>
+                <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="p">),</span>  <span class="c1"># expected output size (B, base_ch*2, W - 2*k_size + 2, H - 2*k_size + 2)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="o">=</span><span class="n">chs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                <span class="n">out_channels</span><span class="o">=</span><span class="n">chs</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="n">k_size</span><span class="p">,</span>
+                <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="p">),</span>  <span class="c1"># expected output size (B, base_ch*4,  W - 3*k_size + 3, H - 3*k_size + 3)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="o">=</span><span class="n">chs</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+                <span class="n">out_channels</span><span class="o">=</span><span class="n">chs</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="n">k_size</span><span class="p">,</span>
+                <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="p">),</span>  <span class="c1"># expected output size (B, base_ch*8,  W - 4*k_size + 4, H - 4*k_size + 4)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaselineConvAE.to_latent">
+<a class="viewcode-back" href="../../../api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.to_latent">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_latent</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveAvgPool2d</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>  <span class="c1"># expected output size (B, chs[4], 1, 1)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(),</span>  <span class="c1"># expected output size (B, chs[4] * 1 * 1)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span>
+                <span class="n">in_features</span><span class="o">=</span><span class="n">chs</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">out_features</span><span class="o">=</span><span class="n">latent_dim</span>
+            <span class="p">),</span>  <span class="c1"># expected output size (B, latent_dim)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaselineConvAE.from_latent">
+<a class="viewcode-back" href="../../../api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.from_latent">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">from_latent</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">latent_dim</span><span class="p">,</span> <span class="n">chs</span><span class="p">[</span><span class="mi">4</span><span class="p">]),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Unflatten</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>  <span class="c1"># need to make sure the dimensions match</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaselineConvAE.classifier">
+<a class="viewcode-back" href="../../../api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.classifier">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">latent_dim</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaselineConvAE.train_acc">
+<a class="viewcode-back" href="../../../api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.train_acc">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_acc</span> <span class="o">=</span> <span class="n">Accuracy</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="s2">&quot;multiclass&quot;</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaselineConvAE.val_acc">
+<a class="viewcode-back" href="../../../api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.val_acc">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val_acc</span> <span class="o">=</span> <span class="n">Accuracy</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="s2">&quot;multiclass&quot;</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaselineConvAE.test_acc">
+<a class="viewcode-back" href="../../../api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.test_acc">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_acc</span> <span class="o">=</span> <span class="n">Accuracy</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="s2">&quot;multiclass&quot;</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaselineConvAE.loss_fn">
+<a class="viewcode-back" href="../../../api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.loss_fn">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="BaselineConvAE.forward">
+<a class="viewcode-back" href="../../../api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward Loop for model data flow</span>
+
+<span class="sd">        Method returns &#39;x&#39; processed through:</span>
+<span class="sd">         Encoder -&gt; Latent Dims -&gt; Classifier</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_latent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sharedStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">stage</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Shared step method for train/val/test stages</span>
+
+<span class="sd">        param: batch - Batch Data</span>
+<span class="sd">        param: stage - `str` of &#39;train&#39;/&#39;val&#39;/&#39;test&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">batch</span>
+        <span class="n">logits</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">preds</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">stage</span> <span class="o">==</span> <span class="s2">&quot;train&quot;</span><span class="p">:</span>
+            <span class="n">acc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_acc</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">stage</span> <span class="o">==</span> <span class="s2">&quot;val&quot;</span><span class="p">:</span>
+            <span class="n">acc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_acc</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># &quot;test&quot;</span>
+            <span class="n">acc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_acc</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+        <span class="n">logs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;ce loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span> <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="n">acc</span><span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">logs</span>
+
+<div class="viewcode-block" id="BaselineConvAE.training_step_body">
+<a class="viewcode-back" href="../../../api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.training_step_body">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">training_step_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sharedStep</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">stage</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaselineConvAE.validation_step_body">
+<a class="viewcode-back" href="../../../api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.validation_step_body">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validation_step_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sharedStep</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">stage</span><span class="o">=</span><span class="s2">&quot;val&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaselineConvAE.test_step_body">
+<a class="viewcode-back" href="../../../api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.test_step_body">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_step_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sharedStep</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">stage</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Adam Ward, National Oceanography Centre.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
