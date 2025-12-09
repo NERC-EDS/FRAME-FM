@@ -4,7 +4,8 @@ from __future__ import annotations
 from typing import Optional, Any, Sequence
 from abc import ABC, abstractmethod
 import warnings
-
+from torch.utils.data import Subset
+import torch
 import pytorch_lightning as pl
 from torch.utils.data import Dataset, DataLoader, Sampler
 
@@ -26,7 +27,11 @@ class BaseDataModule(pl.LightningDataModule, ABC):
         num_workers: int = 4,
         pin_memory: bool = True,
         persistent_workers: bool = False,
-        # Optional index-based splits
+        # Optional split controls
+        split_strategy: str = "fraction",  # "indices" | "fraction" | "none" | "custom"
+        train_split: float = 0.8,
+        val_split: float = 0.2,
+        test_split: float = 0.0,
         train_indices: Optional[Sequence[int]] = None,
         val_indices: Optional[Sequence[int]] = None,
         test_indices: Optional[Sequence[int]] = None,
@@ -34,6 +39,10 @@ class BaseDataModule(pl.LightningDataModule, ABC):
         train_sampler: Optional[Sampler[Any]] = None,
         val_sampler: Optional[Sampler[Any]] = None,
         test_sampler: Optional[Sampler[Any]] = None,
+        # Optional transforms
+        train_transforms: Optional[callable] = None,
+        val_transforms: Optional[callable] = None,
+        test_transforms: Optional[callable] = None,
     ) -> None:
         super().__init__()
 
@@ -43,7 +52,12 @@ class BaseDataModule(pl.LightningDataModule, ABC):
         self.pin_memory = pin_memory
         self.persistent_workers = persistent_workers
 
-        # Optional split controls
+        # Split COntrols
+        self.split_strategy = split_strategy
+        self.train_split = train_split
+        self.val_split = val_split
+        self.test_split = test_split
+
         self._train_indices = train_indices
         self._val_indices = val_indices
         self._test_indices = test_indices
@@ -59,6 +73,56 @@ class BaseDataModule(pl.LightningDataModule, ABC):
 
         # Optional: hold raw data representation (e.g. GeoDataFrame, DataFrame)
         self._raw_data: Any = None
+
+        # Optional: PyTorch Transform objects
+        self.train_transforms = train_transforms
+        self.val_transforms = val_transforms
+        self.test_transforms = test_transforms
+
+    def _split_dataset(
+        self, full_ds: Dataset[Any]
+    ) -> tuple[Dataset[Any], Dataset[Any], Optional[Dataset[Any]]]:
+        n_total = len(full_ds)
+
+        # 1) explicit indices
+        if self.split_strategy == "indices":
+            if self._train_indices is None or self._val_indices is None:
+                raise RuntimeError(
+                    "split_strategy='indices' but train/val indices missing."
+                )
+            train_ds = Subset(full_ds, self._train_indices)
+            val_ds = Subset(full_ds, self._val_indices)
+            test_ds = (
+                Subset(full_ds, self._test_indices)
+                if self._test_indices is not None
+                else None
+            )
+            return train_ds, val_ds, test_ds
+
+        # 2) fraction splits
+        if self.split_strategy == "fraction":
+            n_train = int(n_total * self.train_split)
+            n_val = int(n_total * self.val_split)
+            if n_train + n_val > n_total:
+                raise ValueError("Train + val fraction exceed dataset size.")
+
+            g = torch.Generator().manual_seed(42)
+            indices = torch.randperm(n_total, generator=g).tolist()
+
+            train_idx = indices[:n_train]
+            val_idx = indices[n_train : n_train + n_val]
+            test_idx = indices[n_train + n_val :]
+
+            train_ds = Subset(full_ds, train_idx)
+            val_ds = Subset(full_ds, val_idx)
+            test_ds = Subset(full_ds, test_idx) if test_idx else None
+            return train_ds, val_ds, test_ds
+
+        # 3) no split
+        if self.split_strategy == "none":
+            return full_ds, full_ds, None
+
+        raise ValueError(f"Unknown split_strategy={self.split_strategy!r}")
 
     # --- Subclasses must implement this to create datasets ----
     @abstractmethod
