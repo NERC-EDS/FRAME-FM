@@ -116,17 +116,16 @@ class BaselineConvAE(BaseModule):
         param: stage - `str` of 'train'/'val'/'test'
         """
 
-        x, y = batch
+        x, y = batch["image"], batch["label"]
         logits = self(x)
         loss = self.loss_fn(logits, y)
-        preds = torch.argmax(logits, dim=1)
 
         if stage == "train":
-            acc = self.train_acc(preds, y)
+            acc = self.train_acc(logits, y)
         elif stage == "val":
-            acc = self.val_acc(preds, y)
+            acc = self.val_acc(logits, y)
         else:  # "test"
-            acc = self.test_acc(preds, y)
+            acc = self.test_acc(logits, y)
 
         logs = {"ce loss": loss, "acc": acc}
 
