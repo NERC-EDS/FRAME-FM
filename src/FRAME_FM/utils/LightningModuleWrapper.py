@@ -15,10 +15,9 @@ class BaseModule(pl.LightningModule):
     Enforces logging of loss by default.
     """
 
-    def __init__(self, model: pl.LightningModule):
+    def __init__(self):
         super().__init__()
         self.save_hyperparameters()
-        self.model = model
 
     # ------ OVERWRITES -----
 
@@ -55,6 +54,18 @@ class BaseModule(pl.LightningModule):
 
         return loss
 
+    def test_step(self, batch: Any, batch_idx: int) -> Any:
+        """Default behaviour: call a user-overridable hook and log loss."""
+        loss, logs = self.testing_step_body(batch, batch_idx)
+
+        self.log(
+            "test/loss", loss, on_step=False, on_epoch=True, prog_bar=True, logger=True
+        )
+        for k, v in logs.items():
+            self.log(f"test/{k}", v, on_step=False, on_epoch=True, logger=True)
+
+        return loss
+
     # ---- Hooks model developers are expected to override ----
     def training_step_body(
         self, batch: Any, batch_idx: int
@@ -68,4 +79,7 @@ class BaseModule(pl.LightningModule):
     def validation_step_body(
         self, batch: Any, batch_idx: int
     ) -> tuple[Any, Dict[str, Any]]:
+        raise NotImplementedError
+
+    def test_step_body(self, batch: Any, batch_idx: int) -> tuple[Any, Dict[str, Any]]:
         raise NotImplementedError
