@@ -48,6 +48,17 @@ pip install uv
 uv sync
 ```
 
+## 3. Add Additional Dependencies
+Additional sources, such as `torchgeo` are installable sperately - so as to reduce wasting storage.
+
+To install them, either run the relevant `uv add` command such as:
+```bash
+uv add torchgeo
+```
+OR you can install all sources using the `data_requirements.txt`
+```bash
+uv pip install -r data_requirements.txt
+```
 
 
 
