@@ -88,7 +88,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
-
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">Subset</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pytorch_lightning</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">Sampler</span>
 
@@ -112,7 +113,11 @@
         <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
         <span class="n">pin_memory</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">persistent_workers</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="c1"># Optional index-based splits</span>
+        <span class="c1"># Optional split controls</span>
+        <span class="n">split_strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;fraction&quot;</span><span class="p">,</span>  <span class="c1"># &quot;indices&quot; | &quot;fraction&quot; | &quot;none&quot; | &quot;custom&quot;</span>
+        <span class="n">train_split</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">,</span>
+        <span class="n">val_split</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+        <span class="n">test_split</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
         <span class="n">train_indices</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">val_indices</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">test_indices</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -120,6 +125,10 @@
         <span class="n">train_sampler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sampler</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">val_sampler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sampler</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">test_sampler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sampler</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># Optional transforms</span>
+        <span class="n">train_transforms</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">val_transforms</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">test_transforms</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
@@ -144,7 +153,24 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">persistent_workers</span> <span class="o">=</span> <span class="n">persistent_workers</span></div>
 
 
-        <span class="c1"># Optional split controls</span>
+        <span class="c1"># Split COntrols</span>
+<div class="viewcode-block" id="BaseDataModule.split_strategy">
+<a class="viewcode-back" href="../../../api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.split_strategy">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">split_strategy</span> <span class="o">=</span> <span class="n">split_strategy</span></div>
+
+<div class="viewcode-block" id="BaseDataModule.train_split">
+<a class="viewcode-back" href="../../../api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.train_split">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_split</span> <span class="o">=</span> <span class="n">train_split</span></div>
+
+<div class="viewcode-block" id="BaseDataModule.val_split">
+<a class="viewcode-back" href="../../../api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.val_split">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val_split</span> <span class="o">=</span> <span class="n">val_split</span></div>
+
+<div class="viewcode-block" id="BaseDataModule.test_split">
+<a class="viewcode-back" href="../../../api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.test_split">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_split</span> <span class="o">=</span> <span class="n">test_split</span></div>
+
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_train_indices</span> <span class="o">=</span> <span class="n">train_indices</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_val_indices</span> <span class="o">=</span> <span class="n">val_indices</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_test_indices</span> <span class="o">=</span> <span class="n">test_indices</span>
@@ -169,6 +195,65 @@
 
         <span class="c1"># Optional: hold raw data representation (e.g. GeoDataFrame, DataFrame)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_raw_data</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Optional: PyTorch Transform objects</span>
+<div class="viewcode-block" id="BaseDataModule.train_transforms">
+<a class="viewcode-back" href="../../../api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.train_transforms">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_transforms</span> <span class="o">=</span> <span class="n">train_transforms</span></div>
+
+<div class="viewcode-block" id="BaseDataModule.val_transforms">
+<a class="viewcode-back" href="../../../api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.val_transforms">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val_transforms</span> <span class="o">=</span> <span class="n">val_transforms</span></div>
+
+<div class="viewcode-block" id="BaseDataModule.test_transforms">
+<a class="viewcode-back" href="../../../api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.test_transforms">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_transforms</span> <span class="o">=</span> <span class="n">test_transforms</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_split_dataset</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">full_ds</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Dataset</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Dataset</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dataset</span><span class="p">[</span><span class="n">Any</span><span class="p">]]]:</span>
+        <span class="n">n_total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">full_ds</span><span class="p">)</span>
+
+        <span class="c1"># 1) explicit indices</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_strategy</span> <span class="o">==</span> <span class="s2">&quot;indices&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_indices</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_val_indices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="s2">&quot;split_strategy=&#39;indices&#39; but train/val indices missing.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">train_ds</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span><span class="n">full_ds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_indices</span><span class="p">)</span>
+            <span class="n">val_ds</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span><span class="n">full_ds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_val_indices</span><span class="p">)</span>
+            <span class="n">test_ds</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">Subset</span><span class="p">(</span><span class="n">full_ds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_indices</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_indices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="k">else</span> <span class="kc">None</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">train_ds</span><span class="p">,</span> <span class="n">val_ds</span><span class="p">,</span> <span class="n">test_ds</span>
+
+        <span class="c1"># 2) fraction splits</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_strategy</span> <span class="o">==</span> <span class="s2">&quot;fraction&quot;</span><span class="p">:</span>
+            <span class="n">n_train</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_total</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_split</span><span class="p">)</span>
+            <span class="n">n_val</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_total</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_split</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">n_train</span> <span class="o">+</span> <span class="n">n_val</span> <span class="o">&gt;</span> <span class="n">n_total</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Train + val fraction exceed dataset size.&quot;</span><span class="p">)</span>
+
+            <span class="n">g</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Generator</span><span class="p">()</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randperm</span><span class="p">(</span><span class="n">n_total</span><span class="p">,</span> <span class="n">generator</span><span class="o">=</span><span class="n">g</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+            <span class="n">train_idx</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[:</span><span class="n">n_train</span><span class="p">]</span>
+            <span class="n">val_idx</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="n">n_train</span> <span class="p">:</span> <span class="n">n_train</span> <span class="o">+</span> <span class="n">n_val</span><span class="p">]</span>
+            <span class="n">test_idx</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="n">n_train</span> <span class="o">+</span> <span class="n">n_val</span> <span class="p">:]</span>
+
+            <span class="n">train_ds</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span><span class="n">full_ds</span><span class="p">,</span> <span class="n">train_idx</span><span class="p">)</span>
+            <span class="n">val_ds</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span><span class="n">full_ds</span><span class="p">,</span> <span class="n">val_idx</span><span class="p">)</span>
+            <span class="n">test_ds</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span><span class="n">full_ds</span><span class="p">,</span> <span class="n">test_idx</span><span class="p">)</span> <span class="k">if</span> <span class="n">test_idx</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">train_ds</span><span class="p">,</span> <span class="n">val_ds</span><span class="p">,</span> <span class="n">test_ds</span>
+
+        <span class="c1"># 3) no split</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_strategy</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">full_ds</span><span class="p">,</span> <span class="n">full_ds</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown split_strategy=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">split_strategy</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="c1"># --- Subclasses must implement this to create datasets ----</span>
     <span class="nd">@abstractmethod</span>
