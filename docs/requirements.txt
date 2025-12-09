@@ -1,0 +1,13 @@
+sphinx
+sphinx-copybutton
+sphinx_last_updated_by_git
+sphinx-codeautolink
+sphinx-design
+nbsphinx
+numpydoc
+myst-parser
+IPython
+sphinx-autoapi
+
+sphinx_rtd_theme
+sphinx_rtd_dark_mode

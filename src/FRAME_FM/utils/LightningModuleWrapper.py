@@ -7,6 +7,12 @@ class BaseModule(pl.LightningModule):
     """
     A thin wrapper around PyTorch Lightning's LightningModule to allow for future extensions
     and customizations specific to FRAME-FM project needs.
+
+    Subclasses should implement `training_step_body` and `validation_step_body` methods
+    instead of `training_step` and `validation_step` directly.
+
+    Enforces consistent logging patterns across training and validation steps.
+    Enforces logging of loss by default.
     """
 
     def __init__(self, model: pl.LightningModule):
