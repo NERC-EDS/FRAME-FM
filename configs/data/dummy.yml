@@ -1,6 +1,0 @@
-# Dummy data module configuration (DEMO)
-
-_target_: frame_fm.dataloaders.dummy_datamodule.DummyDataModule
-
-batch_size: 32
-num_workers: 4
