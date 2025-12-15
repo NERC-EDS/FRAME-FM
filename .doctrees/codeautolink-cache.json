@@ -1,4 +1,5 @@
 {
+  "api/FRAME_FM/dataloaders/demo_EurosatDataloader/index": [],
   "api/FRAME_FM/dataloaders/index": [],
   "api/FRAME_FM/index": [],
   "api/FRAME_FM/model_code/demo_EurosatModel/index": [],
@@ -7,6 +8,7 @@
   "api/FRAME_FM/utils/LightningDataModuleWrapper/index": [],
   "api/FRAME_FM/utils/LightningModuleWrapper/index": [],
   "api/FRAME_FM/utils/index": [],
+  "api/ImageLabel_Dataset/index": [],
   "api/index": [],
   "index": []
 }
