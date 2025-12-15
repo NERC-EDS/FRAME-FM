@@ -1,10 +1,15 @@
-# Hydra main configuration file
-
+# configs/config.yaml
 defaults:
-  - model: simple      # -> configs/model/simple.yml
-  - data: dummy        # -> configs/data/dummy.yml
-  - trainer: default   # -> configs/trainer/default.yml
-  - logging: mlflow    # -> configs/logging/mlflow.yml
-  - experiment: base   # -> configs/experiment/base.yml
+  - data: eurosat
+  - model: EuroSATConvAE
+  - trainer: default
+  - logging: mlflow
+  - _self_
 
 seed: 42
+
+hydra:
+  run:
+    dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  job:
+    chdir: true

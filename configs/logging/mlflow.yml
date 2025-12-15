@@ -1,6 +1,11 @@
-# Logging configuration for MLflow
+# configs/logging/mlflow.yaml
+_target_: FRAME_FM.training.logger.create_mlflow_logger
 
-mlflow:
-  tracking_uri: ${env:MLFLOW_TRACKING_URI, "http://localhost:5000"}
-  experiment_name: "frame-fm"
-  run_name: "dev-run"
+experiment_name: "frame-fm-eurosat-ae"
+tracking_uri: ${env:MLFLOW_TRACKING_URI, "file:./mlruns"}
+run_name: "eurosat_autoencoder"
+
+tags:
+  project: "FRAME-FM"
+  dataset: "EuroSAT"
+  model: "EuroSAT Autoencoder"
