@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Optional, Any
 
-from torchvision.datasets import EuroSAT
+from torchvision.datasets import EuroSAT100 as EuroSAT
 
 from FRAME_FM.utils.LightningDataModuleWrapper import BaseDataModule
 from FRAME_FM.datasets.ImageLabel_Dataset import TransformedDataset
