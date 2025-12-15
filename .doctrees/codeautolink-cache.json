@@ -5,6 +5,8 @@
   "api/FRAME_FM/model_code/demo_EurosatModel/index": [],
   "api/FRAME_FM/model_code/index": [],
   "api/FRAME_FM/training/index": [],
+  "api/FRAME_FM/training/logging/index": [],
+  "api/FRAME_FM/training/train/index": [],
   "api/FRAME_FM/utils/LightningDataModuleWrapper/index": [],
   "api/FRAME_FM/utils/LightningModuleWrapper/index": [],
   "api/FRAME_FM/utils/index": [],
