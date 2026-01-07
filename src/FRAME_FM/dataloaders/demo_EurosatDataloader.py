@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from typing import Optional, Any
 
-from torchvision.datasets import EuroSAT100 as EuroSAT
+import torch
+from torchgeo.datasets import EuroSAT100 as EuroSAT
 
 from FRAME_FM.utils.LightningDataModuleWrapper import BaseDataModule
 from FRAME_FM.datasets.ImageLabel_Dataset import TransformedDataset
@@ -46,30 +47,39 @@ class EuroSATDataModule(BaseDataModule):
         Load the full EuroSAT dataset once, with no transform.
         Split and per-split transforms are handled later.
         """
-        return EuroSAT(self.data_root, download=False, transform=None)
+        return EuroSAT(self.data_root, download=False, transforms=None)
 
     def _create_datasets(self, stage: Optional[str] = None) -> None:
         """
-        - Take the full dataset (`self._raw_data`).
-        - Use BaseDataModule._split_dataset(...) to create train/val/test splits
-          based on `split_strategy` + indices/fractions from config.
-        - Wrap each split in TransformedDataset with the appropriate transform
-          provided via Hydra (train_transforms, val_transforms, test_transforms).
+        TorchGeo datasets return dict samples (e.g. {"image": ..., "label": ...}).
+        So transforms should be applied to the whole sample dict, not just the image.
+
+        We split the raw dataset, then apply transforms per split via a small wrapper.
         """
         full_ds = self._raw_data
         train_base, val_base, test_base = self._split_dataset(full_ds)
 
-        self.train_dataset = TransformedDataset(
-            train_base,
-            transform=self.train_transforms,
-        )
-        self.val_dataset = TransformedDataset(
-            val_base,
-            transform=self.val_transforms,
-        )
-        # test_base may be None if no test split configured
-        self.test_dataset = (
-            TransformedDataset(test_base, transform=self.test_transforms)
-            if test_base is not None
-            else None
-        )
+        def apply_transforms(ds, tfm):
+            if ds is None or tfm is None:
+                return ds
+
+            class _Wrapped(torch.utils.data.Dataset):
+                def __init__(self, base, transform):
+                    self.base = base
+                    self.transform = transform
+
+                def __len__(self):
+                    return len(self.base)
+
+                def __getitem__(self, idx):
+                    sample = self.base[idx]
+                    if self.transform is not None:
+                        sample["image"] = self.transform(sample["image"])
+                    return sample
+
+
+            return _Wrapped(ds, tfm)
+
+        self.train_dataset = apply_transforms(train_base, self.train_transforms)
+        self.val_dataset = apply_transforms(val_base, self.val_transforms)
+        self.test_dataset = apply_transforms(test_base, self.test_transforms) if test_base is not None else None

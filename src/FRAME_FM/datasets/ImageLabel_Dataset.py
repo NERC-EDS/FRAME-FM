@@ -2,6 +2,7 @@
 """
 Lightweight Dataset wrapper that applies transforms to images only,
 preserving the (image, label) structure of torchvision datasets."""
+from typing import Any, Optional
 from torch.utils.data import Dataset
 
 

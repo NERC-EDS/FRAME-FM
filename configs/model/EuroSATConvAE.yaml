@@ -1,0 +1,15 @@
+# configs/model/autoencoder_eurosat.yaml
+_target_: FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE
+
+# Architecture
+in_channels: 13          # EuroSAT full Sentinel-2 bands (use 3 for RGB)
+base_ch: 32              # renamed from base_channels
+k_size: 5                # kernel size (default was 5)
+latent_dim: 256
+
+# Optimisation hyperparameters
+lr: 1e-3
+
+# Optional, if your BaseModule uses num_classes or similar
+num_classes: 17    
+

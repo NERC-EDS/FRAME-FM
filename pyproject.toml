@@ -3,7 +3,7 @@ name = "frame-fm"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.13"
 dependencies = [
     "hydra-core>=1.3.2",
     "mlflow>=3.6.0",

@@ -1,5 +1,5 @@
 # configs/data/eurosat.yaml
-_target_: FRAME_FM.dataloaders.eurosat_datamodule.EuroSATDataModule
+_target_: FRAME_FM.dataloaders.demo_EurosatDataloader.EuroSATDataModule
 
 data_root: ${env:EUROSAT_DATA_ROOT, "data"}
 batch_size: 32
@@ -27,27 +27,27 @@ train_transforms:
       size: 64
     - _target_: torchvision.transforms.RandomHorizontalFlip
       p: 0.5
-    - _target_: torchvision.transforms.ToTensor
+    # - _target_: torchvision.transforms.ToTensor
     - _target_: torchvision.transforms.Normalize
-      mean: [0.5, 0.5, 0.5]
-      std: [0.5, 0.5, 0.5]
+      mean: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+      std:  [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
 
 val_transforms:
   _target_: torchvision.transforms.Compose
   transforms:
     - _target_: torchvision.transforms.Resize
       size: 64
-    - _target_: torchvision.transforms.ToTensor
+    # - _target_: torchvision.transforms.ToTensor
     - _target_: torchvision.transforms.Normalize
-      mean: [0.5, 0.5, 0.5]
-      std: [0.5, 0.5, 0.5]
-
+      mean: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+      std:  [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+      
 test_transforms:
   _target_: torchvision.transforms.Compose
   transforms:
     - _target_: torchvision.transforms.Resize
       size: 64
-    - _target_: torchvision.transforms.ToTensor
+    # - _target_: torchvision.transforms.ToTensor
     - _target_: torchvision.transforms.Normalize
-      mean: [0.5, 0.5, 0.5]
-      std: [0.5, 0.5, 0.5]
+      mean: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+      std:  [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]

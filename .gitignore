@@ -11,3 +11,7 @@ __pycache__/
 .vscode/
 ### MacOS Files
 .DS_Store
+/data/
+/outputs/
+/lightning_logs/
+/mlruns/

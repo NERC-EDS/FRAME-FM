@@ -1,17 +1,24 @@
 # src/FRAME_FM/training/train.py
 from __future__ import annotations
 
+import os
 import pytorch_lightning as pl
 from hydra import main as hydra_main
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 from hydra.utils import instantiate
 
-from FRAME_FM.training.logging import (
+from FRAME_FM.training.logging_utils import (
     create_mlflow_logger,
 )  # used via config instantiation
 
+# Ensure the ${env:VAR,default} interpolation works
+if not OmegaConf.has_resolver("env"):
+    OmegaConf.register_new_resolver(
+        "env",
+        lambda key, default=None: os.environ.get(key, default),
+    )
 
-@hydra_main(version_base=None, config_path="../../configs", config_name="config")
+@hydra_main(version_base=None, config_path="../../../configs", config_name="config")
 def main(cfg: DictConfig) -> None:
     # Ensure reproducibility
     pl.seed_everything(cfg.get("seed", 42), workers=True)

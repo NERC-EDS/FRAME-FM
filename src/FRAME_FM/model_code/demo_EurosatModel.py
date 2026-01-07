@@ -7,7 +7,7 @@ Two models are available.
 2. An autoencoder from a [Nature Paper on Flood Analysis](https://www.nature.com/articles/s41598-025-96781-2)
 
 """
-
+import torch
 from typing import Any
 import torch.nn as nn
 from torchmetrics import Accuracy
@@ -130,11 +130,15 @@ class BaselineConvAE(BaseModule):
 
         return loss, logs
 
-    def training_step_body(self, batch):
+    def training_step_body(self, batch, batch_idx: int = 0):
         return self._sharedStep(batch, stage="train")
 
-    def validation_step_body(self, batch):
+    def validation_step_body(self, batch, batch_idx: int = 0):
         return self._sharedStep(batch, stage="val")
 
-    def test_step_body(self, batch):
+    def test_step_body(self, batch, batch_idx: int = 0):
         return self._sharedStep(batch, stage="test")
+
+
+    def configure_optimizers(self):
+        return torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
