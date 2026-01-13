@@ -1,7 +1,55 @@
-/* Fix black module/class prefix in autodoc signatures (dark mode) */
+/* ===============================
+   Python autodoc signatures — dark mode
+   =============================== */
+
+/* 1. "class" / "def" keyword */
+html[data-theme="dark"] em.property {
+    color: #f4b942; /* yellow-orange */
+    font-style: normal; /* optional: remove italics if desired */
+}
+
+/* 2. Module / dotted path prefix */
 html[data-theme="dark"] .sig-prename.descclassname,
 html[data-theme="dark"] .sig-prename.descclassname .pre,
 html[data-theme="dark"] .descclassname,
 html[data-theme="dark"] .descclassname .pre {
-  color: #e6e6e6 !important;
+    color: #ffffff; /* white */
+}
+
+/* 3. Main class / function name */
+html[data-theme="dark"] .sig-name.descname,
+html[data-theme="dark"] .sig-name.descname .pre,
+html[data-theme="dark"] .descname,
+html[data-theme="dark"] .descname .pre {
+    color: #ff4fa3; /* hot pink */
+}
+
+/* 4. Parameter names */
+html[data-theme="dark"] .sig-param .n,
+html[data-theme="dark"] .sig-param .n .pre {
+    color: #e6e6e6;
+}
+
+/* 5. Type annotations (int, str, Tensor, etc.) */
+html[data-theme="dark"] .sig-param .n a,
+html[data-theme="dark"] .sig-param .n a .pre {
+    color: #7dd3fc; /* soft cyan */
+}
+
+/* 6. Operators (:, =, |) */
+html[data-theme="dark"] .sig-param .p,
+html[data-theme="dark"] .sig-param .o {
+    color: #cfcfcf;
+}
+
+/* 7. Default parameter values */
+html[data-theme="dark"] .sig-param .default_value,
+html[data-theme="dark"] .sig-param .default_value .pre {
+    color: #f45347; /* salmon red */
+    font-weight: 500;
+}
+
+/* 8. Optional: overall signature background contrast */
+html[data-theme="dark"] .sig {
+    background-color: #2b2b2b;
 }
