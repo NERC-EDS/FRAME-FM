@@ -77,8 +77,8 @@ html_last_updated_fmt = "%b %d, %Y"
 html_baseurl = "https://NERC-EDS.github.io/FRAME-FM/"
 
 
-pygments_style = "lightbulb"
-pygments_dark_style = "lightbulb"
+pygments_style = "friendly"
+pygments_dark_style = "monokai"
 
 html_static_path = ["_static"]
 html_css_files = [
