@@ -58,15 +58,13 @@ html[data-theme="dark"] .sig {
    Python domain blocks background (dark mode)
    ========================================= */
 
-html[data-theme="dark"] dt.sig.sig-object.py {
-  background-color: #77909c;   /* steel grey */
-  color: #ffffff;              /* default text on the row */
-  border: none;
-  border-radius: 4px;
-  padding: 0.35em 0.6em;
-}
+/* =========================================
+   Override RTD <dt> background for Python signatures (dark mode)
+   ========================================= */
 
-/* Ensure nested signature text inherits correctly */
-html[data-theme="dark"] dt.sig.sig-object.py * {
-  background: transparent;
+html[data-theme="dark"].writer-html5
+.rst-content dl.py > dt.sig.sig-object {
+    background-color: #77909c; /* slate / steel grey */
+    color: #ffffff;
+    border-left-color: #9fb3bd; /* soften the left bar */
 }
