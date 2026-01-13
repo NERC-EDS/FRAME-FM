@@ -53,3 +53,31 @@ html[data-theme="dark"] .sig-param .default_value .pre {
 html[data-theme="dark"] .sig {
     background-color: #2b2b2b;
 }
+
+/* =========================================
+   Python domain blocks background (dark mode)
+   ========================================= */
+
+/* Entire definition list */
+html[data-theme="dark"] dl.py {
+    background-color: #77909c;
+    border-radius: 4px;
+    padding: 0.4em 0.6em;
+}
+
+/* Signature header line */
+html[data-theme="dark"] dl.py > dt.sig {
+    background-color: #77909c;
+    color: #ffffff;
+    border-radius: 4px;
+}
+
+/* Remove light borders from RTD defaults */
+html[data-theme="dark"] dl.py > dt.sig {
+    border: none;
+}
+
+/* Optional: indent description cleanly */
+html[data-theme="dark"] dl.py > dd {
+    margin-left: 1.5em;
+}
