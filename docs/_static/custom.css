@@ -55,16 +55,24 @@ html[data-theme="dark"] .sig {
 }
 
 /* =========================================
-   Python domain blocks background (dark mode)
-   ========================================= */
-
-/* =========================================
    Override RTD <dt> background for Python signatures (dark mode)
    ========================================= */
 
-html[data-theme="dark"].writer-html5
-.rst-content dl.py > dt.sig.sig-object {
-    background-color: #77909c; /* slate / steel grey */
-    color: #ffffff;
-    border-left-color: #9fb3bd; /* soften the left bar */
+/* Override RTD nested <dt> background for Python domain signatures (dark mode) */
+html[data-theme="dark"].writer-html5 .rst-content
+dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple)
+dl:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple)
+> dt.sig.sig-object.py {
+  background: #77909c !important;     /* slate/steel grey */
+  color: #ffffff !important;
+  border-left-color: #9fb3bd !important;
 }
+
+/* Prevent inner spans from reintroducing light backgrounds */
+html[data-theme="dark"].writer-html5 .rst-content
+dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple)
+dl:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple)
+> dt.sig.sig-object.py * {
+  background: transparent !important;
+}
+
