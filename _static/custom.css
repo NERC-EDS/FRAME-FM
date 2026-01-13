@@ -83,9 +83,9 @@ html[data-theme="dark"].writer-html5 .rst-content
 dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple)
 dl:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple)
 > dt.sig.sig-object.py {
-  background: #000e15 !important;     /* slate/steel grey */
+  background: #000000 !important;  
   color: #ffffff !important;
-  border-left-color: rgb(8, 30, 40) !important;
+  border-left-color: rgb(0, 0, 0) !important;
 }
 
 /* Prevent inner spans from reintroducing light backgrounds */
