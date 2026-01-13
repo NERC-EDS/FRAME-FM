@@ -80,6 +80,12 @@ html_baseurl = "https://NERC-EDS.github.io/FRAME-FM/"
 pygments_style = "friendly"
 pygments_dark_style = "monokai"
 
+html_static_path = ["_static"]
+html_css_files = [
+    "custom.css",
+]
+
+
 # -- Intersphinx configuration -----------------------------------------------
 
 intersphinx_mapping = {

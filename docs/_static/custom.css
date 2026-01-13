@@ -1,0 +1,7 @@
+/* Fix black module/class prefix in autodoc signatures (dark mode) */
+html[data-theme="dark"] .sig-prename.descclassname,
+html[data-theme="dark"] .sig-prename.descclassname .pre,
+html[data-theme="dark"] .descclassname,
+html[data-theme="dark"] .descclassname .pre {
+  color: #e6e6e6 !important;
+}
