@@ -53,6 +53,26 @@ html[data-theme="dark"] .sig-param .default_value .pre {
 html[data-theme="dark"] .sig {
     background-color: #2b2b2b;
 }
+/* =========================================
+   Code Block Overrides for Dark Mode
+   ========================================= */
+    /* Dark-mode code blocks: background + base text */
+html[data-theme="dark"] div.highlight,
+html[data-theme="dark"] pre.highlight,
+html[data-theme="dark"] .highlight pre {
+  background: #0f111a !important;  /* Abyss-like */
+  color: #cdd6f4 !important;
+  border: none;
+  border-radius: 4px;
+}
+/* Token tuning for dark mode */
+html[data-theme="dark"] .highlight .k  { color: #82aaff !important; } /* keywords */
+html[data-theme="dark"] .highlight .s  { color: #c3e88d !important; } /* strings */
+html[data-theme="dark"] .highlight .m  { color: #f78c6c !important; } /* numbers */
+html[data-theme="dark"] .highlight .c  { color: #637777 !important; font-style: italic; } /* comments */
+html[data-theme="dark"] .highlight .nf,
+html[data-theme="dark"] .highlight .nc { color: #ffd580 !important; } /* functions/classes */
+
 
 /* =========================================
    Override RTD <dt> background for Python signatures (dark mode)
@@ -63,9 +83,9 @@ html[data-theme="dark"].writer-html5 .rst-content
 dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple)
 dl:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple)
 > dt.sig.sig-object.py {
-  background: #77909c !important;     /* slate/steel grey */
+  background: #000e15 !important;     /* slate/steel grey */
   color: #ffffff !important;
-  border-left-color: #9fb3bd !important;
+  border-left-color: rgb(8, 30, 40) !important;
 }
 
 /* Prevent inner spans from reintroducing light backgrounds */
