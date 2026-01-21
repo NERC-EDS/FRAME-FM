@@ -1,5 +1,9 @@
 # FRAME-FM
+**Framework for the Rapid development of Environmental Foundation Models**
 
+FRAME-FM is an open-source software framework designed to enable the fast, scalable, and accessible development of Foundation Models (FMs) for large-scale environmental datasets, including petabyte-scale archives held by the UK’s NERC Environmental Data Service (EDS).
+
+The project addresses a critical gap: while environmental data archives are vast and information-rich, they are difficult to process directly. FRAME-FM lowers the barrier to using these datasets by providing standardised workflows, infrastructure, and tools that allow users to train, evaluate, fine-tune, and publish foundation models efficiently.
 <details>
   <summary><strong>📚 Table of Contents</strong></summary>
 
