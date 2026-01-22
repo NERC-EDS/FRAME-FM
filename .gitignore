@@ -11,3 +11,9 @@ __pycache__/
 .vscode/
 ### MacOS Files
 .DS_Store
+
+# Ignore everything under exps/
+experiments/*
+
+# But keep the README
+!experiments/experiments_README.md
