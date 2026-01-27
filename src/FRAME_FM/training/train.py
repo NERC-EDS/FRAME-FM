@@ -7,10 +7,6 @@ from hydra import main as hydra_main
 from omegaconf import DictConfig, OmegaConf
 from hydra.utils import instantiate
 
-from FRAME_FM.training.logging_utils import (
-    create_mlflow_logger,
-)  # used via config instantiation
-
 # Ensure the ${env:VAR,default} interpolation works
 if not OmegaConf.has_resolver("env"):
     OmegaConf.register_new_resolver(
