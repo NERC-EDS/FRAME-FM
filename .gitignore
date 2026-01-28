@@ -17,3 +17,10 @@ experiments/*
 
 # But keep the README
 !experiments/experiments_README.md
+
+outputs/
+
+# Ignore everything under mlruns/
+.mlruns/*
+
+docs/_build/

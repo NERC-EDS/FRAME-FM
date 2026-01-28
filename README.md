@@ -25,6 +25,7 @@ The project addresses a critical gap: while environmental data archives are vast
 
 ### 📒 Notebooks
 - [Jupyter Notebooks](./notebooks/notebooks_README.md)
+- [Marimo Notebooks](./notebooks/marimo_notebooks_README.md)
 
 ---
 
@@ -38,17 +39,16 @@ The project addresses a critical gap: while environmental data archives are vast
 This project uses **uv** for dependency management.  
 If you already have the repository (including `pyproject.toml` and `uv.lock`), use the steps below to recreate the full environment.
 
-## 1. Create and activate a virtual environment
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-```
-
-## 2. Install dependencies with uv
+## 1. Install uv
 
 ```bash
 pip install uv
+```
+
+## 2. Create virutal environment and install dependencies with uv 
+
+```bash
+uv venv
 uv sync
 ```
 
@@ -57,11 +57,11 @@ Additional sources, such as `torchgeo` are installable sperately - so as to redu
 
 To install them, either run the relevant `uv add` command such as:
 ```bash
-uv add torchgeo
+uv add torchgeo --optional data
 ```
-OR you can install all sources using the `data_requirements.txt`
+OR you can install all sources using the `data` extra;
 ```bash
-uv pip install -r data_requirements.txt
+uv sync --extra data
 ```
 
 

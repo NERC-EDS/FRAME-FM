@@ -1,7 +1,7 @@
 [project]
 name = "frame-fm"
-version = "0.1.0"
-description = "Add your description here"
+dynamic = ["version"]
+description = "A package for the simplification of training deep learning models for environmental data"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -10,3 +10,38 @@ dependencies = [
     "pytorch-lightning>=2.6.0",
     "torch>=2.9.1",
 ]
+[project.optional-dependencies]
+notebook = [
+    "jupyter>=1.0.0",
+]
+better-notebook = [
+    "marimo>=0.19.6",
+]
+docs = [
+    "sphinx>=7.2.6",
+    "sphinx-rtd-theme>=2.0.0",
+    "sphinx-copybutton",
+    "sphinx_last_updated_by_git",
+    "sphinx-codeautolink",
+    "sphinx-design",
+    "nbsphinx",
+    "numpydoc",
+    "myst-parser",
+    "IPython",
+    "sphinx-autoapi",
+    "sphinx_rtd_dark_mode",
+]
+data = [
+    "torchgeo>=0.8.1",
+]
+
+[build-system]
+requires = ["hatchling", "uv-dynamic-versioning"]
+build-backend = "hatchling"
+
+[tool.uv]
+package = false
+
+[tool.uv-dynamic-versioning]
+fallback-version = "0.1.0"
+version-source = "vcs"
