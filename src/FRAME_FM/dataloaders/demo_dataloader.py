@@ -1,4 +1,4 @@
-# src/FRAME_FM/dataloaders/eurosat_datamodule.py
+# src/FRAME_FM/dataloaders/demo_dataloader.py
 
 from __future__ import annotations
 

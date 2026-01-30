@@ -1,4 +1,4 @@
-# configs/logging/mlflow.yaml
+# configs/logging/demo_log.yaml
 _target_: FRAME_FM.training.logging_utils.create_mlflow_logger
 
 experiment_name: "frame-fm-demo"
