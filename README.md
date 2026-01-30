@@ -39,6 +39,14 @@ The project addresses a critical gap: while environmental data archives are vast
 This project uses **uv** for dependency management.  
 If you already have the repository (including `pyproject.toml` and `uv.lock`), use the steps below to recreate the full environment.
 
+## 0. JASMIN
+if your are running on the UK science compute service (jasmin.ac.uk)`
+once logged in run
+```bash
+module load jaspy
+```
+
+
 ## 1. Install uv
 
 ```bash

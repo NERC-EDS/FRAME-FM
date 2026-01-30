@@ -1,6 +1,6 @@
 ### Virtual Environment
 .venv
-.python-version
+
 ### Python Cache
 __pycache__/
 *.py[cod]
