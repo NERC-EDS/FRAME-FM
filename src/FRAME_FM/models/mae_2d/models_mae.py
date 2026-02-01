@@ -14,7 +14,8 @@ from functools import partial
 import torch
 import torch.nn as nn
 
-from timm.models.vision_transformer import PatchEmbed, Block
+from timm.layers.patch_embed import PatchEmbed
+from timm.models.vision_transformer import Block
 
 from .pos_embed import get_2d_sincos_pos_embed
 
@@ -95,8 +96,8 @@ class MaskedAutoencoderViT(nn.Module):
 
     def patchify(self, imgs):
         """
-        imgs: (N, in_chans, H, W)
-        x: (N, L, patch_size**2 * in_chans)
+        imgs: (N, C, H, W)
+        x: (N, L, patch_size**2 * C)
         """
         p = self.patch_embed.patch_size[0]
         assert imgs.shape[2] == imgs.shape[3] and imgs.shape[2] % p == 0
@@ -109,8 +110,8 @@ class MaskedAutoencoderViT(nn.Module):
 
     def unpatchify(self, x):
         """
-        x: (N, L, patch_size**2 * in_chans)
-        imgs: (N, in_chans, H, W)
+        x: (N, L, patch_size**2 * C)
+        imgs: (N, C, H, W)
         """
         p = self.patch_embed.patch_size[0]
         h = w = int(x.shape[1]**.5)
@@ -198,8 +199,8 @@ class MaskedAutoencoderViT(nn.Module):
 
     def forward_loss(self, imgs, pred, mask):
         """
-        imgs: [N, 3, H, W]
-        pred: [N, L, p*p*3]
+        imgs: [N, C, H, W]
+        pred: [N, L, p*p*C]
         mask: [N, L], 0 is keep, 1 is remove,
         """
         target = self.patchify(imgs)
@@ -216,7 +217,7 @@ class MaskedAutoencoderViT(nn.Module):
 
     def forward(self, imgs, mask_ratio=0.75):
         latent, mask, ids_restore = self.forward_encoder(imgs, mask_ratio)
-        pred = self.forward_decoder(latent, ids_restore)  # [N, L, p*p*3]
+        pred = self.forward_decoder(latent, ids_restore)  # [N, L, p*p*C]
         loss = self.forward_loss(imgs, pred, mask)
         return loss, pred, mask
 
