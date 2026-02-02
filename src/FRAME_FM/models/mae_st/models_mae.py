@@ -146,7 +146,11 @@ class MultimodalMaskedAutoencoder(nn.Module):
         x = self.decoder_norm(x)
 
         # predictor projection
-        preds = [embedder.reconstruct_patches(x[:, 1:, :]) for embedder in self.input_embedders]
+        preds, start_patch = [], 1
+        for embedder in self.input_embedders:
+            end_patch = start_patch + embedder.n_patches
+            preds.append(embedder.reconstruct_patches(x[:, start_patch:end_patch]))
+            start_patch = end_patch
 
         return preds
 
