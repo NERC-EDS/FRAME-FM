@@ -10,12 +10,11 @@
 # --------------------------------------------------------
 
 import numpy as np
-from typing import Tuple
 
 
 def get_nd_sincos_pos_embed(
         embed_dim: int,
-        grid_shape: Tuple[int, ...],
+        grid_shape: tuple[int, ...],
         cls_token: bool = False,
         ) -> np.ndarray:
     """Create a sin-cos embedding of positions on an n-dimensional grid.
@@ -28,18 +27,20 @@ def get_nd_sincos_pos_embed(
     Returns:
         np.ndarray: Array with each row the sin-cos embedding of a grid position.
     """
-    # Divide embedding according to size of grid in each dimension
-    embed_dims = np.round([embed_dim * grid_s / sum(grid_shape) for grid_s in grid_shape])
-    embed_dims[embed_dims.argmin()] += embed_dim - embed_dims.sum()
+    # Divide sin and cos embeddings according to size of grid in each dimension
+    embed_dims = np.round(
+        [embed_dim // 2 * grid_s / sum(grid_shape) for grid_s in grid_shape]
+        ).astype(int)
+    embed_dims[embed_dims.argmin()] += embed_dim // 2 - embed_dims.sum()
 
     grid = np.meshgrid(*[
         np.arange(grid_s, dtype=np.float32) for grid_s in grid_shape
         ])  # len(grid_shape)-tuple of np.arrays of shape grid_shape
     embedding = np.concatenate([
         sincos_embed_coords(dim, coords.flatten()) for dim, coords in zip(embed_dims, grid)
-        ], axis=1)  # np.array of shape (prod(grid_shape), sum(embed_dims))
+        ], axis=1)  # np.array of shape (prod(grid_shape), 2 * sum(sin_embed_dims))
     if cls_token:
-        embedding = np.concatenate([np.zeros([1, sum(embed_dims)]), embedding], axis=0)
+        embedding = np.concatenate([np.zeros([1, 2 * sum(embed_dims)]), embedding], axis=0)
     return embedding
 
 
@@ -56,9 +57,8 @@ def sincos_embed_coords(
     Returns:
         np.ndarray: Array with each row the sin-cos embedding of a coordinate.
     """
-    assert embed_dim % 2 == 0
-    omega = 2 * np.pi / max_period**np.linspace(0, 1, embed_dim // 2, dtype=float)  # (D/2,)
-    out = np.einsum('m,d->md', coordinates, omega)  # (M, D/2), outer product
-    sin_embedding = np.sin(out)  # (M, D/2)
-    cos_embedding = np.cos(out)  # (M, D/2)
-    return np.concatenate([sin_embedding, cos_embedding], axis=1)  # (M, D)
+    omega = 2 * np.pi / max_period**np.linspace(0, 1, embed_dim, dtype=float)  # (D,)
+    out = np.einsum('m,d->md', coordinates, omega)  # (M, D), outer product
+    sin_embedding = np.sin(out)  # (M, D)
+    cos_embedding = np.cos(out)  # (M, D)
+    return np.concatenate([sin_embedding, cos_embedding], axis=1)  # (M, 2D)

@@ -59,8 +59,8 @@ class PatchEmbed(nn.Module):
 
     def patchify(self, inputs: torch.Tensor):
         patch_shape = self.patch_shape
-        assert len(inputs.shape) == len(patch_shape), \
-            f"{len(inputs.shape)}-D input not divisible into {len(patch_shape)}-D patches"
+        assert len(inputs.shape) - 2 == len(patch_shape), \
+            f"{len(inputs.shape) - 2}-D input not divisible into {len(patch_shape)}-D patches"
         for dim, (s_i, s_p) in enumerate(zip(inputs.shape[2:], patch_shape)):
             assert s_i % s_p == 0, \
                 f"Input dimension {dim} not divisible into patches ({s_i} % {s_p} != 0)"
@@ -88,9 +88,9 @@ class PatchEmbed(nn.Module):
             assert len(output_shape) == len(patch_shape), \
                 f"{len(output_shape)}-D output not formable from {len(patch_shape)}-D patches"
             grid_shape, n_patches = _count_patches(output_shape, patch_shape)
-        assert x.shape[1] != n_patches, \
+        assert x.shape[1] == n_patches, \
             f"Grid shape {grid_shape} not formable from {x.shape[1]} patches"
-        assert x.shape[2] != prod(patch_shape) * self.n_channels, \
+        assert x.shape[2] == prod(patch_shape) * self.n_channels, \
             f"{n_channels}-channel {patch_shape} patch not formable from {x.shape[2]} values"
 
         x = x.reshape(shape=(x.shape[0],) + grid_shape + patch_shape + (n_channels,))
@@ -135,7 +135,6 @@ class MaskedAutoencoderND(nn.Module):
                  norm_layer: type[nn.LayerNorm] = nn.LayerNorm,
                  norm_pix_loss: bool = False):
         super().__init__()
-
         # --------------------------------------------------------------------------
         # MAE encoder specifics
         self.patch_embed = PatchEmbed(input_shape, patch_shape, input_channels, embed_dim)
