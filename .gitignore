@@ -24,3 +24,5 @@ outputs/
 .mlruns/*
 
 docs/_build/
+
+src/frame_fm.egg-info/
