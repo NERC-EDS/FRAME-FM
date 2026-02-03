@@ -1,8 +1,8 @@
 # Copyright (c) Matt Arran.
 
 # This source code is adapted from Masked Autoencoder (MAE) code, copyright
-# Meta Platforms, Inc. and affiliates, licensed under the license found in
-# LICENSE_MAE.txt file in this folder.
+# Meta Platforms, Inc. and affiliates, licensed under the license found in the
+# licences/LICENSE_MAE.txt file.
 # PatchEmbed is inspired by the equivalent class in PyTorch Image Models (timm).
 # --------------------------------------------------------
 # Embedding utils
@@ -100,6 +100,9 @@ class BaseEmbedder(torch.nn.Module):
     def reconstruct_tokens(self, embedding: torch.Tensor) -> torch.Tensor:
         raise NotImplementedError
 
+    def untokenify(self, inpt: torch.Tensor) -> torch.Tensor:
+        raise NotImplementedError
+
 
 class PatchEmbed(BaseEmbedder):
     """ 1-3D Image to Patch Embedding
@@ -112,8 +115,6 @@ class PatchEmbed(BaseEmbedder):
                  reconstruct_dim: int,
                  bias: bool = True,
                  norm_layer: torch.nn.Module | None = None,
-                 device=None,
-                 dtype=None,
                  **conv_kwargs):
         """Instantiate embedder for patches in 1-3D, n-channel images.
 
@@ -126,8 +127,6 @@ class PatchEmbed(BaseEmbedder):
             bias (bool, optional): Whether to include bias in patch embedding. Defaults to True.
             norm_layer (torch.nn.Module | None, optional): Layer with which to normalise embedding.
                 Defaults to None: no normalisation.
-            device (optional): Device on which to perform computations. Defaults to None.
-            dtype (optional): Type of input. Defaults to None.
             **conv_kwargs: Keyword arguments to pass for convolution layer instantiation.
         """
         super().__init__()
@@ -144,8 +143,6 @@ class PatchEmbed(BaseEmbedder):
             kernel_size=patch_shape,
             stride=patch_shape,
             bias=bias,
-            device=device,
-            dtype=dtype,
             **conv_kwargs
             )
         self.pos_embed = torch.nn.Parameter(
@@ -154,7 +151,7 @@ class PatchEmbed(BaseEmbedder):
         if norm_layer is None:
             self.norm = torch.nn.Identity()
         else:
-            self.norm = norm_layer(embed_dim, device=device, dtype=dtype)
+            self.norm = norm_layer(embed_dim)
         self.reconstruct_dim = reconstruct_dim
         self.decoder_pos_embed = torch.nn.Parameter(
             torch.zeros(1, self.n_patches, reconstruct_dim), requires_grad=False

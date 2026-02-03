@@ -1,7 +1,7 @@
 # Copyright (c) Matt Arran.
 
 # This source code is adapted from code (c) Meta Platforms, Inc. and affiliates,
-# licensed under the license in the LICENSE_MAE.txt file in this folder.
+# licensed under the license in the licences/LICENSE_MAE.txt file.
 # --------------------------------------------------------
 # References:
 # MAE: https://github.com/facebookresearch/mae/tree/main
@@ -13,7 +13,7 @@ import torch
 from torch import nn
 from typing import Sequence
 
-from .embedders import BaseEmbedder
+from ..utils.embedders import BaseEmbedder, PatchEmbed
 from ..utils.LightningModuleWrapper import BaseModule
 
 
@@ -23,20 +23,30 @@ class MultimodalMaskedAutoencoder(BaseModule):
     input_embedders: list[BaseEmbedder]
 
     def __init__(self,
-                 input_embedders: list[BaseEmbedder],
+                 input_shapes: list[tuple[int, ...]],
+                 n_channels: list[int],
+                 patch_shapes: list[tuple[int, ...]],
+                 encoder_embed_dim: int = 16,
                  encoder_depth: int = 24,
                  encoder_num_heads: int = 16,
+                 decoder_embed_dim: int = 16,
                  decoder_depth: int = 8,
                  decoder_num_heads: int = 16,
                  mlp_ratio: float = 4.,
                  norm_layer: type[nn.LayerNorm] = nn.LayerNorm,
-                 norm_token_loss: bool = False):
+                 norm_token_loss: bool = False,
+                 learning_rate: float = 1.e-3,
+                 default_mask_ratio: float = 0.75):
         """Instantiate Multimodal Masked Autoencoder
 
         Args:
-            input_embedders (list[BaseEmbedder]): Embedding classes for each model input.
+            input_shapes (list[tuple[int, ...]]): Shapes of each model input.
+            n_channels (list[int]): Numbers of channels in each model input.
+            patch_shapes (list[tuple[int, ...]]): Sizes of patches into which to divide each input.
+            encoder_embed_dim (int). Dimensions into which to embed each patch. Defaults to 16.
             encoder_depth (int, optional): Number of attention layers for encoding. Defaults to 24.
             encoder_num_heads (int, optional): Number of attention heads per layer. Defaults to 16.
+            decoder_embed_dim (int). Dimensions from which to reconstruct each patch. Defaults to 16.
             decoder_depth (int, optional): Number of attention layers for decoding. Defaults to 8.
             decoder_num_heads (int, optional): Number of attention heads per layer. Defaults to 16.
             mlp_ratio (float, optional): Ratio of MLP and embedding dimensions in attention blocks.
@@ -45,19 +55,21 @@ class MultimodalMaskedAutoencoder(BaseModule):
                 Defaults to nn.LayerNorm.
             norm_token_loss (bool, optional): Whether to variance-normalise per-token loss.
                 Defaults to False.
+            learning_rate (float): Initial learning rate for Adam optimizer. Defaults to 1.e-3.
+            default_mask_ratio (float): Default proportion of token embeddings to mask per batch.
         """
         super().__init__()
         # --------------------------------------------------------------------------
-        self.input_embedders = torch.nn.ModuleList(input_embedders)  # type: ignore
-        encoder_embed_dim = input_embedders[0].embed_dim
-        decoder_embed_dim = input_embedders[0].reconstruct_dim
-        for id, ie in enumerate(input_embedders[1:], 1):
-            assert ie.embed_dim == encoder_embed_dim, (
-                "Input embedding dimensions inconsistent"
-                f" ({encoder_embed_dim} of 0 != {ie.embed_dim} of {id})")
-            assert ie.reconstruct_dim == decoder_embed_dim, (
-                "Reconstruction embedding dimensions inconsistent"
-                f" ({decoder_embed_dim} of 0 != {ie.reconstruct_dim} of {id})")
+        self.input_embedders = nn.ModuleList([
+            PatchEmbed(
+                input_shape,
+                patch_shape,
+                n_channel,
+                encoder_embed_dim,
+                decoder_embed_dim
+            )
+            for input_shape, patch_shape, n_channel in zip(input_shapes, patch_shapes, n_channels)
+        ])  # type: ignore
 
         self.cls_token = nn.Parameter(torch.zeros(1, 1, encoder_embed_dim))
         self.blocks = nn.ModuleList([
@@ -76,6 +88,8 @@ class MultimodalMaskedAutoencoder(BaseModule):
         self.decoder_norm = norm_layer(decoder_embed_dim)
         # --------------------------------------------------------------------------
         self.norm_token_loss = norm_token_loss
+        self.learning_rate = learning_rate
+        self.default_mask_ratio = default_mask_ratio
         self.initialize_weights()
 
     def initialize_weights(self):
@@ -259,8 +273,8 @@ class MultimodalMaskedAutoencoder(BaseModule):
         loss = self.forward_loss(inputs, preds, mask)
         return loss, preds, mask
 
-    def _sharedStep(self, inputs, mask_ratio=0.75):
-        loss, _, _ = self(inputs, mask_ratio=mask_ratio)
+    def _sharedStep(self, inputs):
+        loss, _, _ = self(inputs, mask_ratio=self.default_mask_ratio)
         return loss, {}
 
     def training_step_body(self, batch, batch_idx):
@@ -273,5 +287,5 @@ class MultimodalMaskedAutoencoder(BaseModule):
         return self._sharedStep(batch)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         return optimizer
