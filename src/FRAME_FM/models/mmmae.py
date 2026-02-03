@@ -14,11 +14,14 @@ from torch import nn
 from typing import Sequence
 
 from .embedders import BaseEmbedder
+from ..utils.LightningModuleWrapper import BaseModule
 
 
-class MultimodalMaskedAutoencoder(nn.Module):
+class MultimodalMaskedAutoencoder(BaseModule):
     """Masked Autoencoder with flexible multi-input embeddings and transformer backbone
     """
+    input_embedders: list[BaseEmbedder]
+
     def __init__(self,
                  input_embedders: list[BaseEmbedder],
                  encoder_depth: int = 24,
@@ -45,7 +48,7 @@ class MultimodalMaskedAutoencoder(nn.Module):
         """
         super().__init__()
         # --------------------------------------------------------------------------
-        self.input_embedders = input_embedders
+        self.input_embedders = torch.nn.ModuleList(input_embedders)  # type: ignore
         encoder_embed_dim = input_embedders[0].embed_dim
         decoder_embed_dim = input_embedders[0].reconstruct_dim
         for id, ie in enumerate(input_embedders[1:], 1):
@@ -255,3 +258,20 @@ class MultimodalMaskedAutoencoder(nn.Module):
         preds = self.forward_decoder(latent, ids_restore, positions)
         loss = self.forward_loss(inputs, preds, mask)
         return loss, preds, mask
+
+    def _sharedStep(self, inputs, mask_ratio=0.75):
+        loss, _, _ = self(inputs, mask_ratio=mask_ratio)
+        return loss, {}
+
+    def training_step_body(self, batch, batch_idx):
+        return self._sharedStep(batch)
+
+    def validation_step_body(self, batch, batch_idx):
+        return self._sharedStep(batch)
+
+    def test_step_body(self, batch, batch_idx):
+        return self._sharedStep(batch)
+
+    def configure_optimizers(self):
+        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
+        return optimizer
