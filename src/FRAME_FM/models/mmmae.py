@@ -1,7 +1,7 @@
 # Copyright (c) Matt Arran.
 
 # This source code is adapted from code (c) Meta Platforms, Inc. and affiliates,
-# licensed under the license found in the LICENSE file in this folder.
+# licensed under the license found in the LICENSE_MAE file in this folder.
 # --------------------------------------------------------
 # References:
 # MAE: https://github.com/facebookresearch/mae/tree/main
@@ -12,7 +12,7 @@ from timm.models.vision_transformer import Block
 import torch
 from torch import nn
 
-from .pos_embed import BaseEmbedder
+from .embedders import BaseEmbedder
 
 
 class MultimodalMaskedAutoencoder(nn.Module):
@@ -149,7 +149,7 @@ class MultimodalMaskedAutoencoder(nn.Module):
         preds, start_patch = [], 1
         for embedder in self.input_embedders:
             end_patch = start_patch + embedder.n_patches
-            preds.append(embedder.reconstruct_patches(x[:, start_patch:end_patch]))
+            preds.append(embedder.reconstruct_tokens(x[:, start_patch:end_patch]))
             start_patch = end_patch
 
         return preds
@@ -162,7 +162,7 @@ class MultimodalMaskedAutoencoder(nn.Module):
         """
         losses = []
         for ie, inpt, prediction in zip(self.input_embedders, inputs, predictions):
-            target = ie.patchify(inpt)
+            target = ie.tokenify(inpt)
             if self.norm_pix_loss:
                 mean = target.mean(dim=[2, 3], keepdim=True)
                 var = target.var(dim=[2, 3], keepdim=True)

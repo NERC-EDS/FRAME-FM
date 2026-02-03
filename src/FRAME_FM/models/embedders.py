@@ -1,12 +1,15 @@
 # Copyright (c) Matt Arran.
 
-# This source code is adapted from code (c) Meta Platforms, Inc. and affiliates,
-# licensed under the license found in the LICENSE file in this folder.
+# This source code is adapted from Masked Autoencoder (MAE) code, copyright
+# Meta Platforms, Inc. and affiliates, licensed under the license found in
+# LICENSE_MAE.txt file in this folder.
+# PatchEmbed is inspired by the equivalent class in PyTorch Image Models (timm).
 # --------------------------------------------------------
 # Embedding utils
 # --------------------------------------------------------
 # References:
 # MAE: https://github.com/facebookresearch/mae/tree/main
+# timm: https://github.com/rwightman/pytorch-image-models/tree/master/timm
 # --------------------------------------------------------
 
 from math import prod
@@ -85,7 +88,7 @@ class BaseEmbedder(torch.nn.Module):
     def initialize_weights(self):
         raise NotImplementedError
 
-    def patchify(self, inpt: torch.Tensor) -> torch.Tensor:
+    def tokenify(self, inpt: torch.Tensor) -> torch.Tensor:
         raise NotImplementedError
 
     def forward(self, inpt: torch.Tensor) -> torch.Tensor:
@@ -94,7 +97,7 @@ class BaseEmbedder(torch.nn.Module):
     def embed_pos(self, pos: torch.Tensor | None) -> torch.Tensor:
         raise NotImplementedError
 
-    def reconstruct_patches(self, embedding: torch.Tensor) -> torch.Tensor:
+    def reconstruct_tokens(self, embedding: torch.Tensor) -> torch.Tensor:
         raise NotImplementedError
 
 
@@ -160,7 +163,7 @@ class PatchEmbed(BaseEmbedder):
         w = self.proj.weight.data
         torch.nn.init.xavier_uniform_(w.view([w.shape[0], -1]))
 
-    def patchify(self, inputs: torch.Tensor) -> torch.Tensor:
+    def tokenify(self, inputs: torch.Tensor) -> torch.Tensor:
         patch_shape, n_dim = self.patch_shape, len(self.patch_shape)
         assert len(inputs.shape) - 2 == n_dim, \
             f"{len(inputs.shape) - 2}-D input not divisible into {n_dim}-D patches"
@@ -182,7 +185,7 @@ class PatchEmbed(BaseEmbedder):
         # (N, H W, P**2 C) for 2D square patches
         return x
 
-    def unpatchify(self, x: torch.Tensor,
+    def untokenify(self, x: torch.Tensor,
                    output_shape: tuple[int, ...] | None = None) -> torch.Tensor:
         patch_shape, n_dim = self.patch_shape, len(self.patch_shape)
         n_channels = self.n_channels
@@ -225,5 +228,5 @@ class PatchEmbed(BaseEmbedder):
     def embed_pos(self, pos: torch.Tensor | None) -> torch.Tensor:
         return self.decoder_pos_embed
 
-    def reconstruct_patches(self, x: torch.Tensor) -> torch.Tensor:
+    def reconstruct_tokens(self, x: torch.Tensor) -> torch.Tensor:
         return self.reconstruct_layer(x)
