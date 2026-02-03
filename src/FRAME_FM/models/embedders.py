@@ -115,9 +115,24 @@ class PatchEmbed(BaseEmbedder):
                  device=None,
                  dtype=None,
                  **conv_kwargs):
+        """Instantiate embedder for patches in 1-3D, n-channel images.
+
+        Args:
+            input_shape (tuple[int, ...]): Shape of input image.
+            patch_shape (tuple[int, ...]): Shape of patches into which image will be divided.
+            n_channels (int): Number of channels recorded in image.
+            embed_dim (int): Number of dimensions into which to embed each patch.
+            reconstruct_dim (int): Number of embedding dimensions from which to reconstruct patch.
+            bias (bool, optional): Whether to include bias in patch embedding. Defaults to True.
+            norm_layer (torch.nn.Module | None, optional): Layer with which to normalise embedding.
+                Defaults to None: no normalisation.
+            device (optional): Device on which to perform computations. Defaults to None.
+            dtype (optional): Type of input. Defaults to None.
+            **conv_kwargs: Keyword arguments to pass for convolution layer instantiation.
+        """
         super().__init__()
         assert len(input_shape) in _conv_dim_dict.keys(), \
-            f"{len(input_shape)}-D input not supported"
+            f"{len(input_shape)}D input not supported"
         self.input_shape, self.patch_shape = input_shape, patch_shape
         self.grid_shape, self.n_patches = _count_patches(input_shape, patch_shape)
         self.n_channels = n_channels
@@ -149,7 +164,9 @@ class PatchEmbed(BaseEmbedder):
             )
 
     def initialize_weights(self):
-        # initialize (and freeze) pos_embed by sin-cos embedding
+        """Set up embedder weights and parameters.
+        """
+        # define fixed sin-cos embeddings of patch position within image
         pos_embed = get_nd_sincos_pos_embed(
             self.embed_dim, self.grid_shape, cls_token=False
             )
@@ -164,6 +181,17 @@ class PatchEmbed(BaseEmbedder):
         torch.nn.init.xavier_uniform_(w.view([w.shape[0], -1]))
 
     def tokenify(self, inputs: torch.Tensor) -> torch.Tensor:
+        """Reshape batched input n-D images into sequences of patch tokens.
+
+        Shapes are given for the example of a batch of B, C-channel 2D images,
+        with image size (Hh, Ww) and patch size (h, w).
+
+        Args:
+            inputs (torch.Tensor): Batched sequence of images, shape e.g. [B, C, Hh, Ww]
+
+        Returns:
+            torch.Tensor: Batched sequences of patch tokens, shape e.g. [B, HW, hwC]
+        """
         patch_shape, n_dim = self.patch_shape, len(self.patch_shape)
         assert len(inputs.shape) - 2 == n_dim, \
             f"{len(inputs.shape) - 2}-D input not divisible into {n_dim}-D patches"
@@ -176,17 +204,30 @@ class PatchEmbed(BaseEmbedder):
             (inputs.shape[0], self.n_channels)
             + sum([(s_g, s_p) for s_g, s_p in zip(grid_shape, patch_shape)], ())
             ))
-        # (N, C, H, P, W, P) for 2D square patches
+        # (B, C, H, h, W, w) for 2D patches
         x = x.permute(
             0, *range(2, 2 + 2 * n_dim, 2), *range(3, 3 + 2 * n_dim, 2), 1
             )
-        # (N, H, W, P, P, C) for 2D square patches
+        # (B, H, W, h, w, C) for 2D patches
         x = x.reshape(shape=(inputs.shape[0], n_patches, prod(patch_shape) * self.n_channels))
-        # (N, H W, P**2 C) for 2D square patches
+        # (B, H W, h w C) for 2D patches
         return x
 
     def untokenify(self, x: torch.Tensor,
                    output_shape: tuple[int, ...] | None = None) -> torch.Tensor:
+        """Reshape batched sequences of patch tokens into n-D images.
+
+        Shapes are given for the example of a batch of B, C-channel 2D images,
+        with image size (Hh, Ww) and patch size (h, w).
+
+        Args:
+            x (torch.Tensor): Batched sequences of tokens, shape e.g. [B, HW, hwC]
+            output_shape (tuple[int, ...] | None, optional): Required image shape, if different
+                from input_shape in class instantiation. Defaults to None: use input_shape.
+
+        Returns:
+            torch.Tensor: Batched sequence of images, shape e.g. [B, C, Hh, Ww]
+        """
         patch_shape, n_dim = self.patch_shape, len(self.patch_shape)
         n_channels = self.n_channels
         if output_shape is None:
@@ -201,32 +242,47 @@ class PatchEmbed(BaseEmbedder):
             f"{n_channels}-channel {patch_shape} patch not formable from {x.shape[2]} values"
 
         x = x.reshape(shape=(x.shape[0],) + grid_shape + patch_shape + (n_channels,))
-        # (N, H, W, P, P, C) for 2D square patches
+        # (N, H, W, h, w, C) for 2D patches
         x = x.permute(
             0, -1, *sum([(id, n_dim + id) for id in range(1, 1 + n_dim)], ())
             )
-        # (N, C, H, P, W, P) for 2D square patches
+        # (N, C, H, h, W, w) for 2D patches
         imgs = x.reshape(shape=(
             (x.shape[0], n_channels)
             + sum([(s_g * s_p,) for s_g, s_p in zip(grid_shape, patch_shape)], ())
             ))
-        # (N, C, H P, W P) for 2D square patches
+        # (N, C, H h, W w) for 2D patches
         return imgs
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Convert batched input n-D images into sequences of patch embeddings.
+
+        Shapes are given for the example of a batch of B, C-channel 2D images,
+        with image size (Hh, Ww) and patch size (h, w), with a D-D embedding.
+
+        Args:
+            x (torch.Tensor): Batched sequence of images, shape e.g. [B, C, Hh, Ww].
+
+        Returns:
+            torch.Tensor: Batched sequences of embeddings, shape e.g. [B, HW, D]
+        """
         for dim, (s_actual, s_expected) in enumerate(zip(x.shape[2:], self.input_shape)):
             torch._assert(
                 s_actual == s_expected,
                 f"Input dimension {dim} ({s_actual}) doesn't match specification ({s_expected})"
                 )
         x = self.proj(x)  # Project each patch into embedding, by convolution
-        x = x.flatten(start_dim=2).transpose(1, 2)  # NC[img_shape] -> N[Prod(img_shape)]C
+        x = x.flatten(start_dim=2).transpose(1, 2)  # (B, D, H, W) -> (B, HW, D) for 2D patches
         x = self.norm(x)
         x = x + self.pos_embed
         return x
 
     def embed_pos(self, pos: torch.Tensor | None) -> torch.Tensor:
+        """Return fixed embedding of patch positions into reconstruction space.
+        """
         return self.decoder_pos_embed
 
     def reconstruct_tokens(self, x: torch.Tensor) -> torch.Tensor:
+        """Reconstruct patch tokens from an embedding.
+        """
         return self.reconstruct_layer(x)

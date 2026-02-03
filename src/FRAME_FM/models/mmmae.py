@@ -1,7 +1,7 @@
 # Copyright (c) Matt Arran.
 
 # This source code is adapted from code (c) Meta Platforms, Inc. and affiliates,
-# licensed under the license found in the LICENSE_MAE file in this folder.
+# licensed under the license in the LICENSE_MAE.txt file in this folder.
 # --------------------------------------------------------
 # References:
 # MAE: https://github.com/facebookresearch/mae/tree/main
@@ -11,12 +11,13 @@
 from timm.models.vision_transformer import Block
 import torch
 from torch import nn
+from typing import Sequence
 
 from .embedders import BaseEmbedder
 
 
 class MultimodalMaskedAutoencoder(nn.Module):
-    """ Masked Autoencoder with flexible input embeddings and transformer backbone
+    """Masked Autoencoder with flexible multi-input embeddings and transformer backbone
     """
     def __init__(self,
                  input_embedders: list[BaseEmbedder],
@@ -26,7 +27,22 @@ class MultimodalMaskedAutoencoder(nn.Module):
                  decoder_num_heads: int = 16,
                  mlp_ratio: float = 4.,
                  norm_layer: type[nn.LayerNorm] = nn.LayerNorm,
-                 norm_pix_loss: bool = False):
+                 norm_token_loss: bool = False):
+        """Instantiate Multimodal Masked Autoencoder
+
+        Args:
+            input_embedders (list[BaseEmbedder]): Embedding classes for each model input.
+            encoder_depth (int, optional): Number of attention layers for encoding. Defaults to 24.
+            encoder_num_heads (int, optional): Number of attention heads per layer. Defaults to 16.
+            decoder_depth (int, optional): Number of attention layers for decoding. Defaults to 8.
+            decoder_num_heads (int, optional): Number of attention heads per layer. Defaults to 16.
+            mlp_ratio (float, optional): Ratio of MLP and embedding dimensions in attention blocks.
+                Defaults to 4..
+            norm_layer (type[nn.LayerNorm], optional): Layer class for [en/de]coder normalisation.
+                Defaults to nn.LayerNorm.
+            norm_token_loss (bool, optional): Whether to variance-normalise per-token loss.
+                Defaults to False.
+        """
         super().__init__()
         # --------------------------------------------------------------------------
         self.input_embedders = input_embedders
@@ -56,10 +72,12 @@ class MultimodalMaskedAutoencoder(nn.Module):
             ])
         self.decoder_norm = norm_layer(decoder_embed_dim)
         # --------------------------------------------------------------------------
-        self.norm_pix_loss = norm_pix_loss
+        self.norm_token_loss = norm_token_loss
         self.initialize_weights()
 
     def initialize_weights(self):
+        """Initialise layer weights and parameters, including in input embedders.
+        """
         # initialization
         for input_embedder in self.input_embedders:
             input_embedder.initialize_weights()
@@ -80,16 +98,24 @@ class MultimodalMaskedAutoencoder(nn.Module):
             nn.init.constant_(m.bias, 0)
             nn.init.constant_(m.weight, 1.0)
 
-    def random_masking(self, x, mask_ratio):
+    def random_masking(self, x: torch.Tensor, mask_ratio: float
+                       ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Shuffle batched token embeddings and mask random selection.
+
+        Args:
+            x (torch.Tensor): Batched token embeddings, shape [B, L, D].
+            mask_ratio (float): Proportion p of token embeddings to mask per batch.
+
+        Returns:
+            tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+             * Randomly selected token embeddings, shape [B, pL, D].
+             * Mask with 0 where token extracted, 1 otherwise, shape [B, L].
+             * IDs with which to restore original, unshuffled token embeddings.
         """
-        Perform per-sample random masking by per-sample shuffling.
-        Per-sample shuffling is done by argsort random noise.
-        x: [N, L, D], sequence
-        """
-        N, L, D = x.shape  # batch, length, dim
+        B, L, D = x.shape  # batch, length, dim
         len_keep = int(L * (1 - mask_ratio))
 
-        noise = torch.rand(N, L, device=x.device)  # noise in [0, 1]
+        noise = torch.rand(B, L, device=x.device)  # noise in [0, 1]
 
         # sort noise for each sample
         ids_shuffle = torch.argsort(noise, dim=1)  # ascend: small is keep, large is remove
@@ -100,14 +126,28 @@ class MultimodalMaskedAutoencoder(nn.Module):
         x_masked = torch.gather(x, dim=1, index=ids_keep.unsqueeze(-1).repeat(1, 1, D))
 
         # generate the binary mask: 0 is keep, 1 is remove
-        mask = torch.ones([N, L], device=x.device)
+        mask = torch.ones([B, L], device=x.device)
         mask[:, :len_keep] = 0
         # unshuffle to get the binary mask
         mask = torch.gather(mask, dim=1, index=ids_restore)
 
         return x_masked, mask, ids_restore
 
-    def forward_encoder(self, inputs, mask_ratio):
+    def forward_encoder(self, inputs: list[torch.Tensor], mask_ratio: float
+                        ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Tokenise and embed inputs, randomly mask tokens, and encode using a transformer.
+
+        Args:
+            inputs (list[torch.Tensor]): Batched model inputs, for conversion by
+                input_embedders into token embeddings of shapes ([B, L_i, D])_i.
+            mask_ratio (float): Proportion p of token embeddings to mask per batch.
+
+        Returns:
+            tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+             * Encodings of randomly selected input embeddings, shape [B, 1 + (1-p)sum(L_i), D].
+             * Mask with 0 where token extracted, 1 otherwise, shape [B, sum(L_i)].
+             * IDs with which to restore original, unshuffled token embeddings, shape [B, sum(L_i)].
+        """
         # embed patches
         x = torch.cat([embed(inpt) for embed, inpt in zip(self.input_embedders, inputs)], dim=1)
 
@@ -126,19 +166,35 @@ class MultimodalMaskedAutoencoder(nn.Module):
 
         return x, mask, ids_restore
 
-    def forward_decoder(self, x, ids_restore, positions):
+    def forward_decoder(self, x: torch.Tensor, ids_restore: torch.Tensor,
+                        positions: Sequence[torch.Tensor | None]) -> list[torch.Tensor]:
+        """Transform encoding of masked inputs, decode using a transformer, and reconstruct tokens.
+
+        Args:
+            x (torch.Tensor): Encodings of shuffled, masked tokens, shape [B, 1 + (1-p)L, D].
+            ids_restore (torch.Tensor): IDs with which to restore original, unshuffled encodings,
+                shape [B, L].
+            positions (Sequence[torch.Tensor | None]): List with token positions for each input,
+                if variable position embedding is implemented for that input, otherwise None.
+
+        Returns:
+            list[torch.Tensor]: Decoded tokens for each input, as reconstructed by input_embedders,
+                shapes ([B, L_i, D_i])_i with sum(L_i) = L.
+        """
         # embed tokens
         x = self.decoder_embed(x)
 
-        # append mask tokens to sequence
+        # append mask tokens to sequence, excluding cls token
         mask_tokens = self.mask_token.repeat(x.shape[0], ids_restore.shape[1] + 1 - x.shape[1], 1)
-        x_ = torch.cat([x[:, 1:, :], mask_tokens], dim=1)  # no cls token
-        x_ = torch.gather(x_, dim=1, index=ids_restore.unsqueeze(-1).repeat(1, 1, x.shape[2]))  # unshuffle
+        x_ = torch.cat([x[:, 1:, :], mask_tokens], dim=1)
+        # unshuffle
+        x_ = torch.gather(x_, dim=1, index=ids_restore.unsqueeze(-1).repeat(1, 1, x.shape[2]))
         # add pos embed
         x_ = x_ + torch.cat(
             [ie.embed_pos(pos) for ie, pos in zip(self.input_embedders, positions)], dim=1
             )
-        x = torch.cat([x[:, :1, :], x_], dim=1)  # append cls token
+        # append cls token
+        x = torch.cat([x[:, :1, :], x_], dim=1)
 
         # apply Transformer blocks
         for blk in self.decoder_blocks:
@@ -154,31 +210,48 @@ class MultimodalMaskedAutoencoder(nn.Module):
 
         return preds
 
-    def forward_loss(self, inputs, predictions, mask):
-        """
-        imgs: [N, C, H, W]
-        pred: [N, L, p*p*C]
-        mask: [N, L], 0 is keep, 1 is remove,
+    def forward_loss(self, inputs: list[torch.Tensor], predictions: list[torch.Tensor],
+                     mask: torch.Tensor) -> torch.Tensor:
+        """Calculate masked-token MSE between batched inputs and model predictions.
+
+        Args:
+            inputs (list[torch.Tensor]):  Batched model inputs, for conversion by
+                input_embedders into tokens of shapes ([B, L_i, D_i])_i.
+            predictions (list[torch.Tensor]): Model predictions, shapes ([B, L_i, D_i])_i.
+            mask (torch.Tensor): Mask with 1 where token masked, shape [B, sum(L_i)].
+
+        Returns:
+            torch.Tensor: Average mean squared error over the batch, shape [1].
         """
         losses = []
         for ie, inpt, prediction in zip(self.input_embedders, inputs, predictions):
             target = ie.tokenify(inpt)
-            if self.norm_pix_loss:
-                mean = target.mean(dim=[2, 3], keepdim=True)
-                var = target.var(dim=[2, 3], keepdim=True)
-                target = (target - mean) / (var + 1.e-6)**.5
-
-            loss = (prediction - target) ** 2
+            norm = target.var(dim=[2, 3], keepdim=True) if self.norm_token_loss else 1
+            loss = (prediction - target) ** 2 / norm
             losses.append(loss.mean(dim=-1))
 
         loss = torch.concat(losses, dim=1)
-        loss = (loss * mask).sum() / mask.sum()  # mean loss on removed patches
+        loss = (loss * mask).sum() / mask.sum()
         return loss
 
-    def forward(self, inputs, mask_ratio=0.75):
+    def forward(self, inputs: list[torch.Tensor], mask_ratio: float = 0.75
+                ) -> tuple[torch.Tensor, list[torch.Tensor], torch.Tensor]:
+        """Apply MMMAE to inputs and return the loss, predictions, and mask.
+
+        Args:
+            inputs (list[torch.Tensor]): Batched model inputs.
+            mask_ratio (float, optional): Proportion of token embeddings to mask per batch.
+                Defaults to 0.75.
+
+        Returns:
+            tuple[torch.Tensor, list[torch.Tensor], torch.Tensor]:
+             * Mean squared error of model predictions, over masked tokens, shape [1].
+             * Model predictions of input tokens, shapes ([B, L_i, D_i])_i.
+             * Mask with 0 where token extracted, 1 otherwise, shape [B, sum(L_i)].
+        """
         positions = [None for _ in range(len(inputs))]
         # Positions not yet implemented
         latent, mask, ids_restore = self.forward_encoder(inputs, mask_ratio)
-        preds = self.forward_decoder(latent, ids_restore, positions)  # [N, L, p*p*C]
+        preds = self.forward_decoder(latent, ids_restore, positions)
         loss = self.forward_loss(inputs, preds, mask)
         return loss, preds, mask
