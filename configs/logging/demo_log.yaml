@@ -2,7 +2,7 @@
 _target_: FRAME_FM.training.logging_utils.create_mlflow_logger
 
 experiment_name: "frame-fm-demo"
-tracking_uri: ${env:MLFLOW_TRACKING_URI, "file:./mlruns"}
+tracking_uri: ${oc.env:MLFLOW_TRACKING_URI,${hydra:runtime.cwd}/mlruns}
 run_name: "demo_autoencoder"
 
 tags:

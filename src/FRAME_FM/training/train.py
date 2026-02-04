@@ -1,18 +1,10 @@
 # src/FRAME_FM/training/train.py
 from __future__ import annotations
 
-import os
 import pytorch_lightning as pl
 from hydra import main as hydra_main
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
 from hydra.utils import instantiate
-
-# Ensure the ${env:VAR,default} interpolation works
-if not OmegaConf.has_resolver("env"):
-    OmegaConf.register_new_resolver(
-        "env",
-        lambda key, default=None: os.environ.get(key, default),
-    )
 
 @hydra_main(version_base=None, config_path="../../../configs", config_name="config")
 def main(cfg: DictConfig) -> None:
