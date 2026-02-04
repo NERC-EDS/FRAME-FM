@@ -1,5 +1,5 @@
 # configs/data/demo_data.yaml
-_target_: FRAME_FM.dataloaders.demo_dataloader.EuroSATDataModule
+_target_: FRAME_FM.dataloaders.demo_eurosat.EuroSATDataModule
 
 data_root: ${oc.env:DATA_ROOT,${hydra:runtime.cwd}/data}
 batch_size: 32

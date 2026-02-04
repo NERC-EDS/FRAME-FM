@@ -1,5 +1,5 @@
 # configs/model/demo_model.yaml
-_target_: FRAME_FM.models.demo_model.EuroSATAutoencoder
+_target_: FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder
 
 # Architecture
 in_channels: 3          # RGB Bands

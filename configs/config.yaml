@@ -1,9 +1,9 @@
 # configs/config.yaml
 defaults:
-  - data: demo_data
-  - model: demo_model
+  - data: demo_eurosat
+  - model: demo_autoencoder
   - trainer: default
-  - logging: demo_log
+  - logging: demo_mlflow 
   - _self_
 
 seed: 42
