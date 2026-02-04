@@ -5,6 +5,12 @@ from __future__ import annotations
 import os
 from typing import Optional, Any
 
+# TO BE REMOVED once FRAME-FM is installed as a package
+import sys
+# add src to python path
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), 'src')))
+print("Python path:", sys.path)
+
 from torchvision.datasets import EuroSAT as EuroSAT
 
 from FRAME_FM.utils.LightningDataModuleWrapper import BaseDataModule

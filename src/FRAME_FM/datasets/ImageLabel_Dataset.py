@@ -2,8 +2,8 @@
 """
 Lightweight Dataset wrapper that applies transforms to images only,
 preserving the (image, label) structure of torchvision datasets."""
+from typing import Optional, Any
 from torch.utils.data import Dataset
-
 
 class TransformedDataset(Dataset):
     """
@@ -22,3 +22,4 @@ class TransformedDataset(Dataset):
         if self.transform is not None:
             img = self.transform(img)
         return img, target
+    

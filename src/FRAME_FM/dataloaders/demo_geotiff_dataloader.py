@@ -2,26 +2,24 @@ import matplotlib
 matplotlib.use("Agg") #Ensure a non-interactive Matplotlib backend
 import matplotlib.pyplot as plt
 import os
-import torch
-import pytorch_lightning as pl
-from torch.utils.data import random_split
-import mlflow
-import mlflow.pytorch
-import xarray as xr
-import rioxarray as rxr
-import pandas as pd
 import sys
+import torch
+# import pytorch_lightning as pl
+# import xarray as xr
+import rioxarray as rxr
+from typing import Optional, Any
 
 
-# add src to python path - otherwise python cannot see FRAME_FM
+# add src to python path
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), 'src')))
 print("Python path:", sys.path)
 
 from FRAME_FM.utils.LightningDataModuleWrapper import BaseDataModule
+from FRAME_FM.datasets.InputOnly_Dataset import TransformedInputDataset
 
 class XarrayStaticDataset(BaseDataModule):
     '''
-    A simple DataModule for loading static data from NetCDF files using xarray.
+    A simple DataModule for loading static data from geotiff files using xarray.
     '''
     def __init__(
         self,
@@ -30,11 +28,12 @@ class XarrayStaticDataset(BaseDataModule):
         num_workers: int = 4,
         pin_memory: bool = True,
         persistent_workers: bool = False,
-        train_split: float = 0.8,
-        val_split: float = 0.2,
+        train_split: float = 0.85,
+        val_split: float = 0.15,
         test_split: float = 0.0,
         split_strategy: str = "fraction",
         tile_size: int = 256,
+        scaling_coefficient: float = 0.01,
     ) -> None:
         super().__init__(
             data_root=data_root,
@@ -48,6 +47,7 @@ class XarrayStaticDataset(BaseDataModule):
             split_strategy=split_strategy,
         )
         self.tile_size = tile_size
+        self.scaling_coefficient = scaling_coefficient
 
     def __len__(self):
         return len(self.ar[self.batch_dim])
@@ -56,16 +56,16 @@ class XarrayStaticDataset(BaseDataModule):
         return self.ar[{self.batch_dim: idx}].values
     
     def _load_raw_data(self):
-        """
-         Load from local file
-        """
+        # currently reading a single file
         ds = rxr.open_rasterio(self.data_root)
         return ds
+
     
-    def _create_datasets(self, stage: str = None) -> None:
+    def _create_datasets(self, stage: Optional[str] = None) -> None:
         """
         Reads the DataArray from the attributes, tiles it into patches along x
-        and y axis, and outputs stacked tiles
+        and y axis, and outputs stacked tiles. This dataset contains only
+        inputs to b
         
         AK: the tiling in this way does not preserve relative positions of
         tiles, so for the exrension to multiple layers the bands need to be
@@ -81,12 +81,32 @@ class XarrayStaticDataset(BaseDataModule):
         # stack
         stacked_tiles = tiles.stack(batch_dim=("x_coarse", "y_coarse"))
         # transpose to have batch dim first
-        batch_ready = stacked_tiles.transpose("batch_dim", "y_fine", "x_fine", "band")
+        batch_ready = stacked_tiles.transpose("batch_dim", "band", "y_fine", "x_fine")
+        # to tensor
+        batch_ready = torch.tensor(batch_ready.values, dtype=torch.float32)
         # split into subsets
         split_datasets = self._split_dataset(batch_ready)
-        self.train_dataset = split_datasets[0]
-        self.val_dataset = split_datasets[1]
-        self.test_dataset = split_datasets[2] if len(split_datasets) > 2 else None
+        # transform datasets
+        train_base, val_base, test_base = split_datasets
+        self.train_dataset = TransformedInputDataset(
+            train_base,
+            scaling_coefficient=self.scaling_coefficient,
+            transform=self.train_transforms,
+        )
+        self.val_dataset = TransformedInputDataset(
+            val_base,
+            scaling_coefficient=self.scaling_coefficient,
+            transform=self.val_transforms,
+        )
+        # test_base may be None if no test split configured
+        self.test_dataset = (
+            TransformedInputDataset(
+                test_base, 
+                scaling_coefficient=self.scaling_coefficient, 
+                transform=self.test_transforms)
+            if test_base is not None
+            else None
+        )
         
 
 def main():
@@ -150,20 +170,17 @@ def main():
     data_module = XarrayStaticDataset(data_root=geotiff_path, tile_size=tile_size)
     data_module.setup() 
     if Debug:
-        print("Train dataset length:", len(data_module.train_dataset))
-        print("Validation dataset length:", len(data_module.val_dataset))
+        print(f"Train dataset length: {len(data_module.train_dataset)}. Data type: {type(data_module.train_dataset)}")
+        print(f"Validation dataset length: {len(data_module.val_dataset)}. Data type: {type(data_module.val_dataset)}")
         first_item = data_module.train_dataset[0]
-        print("First item shape (should be tile_size, tile_size, nBands):", first_item.shape)
+        print(first_item) # making sure it is a tensor not a tuple
+        print(f"First item shape (should be nBands, tile_size, tile_size): {first_item.shape}")
         if data_module.test_dataset is not None:
-            print("Test dataset length:", len(data_module.test_dataset))
+            print(f"Test dataset length: {len(data_module.test_dataset)}. Data type: {type(data_module.test_dataset)}")
     
-    # barebones dataloaders as implemented in BaseDataModule
     train_loader = data_module.train_dataloader()
     val_loader = data_module.val_dataloader()
     return None      
     
 if __name__ == "__main__":
     main()
-    
-    
-    
