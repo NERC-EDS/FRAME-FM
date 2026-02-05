@@ -1,0 +1,11 @@
+# configs/logging/demo_log.yaml
+_target_: FRAME_FM.training.logging_utils.create_mlflow_logger
+
+experiment_name: "frame-fm-demo"
+tracking_uri: ${oc.env:MLFLOW_TRACKING_URI,${hydra:runtime.cwd}/mlruns}
+run_name: "demo_autoencoder"
+
+tags:
+  project: "FRAME-FM"
+  dataset: "EuroSAT"
+  model: "EuroSAT Autoencoder"

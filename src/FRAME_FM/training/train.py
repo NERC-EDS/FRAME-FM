@@ -6,12 +6,7 @@ from hydra import main as hydra_main
 from omegaconf import DictConfig
 from hydra.utils import instantiate
 
-from FRAME_FM.training.logging import (
-    create_mlflow_logger,
-)  # used via config instantiation
-
-
-@hydra_main(version_base=None, config_path="../../configs", config_name="config")
+@hydra_main(version_base=None, config_path="../../../configs", config_name="config")
 def main(cfg: DictConfig) -> None:
     # Ensure reproducibility
     pl.seed_everything(cfg.get("seed", 42), workers=True)
