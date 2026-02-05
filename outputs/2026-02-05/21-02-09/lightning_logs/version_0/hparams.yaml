@@ -1,0 +1,9 @@
+config:
+  _target_: FRAME_FM.models.demo_convAE.ConvAutoencoder
+  in_channels: 10
+  base_channels: 32
+  kernel_size: 3
+  latent_dim: 256
+  lr: 0.001
+  weight_decay: 1.0e-05
+  num_classes: 17

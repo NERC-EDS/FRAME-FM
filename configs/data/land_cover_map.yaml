@@ -1,0 +1,60 @@
+# configs/data/land_cover_map.yml
+_target_: FRAME_FM.dataloaders.demo_geotiff_dataloader.XarrayStaticDataModule
+
+data_root: /gws/ssde/j25b/eds_ai/frame-fm/data/inputs/land_cover_map_2015/data/LCM2015_GB_1km_percent_cover_aggregate_class.tif
+batch_size: 8
+num_workers: 4
+pin_memory: true
+persistent_workers: true
+
+# BaseDataModule split logic
+split_strategy: fraction        # "fraction" | "indices" | "none"
+train_split: 0.85
+val_split: 0.15
+test_split: 0.0
+
+# Explicit indices not used here (fractions take over)
+train_indices: null
+val_indices: null
+test_indices: null
+
+# Tile size for tiling the input data (if applicable)
+tile_size: 64
+
+# --- Transforms: config-driven, per split ---
+
+train_transforms:
+  _target_: torchvision.transforms.Compose
+  transforms:
+    - _target_: torchvision.transforms.RandomHorizontalFlip
+      p: 0.5
+      # have to do custom transform to scale from [0,100] to [0,1] since ToTensor assumes max value of 255
+    - _target_: torchvision.transforms.Normalize
+      mean: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+      std: [100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+    # - _target_: torchvision.transforms.ToTensor
+    - _target_: torchvision.transforms.Normalize
+      mean: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+      std: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+
+val_transforms:
+  _target_: torchvision.transforms.Compose
+  transforms:
+    - _target_: torchvision.transforms.Normalize
+      mean: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+      std: [100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+    # - _target_: torchvision.transforms.ToTensor
+    - _target_: torchvision.transforms.Normalize
+      mean: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+      std: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+
+test_transforms:
+  _target_: torchvision.transforms.Compose
+  transforms:
+    - _target_: torchvision.transforms.Normalize
+      mean: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+      std: [100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+    # - _target_: torchvision.transforms.ToTensor
+    - _target_: torchvision.transforms.Normalize
+      mean: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+      std: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]

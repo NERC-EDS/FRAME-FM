@@ -1,0 +1,15 @@
+# configs/config_convAE.yaml
+defaults:
+  - data: land_cover_map
+  - model: convAE
+  - trainer: convAE_trainer
+  - logging: mlflow_land_cover
+  - _self_
+
+seed: 42
+
+hydra:
+  run:
+    dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  job:
+    chdir: true

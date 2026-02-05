@@ -12,4 +12,4 @@
 # executable
 source .venv/bin/activate
 export PYTHONPATH="$PWD/src:$PYTHONPATH" # this is necessary at the moment because baseline modules are in src/
-python experiments/convAE_train.py # not sure if it need hydra config location as an argument
+python experiments/demo_convAE_train.py # not sure if it need hydra config location as an argument

@@ -17,7 +17,7 @@ print("Python path:", sys.path)
 from FRAME_FM.utils.LightningDataModuleWrapper import BaseDataModule
 from FRAME_FM.datasets.InputOnly_Dataset import TransformedInputDataset
 
-class XarrayStaticDataset(BaseDataModule):
+class XarrayStaticDataModule(BaseDataModule):
     '''
     A simple DataModule for loading static data from geotiff files using xarray.
     '''
@@ -32,8 +32,10 @@ class XarrayStaticDataset(BaseDataModule):
         val_split: float = 0.15,
         test_split: float = 0.0,
         split_strategy: str = "fraction",
+        train_transforms: Optional[callable] = None,
+        val_transforms: Optional[callable] = None,
+        test_transforms: Optional[callable] = None,
         tile_size: int = 256,
-        scaling_coefficient: float = 0.01,
     ) -> None:
         super().__init__(
             data_root=data_root,
@@ -45,15 +47,17 @@ class XarrayStaticDataset(BaseDataModule):
             val_split=val_split,
             test_split=test_split,
             split_strategy=split_strategy,
+            train_transforms=train_transforms,
+            val_transforms=val_transforms,
+            test_transforms=test_transforms,
         )
         self.tile_size = tile_size
-        self.scaling_coefficient = scaling_coefficient
 
-    def __len__(self):
-        return len(self.ar[self.batch_dim])
+    # def __len__(self):
+    #     return len(self.ar[self.batch_dim])
 
-    def __getitem__(self, idx):
-        return self.ar[{self.batch_dim: idx}].values
+    # def __getitem__(self, idx):
+    #     return self.ar[{self.batch_dim: idx}].values
     
     def _load_raw_data(self):
         # currently reading a single file
@@ -80,6 +84,9 @@ class XarrayStaticDataset(BaseDataModule):
         tiles = array.coarsen(x=self.tile_size, y=self.tile_size, boundary='pad').construct(x=("x_coarse", "x_fine"), y=("y_coarse", "y_fine"))
         # stack
         stacked_tiles = tiles.stack(batch_dim=("x_coarse", "y_coarse"))
+        ## THIS WILL CHANGE
+        # replace nans with zeros (if any - this is required for latent space visualization, otherwise the PCA will fail)
+        stacked_tiles = stacked_tiles.fillna(0)
         # transpose to have batch dim first
         batch_ready = stacked_tiles.transpose("batch_dim", "band", "y_fine", "x_fine")
         # to tensor
@@ -90,19 +97,16 @@ class XarrayStaticDataset(BaseDataModule):
         train_base, val_base, test_base = split_datasets
         self.train_dataset = TransformedInputDataset(
             train_base,
-            scaling_coefficient=self.scaling_coefficient,
             transform=self.train_transforms,
         )
         self.val_dataset = TransformedInputDataset(
             val_base,
-            scaling_coefficient=self.scaling_coefficient,
             transform=self.val_transforms,
         )
         # test_base may be None if no test split configured
         self.test_dataset = (
             TransformedInputDataset(
                 test_base, 
-                scaling_coefficient=self.scaling_coefficient, 
                 transform=self.test_transforms)
             if test_base is not None
             else None
@@ -167,7 +171,7 @@ def main():
     
     # try initializing the dataloader
     tile_size = 128
-    data_module = XarrayStaticDataset(data_root=geotiff_path, tile_size=tile_size)
+    data_module = XarrayStaticDataModule(data_root=geotiff_path, tile_size=tile_size)
     data_module.setup() 
     if Debug:
         print(f"Train dataset length: {len(data_module.train_dataset)}. Data type: {type(data_module.train_dataset)}")

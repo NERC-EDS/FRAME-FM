@@ -1,0 +1,53 @@
+# configs/data/eurosat.yaml
+_target_: FRAME_FM.dataloaders.eurosat_datamodule.EuroSATDataModule
+
+data_root: ${env:EUROSAT_DATA_ROOT, "data"}
+batch_size: 32
+num_workers: 4
+pin_memory: true
+persistent_workers: true
+
+# BaseDataModule split logic
+split_strategy: fraction        # "fraction" | "indices" | "none"
+train_split: 0.8
+val_split: 0.2
+test_split: 0.0
+
+# Explicit indices not used here (fractions take over)
+train_indices: null
+val_indices: null
+test_indices: null
+
+# --- Transforms: config-driven, per split ---
+
+train_transforms:
+  _target_: torchvision.transforms.Compose
+  transforms:
+    - _target_: torchvision.transforms.Resize
+      size: 64
+    - _target_: torchvision.transforms.RandomHorizontalFlip
+      p: 0.5
+    - _target_: torchvision.transforms.ToTensor
+    - _target_: torchvision.transforms.Normalize
+      mean: [0.5, 0.5, 0.5]
+      std: [0.5, 0.5, 0.5]
+
+val_transforms:
+  _target_: torchvision.transforms.Compose
+  transforms:
+    - _target_: torchvision.transforms.Resize
+      size: 64
+    - _target_: torchvision.transforms.ToTensor
+    - _target_: torchvision.transforms.Normalize
+      mean: [0.5, 0.5, 0.5]
+      std: [0.5, 0.5, 0.5]
+
+test_transforms:
+  _target_: torchvision.transforms.Compose
+  transforms:
+    - _target_: torchvision.transforms.Resize
+      size: 64
+    - _target_: torchvision.transforms.ToTensor
+    - _target_: torchvision.transforms.Normalize
+      mean: [0.5, 0.5, 0.5]
+      std: [0.5, 0.5, 0.5]

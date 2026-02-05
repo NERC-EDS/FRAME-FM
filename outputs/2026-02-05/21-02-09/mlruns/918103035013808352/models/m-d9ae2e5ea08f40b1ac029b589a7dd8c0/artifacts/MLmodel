@@ -1,0 +1,23 @@
+artifact_path: file:///gws/ssde/j25b/eds_ai/frame-fm/users/akadobgs/FRAME-FM/outputs/2026-02-05/21-02-09/mlruns/918103035013808352/models/m-d9ae2e5ea08f40b1ac029b589a7dd8c0/artifacts
+flavors:
+  python_function:
+    config:
+      device: null
+    data: data
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.pytorch
+    pickle_module_name: mlflow.pytorch.pickle_module
+    python_version: 3.12.11
+  pytorch:
+    code: null
+    model_data: data
+    pytorch_version: 2.10.0+cu128
+mlflow_version: 3.6.0
+model_id: m-d9ae2e5ea08f40b1ac029b589a7dd8c0
+model_size_bytes: 11597984
+model_uuid: m-d9ae2e5ea08f40b1ac029b589a7dd8c0
+prompts: null
+run_id: 48eb146eb75348488ab1d5a3ccdd95e5
+utc_time_created: '2026-02-05 21:10:18.589219'

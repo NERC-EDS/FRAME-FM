@@ -1,0 +1,10 @@
+artifact_location: file:///gws/ssde/j25b/eds_ai/frame-fm/users/akadobgs/FRAME-FM/outputs/2026-02-05/21-02-09/mlruns/918103035013808352/models/m-d9ae2e5ea08f40b1ac029b589a7dd8c0/artifacts
+creation_timestamp: 1770325329386
+experiment_id: '918103035013808352'
+last_updated_timestamp: 1770325831042
+model_id: m-d9ae2e5ea08f40b1ac029b589a7dd8c0
+model_type: null
+name: model
+source_run_id: 48eb146eb75348488ab1d5a3ccdd95e5
+status: 2
+status_message: null
