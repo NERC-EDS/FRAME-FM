@@ -14,7 +14,7 @@ The project addresses a critical gap: while environmental data archives are vast
 - [Hydra Configuration System](./configs/configs_README.md)
 
 ### 🧠 Code Structure
-- [Model Code](./src/FRAME_FM/model_code/model_code_README.md)
+- [Model Code](./src/FRAME_FM/model_code/models_README.md)
 - [Data Loaders](./src/FRAME_FM/dataloaders/dataloaders_README.md)
 - [Training Pipeline](./src/FRAME_FM/training/training_README.md)
 - [Utilities](./src/FRAME_FM/utils/utils_README.md)
