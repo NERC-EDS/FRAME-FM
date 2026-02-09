@@ -25,16 +25,21 @@ def create_zarr_name(data_uri: str) -> str:
 def cache_data_to_zarr(selectors: list[dict], 
                        cache_dir: str | Path, 
                        generate_stats: bool = True, 
-                       pre_transforms: list | None = None):
+                       pre_transforms: list | None = None) -> dict:
     """
     Cache data to Zarr format based on the provided selectors and cache directory.
+
     Args:
         selectors (list[dict]): A list of dictionaries defining selections for data.
         cache_dir (str): The directory where cached Zarr files will be stored.
         generate_stats (bool): Whether to generate statistics during caching.
         pre_transforms (list | None): A list of pre-transform class instances to apply before caching.
     """
+    # Ensure pre_transformas are list
     pre_transforms = pre_transforms or []
+
+    # Set up a dictionary to keep track of the mapping from (uri, var_id) to Zarr file paths
+    var_zarr_dict = {}
 
     # Create the cache directory if it doesn't exist
     Path(cache_dir).mkdir(parents=True, exist_ok=True)
@@ -78,14 +83,18 @@ def cache_data_to_zarr(selectors: list[dict],
             write_zarr(ds, cache_path, chunks=selector.get("common", {}).get("chunks", DEFAULTS.chunks))
         else:
             ds.compute()  # Ensure the dataset is computed before writing to Zarr
-            ds.to_zarr(cache_path, mode="w", zarr_version=2)
+            _ = ds.to_zarr(cache_path, mode="w", zarr_version=2)
             print(f"Finished caching data to {cache_path}")
 
         if generate_stats:
             # Generate and save statistics for the cached data
             print("\nHandle Stats here... (placeholder)")
 
+        # Update the response dictionary
+        var_zarr_dict[data_uri] = {"zarr_path": cache_path, "variables": variables}
+
     print("\nFinished processing all selectors.")
+    return var_zarr_dict
 
 
 def write_zarr(ds: xr.Dataset,  output_path: Path | str, chunks: dict[str, int] | None = None) -> Path | str:

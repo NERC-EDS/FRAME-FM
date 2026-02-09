@@ -51,7 +51,7 @@ def main():
     loaded_selectors = load_selectors_from_yaml(yaml_path)
 
     print(loaded_selectors)
-    
+
     # Example usage
     dataset = BigGeoDataset(
         selectors=loaded_selectors,
@@ -67,6 +67,11 @@ def main():
 
     print("Pre-caching data...")
     dataset.precache_data()
+
+    print(f"Dataset length: {len(dataset)}")
+
+    sample = dataset[0]
+    print(f"First sample in dataset: {sample.shape = }, {sample.dtype = }, {sample.min() = }, {sample.max() = }")  
 
 
 if __name__ == "__main__":

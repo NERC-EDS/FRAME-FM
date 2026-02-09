@@ -117,6 +117,7 @@ def safely_remove_dir(path: Path | str):
 
     print(f"Removed directory at: {path}")
 
+
 def dump_selectors_to_yaml(selectors: list[dict], yaml_path: str):
     with open(yaml_path, "w") as yaml_file:
         yaml.dump({"selectors": selectors}, yaml_file)
@@ -131,3 +132,19 @@ def load_selectors_from_yaml(yaml_path: str) -> list[dict]:
 
     print(f"Loaded selectors from YAML file at: {yaml_path}")
     return selectors
+
+
+def open_zarrs(data_dict: dict) -> dict:
+    ds_map = {}
+
+    for uri, zarr_path in data_dict.items():
+        print(f"Opening Zarr file for URI '{uri}' at path: {zarr_path}")
+        ds = xr.open_zarr(zarr_path)
+        ds_map[uri] = ds
+
+    # Add datasets to the input dictionary
+    for uri, ds in ds_map.items():
+        print(f"Dataset for URI '{uri}' has variables: {list(ds.data_vars)} and dimensions: {list(ds.dims)}")
+        data_dict[uri]["xr_dset"] = ds
+
+    return data_dict
