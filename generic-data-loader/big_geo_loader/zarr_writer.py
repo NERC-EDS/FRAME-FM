@@ -1,6 +1,6 @@
 from .utils import load_data_from_selector, safely_remove_dir
 from .transforms import *
-from .settings import DefaultSettings as DEFAULTS
+from .settings import DEBUG, DefaultSettings as DEFAULTS
 
 from pathlib import Path
 
@@ -53,7 +53,7 @@ def cache_data_to_zarr(selectors: list[dict],
 
         if transform_rule == "override":
             transforms = common_pre_transforms
-        elif transform_rule == "append":
+        else:  # If not set, or set to "append"
             transforms = pre_transforms + common_pre_transforms
 
         # Apply dataset-specific transforms if specified in var_settings
@@ -91,7 +91,8 @@ def cache_data_to_zarr(selectors: list[dict],
             print("\nHandle Stats here... (placeholder)")
 
         # Update the response dictionary
-        var_zarr_dict[data_uri] = {"zarr_path": cache_path, "variables": variables}
+        processed_var_ids = [v for v in ds.variables if v not in ds.coords]
+        var_zarr_dict[data_uri] = {"zarr_path": cache_path, "variables": processed_var_ids}
 
     print("\nFinished processing all selectors.")
     return var_zarr_dict
@@ -108,7 +109,7 @@ def write_zarr(ds: xr.Dataset,  output_path: Path | str, chunks: dict[str, int] 
     #  - https://github.com/roocs/rook/issues/55
     #  - https://docs.dask.org/en/latest/scheduling.html
     with dask.config.set(scheduler="synchronous"):
-        delayed_obj = chunked_ds.to_zarr(output_path, zarr_version=2, compute=False)
+        delayed_obj = chunked_ds.to_zarr(output_path, zarr_version=DEFAULTS.zarr_version, compute=False)
         delayed_obj.compute()
 
     print(f"Wrote output file: {output_path}")

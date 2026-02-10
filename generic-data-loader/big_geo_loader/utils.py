@@ -3,6 +3,8 @@ from pathlib import Path
 from typing import Type
 import yaml
 
+from .settings import DEBUG, DefaultSettings as DEFAULTS
+
 
 def _map_uri_to_engine(uri: Path | str):
     # Map the URI to the appropriate engine for loading data
@@ -32,27 +34,6 @@ def load_data_from_selector(selector: dict) -> xr.Dataset:
     # Initialize an empty Dataset to store the loaded data
     dset = xr.Dataset()
 
-    # Example selector format:
-    # Selector format example:
-    # {   
-    #     "uri": "https://gws-access.jasmin.ac.uk/public/eds_ai/era5_repack/aggregations/data/ecmwf-era5X_oper_an_sfc_2000_2020_2d_repack.kr1.0.json",
-    #     "common": {
-    #         "subset": {
-    #             "time": slice("2000-01-01 00:00:00", "2000-01-05 03:00:00"),
-    #             "latitude": slice(60, 28.2),
-    #             "longitude": slice(-40, 110.75)
-    #         },
-    #         "pre_transforms": [
-    #             {"type": "rename", "var_id": "d2m", "new_name": "dewpoint_temperature"},
-    #             {"type": "roll", "dim": "longitude", "shift": None},
-    #             {"type": "reverse_axis", "dim": "latitude"}
-    #         ],
-    #         "chunks": {"time": 10}
-    #     },
-    #     "variables": {
-    #         "d2m": {},
-    #     }
-    # },
     # Get the URI
     uri = selector["uri"]
 
@@ -92,13 +73,17 @@ def convert_subset_selectors_to_slices(selector: dict) -> dict:
     return new_selector
 
 
-def _check_xarray_object(
-    obj: xr.DataArray | xr.Dataset,
-    expected_type: Type[xr.DataArray] | Type[xr.Dataset] = xr.Dataset,
-):
-    if not isinstance(obj, expected_type):
-        raise TypeError(f"Expected an xarray {expected_type.__name__} object.")
-    return obj
+def check_object_type(obj: object, allowed_types: object | tuple[object, ...]) -> object:
+    # Check if allowed_types is a single type, if so convert it to a tuple
+    if isinstance(allowed_types, type):
+        allowed_types = (allowed_types,)
+
+    for t in allowed_types:   # type: ignore
+        if isinstance(t, type):
+            return obj
+
+    raise TypeError(f"Expected an object of type: {allowed_types}, but received {type(obj)}.")
+
 
 def safely_remove_dir(path: Path | str):
     """
@@ -115,7 +100,7 @@ def safely_remove_dir(path: Path | str):
                 safely_remove_dir(item)
         path.rmdir()
 
-    print(f"Removed directory at: {path}")
+    if DEBUG: print(f"Removed directory at: {path}")
 
 
 def dump_selectors_to_yaml(selectors: list[dict], yaml_path: str):
@@ -126,9 +111,10 @@ def dump_selectors_to_yaml(selectors: list[dict], yaml_path: str):
 
 
 def load_selectors_from_yaml(yaml_path: str) -> list[dict]:
+
     with open(yaml_path, "r") as yaml_file:
         data = yaml.safe_load(yaml_file)
-        selectors = data.get("selectors", [])
+        selectors = data.get("selectors", [])  # type: ignore
 
     print(f"Loaded selectors from YAML file at: {yaml_path}")
     return selectors
@@ -137,9 +123,10 @@ def load_selectors_from_yaml(yaml_path: str) -> list[dict]:
 def open_zarrs(data_dict: dict) -> dict:
     ds_map = {}
 
-    for uri, zarr_path in data_dict.items():
+    for uri, content in data_dict.items():
+        zarr_path = content.get("zarr_path")
         print(f"Opening Zarr file for URI '{uri}' at path: {zarr_path}")
-        ds = xr.open_zarr(zarr_path)
+        ds = xr.open_zarr(zarr_path, zarr_version=DEFAULTS.zarr_version)
         ds_map[uri] = ds
 
     # Add datasets to the input dictionary
@@ -148,3 +135,11 @@ def open_zarrs(data_dict: dict) -> dict:
         data_dict[uri]["xr_dset"] = ds
 
     return data_dict
+
+
+def load_data_from_uri(uri: str, subset_selection: dict) -> xr.Dataset:
+    # Load dataset from URI
+    engine = _map_uri_to_engine(uri)
+    ds = xr.open_dataset(uri, engine=engine, chunks="auto")
+    ds = ds.sel(**subset_selection)
+    return ds

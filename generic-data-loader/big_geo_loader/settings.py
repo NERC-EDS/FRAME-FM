@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+DEBUG = False
 
 
 class DatasetSettings:
@@ -14,3 +15,4 @@ class DatasetSettings:
 
 class DefaultSettings:
     chunks: dict[str, int] = {"time": 24}
+    zarr_version: int = 2

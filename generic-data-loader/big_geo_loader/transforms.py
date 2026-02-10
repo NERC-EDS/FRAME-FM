@@ -4,9 +4,8 @@ import numpy as np
 DA = xr.DataArray
 DS = xr.Dataset
 
-from .utils import _check_xarray_object
-from torchvision.transforms import ToTensor
-
+from .utils import check_object_type
+import torch
 
 
 class BaseTransform:
@@ -16,8 +15,11 @@ class BaseTransform:
 class NormalizeTransform(BaseTransform):
     def __call__(self, sample, mean: float, std: float):
         # Implement normalization logic here
-        _check_xarray_object(sample, expected_type=DA)
+        check_object_type(sample, allowed_types=DA)
         return (sample - mean) / std
+
+class ScaleTransform(NormalizeTransform): 
+    pass
 
 class ResizeTransform(BaseTransform):
     def __init__(self, size: tuple):
@@ -25,7 +27,7 @@ class ResizeTransform(BaseTransform):
 
     def __call__(self, sample):
         # Implement resizing logic here
-        _check_xarray_object(sample, expected_type=DA)
+        check_object_type(sample, allowed_types=DA)
         return sample.to_numpy().reshape(self.size)
 
 class RenameTransform(BaseTransform):
@@ -35,7 +37,7 @@ class RenameTransform(BaseTransform):
 
     def __call__(self, sample):
         # Implement renaming logic here
-        _check_xarray_object(sample, expected_type=DS)
+        check_object_type(sample, allowed_types=DS)
         sample = sample.rename_vars({self.var_id: self.new_name})
         return sample
     
@@ -46,7 +48,7 @@ class RollTransform(BaseTransform):
 
     def __call__(self, sample):
         # Implement rolling logic here
-        _check_xarray_object(sample, expected_type=DS)
+        check_object_type(sample, allowed_types=DS)
         shift = self.shift
         
         if shift is None:
@@ -72,12 +74,17 @@ class ReverseAxisTransform(BaseTransform):
 
     def __call__(self, sample):
         # Implement axis reversal logic here
-        _check_xarray_object(sample, expected_type=DS)
+        check_object_type(sample, allowed_types=DS)
         ds_rev = sample.isel(**{self.dim: slice(None, None, -1)})
         return ds_rev
 
-class ScaleTransform(NormalizeTransform): 
-    pass
+class ToTensor(BaseTransform):
+    def __call__(self, sample):
+        # Implement conversion to PyTorch tensor here
+        check_object_type(sample, allowed_types=(DA, np.ndarray))
+        if isinstance(sample, DA):
+            sample = sample.values
+        return torch.from_numpy(sample)
 
 
 
@@ -87,8 +94,8 @@ transform_mapping = {
     "rename": RenameTransform,
     "roll": RollTransform,
     "scale": ScaleTransform,
-    "to_tensor": ToTensor,
     "reverse_axis": ReverseAxisTransform,
+    "to_tensor": ToTensor
 }
 
 

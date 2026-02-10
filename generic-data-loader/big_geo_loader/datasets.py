@@ -8,6 +8,7 @@ import numpy as np
 from .settings import DatasetSettings as SETTINGS
 from .zarr_writer import cache_data_to_zarr
 from .utils import open_zarrs
+from .transforms import resolve_transform
 
 
 class BigGeoDataset(Dataset):
@@ -50,13 +51,21 @@ class BigGeoDataset(Dataset):
         if not self.is_precached:
             raise RuntimeError("Data must be precached before accessing length.")
         
-        # Load the first timme slice for all variables and flatten everything into a single vector
-        # self.data looks like: {uri: {"xr_dset": ds, "variables": variables}}
-        sample = np.array([uri_dict["xr_dset"][var_id].isel(time=idx).values.flatten() for uri_dict in self.data.values() for var_id in uri_dict["variables"]])
+        # idx refers to each time step across all datasets, stack all arrays along the variable dimension
+        # and convert to tensor in the runtime transforms
+        sample_slices = []
+        for uri, uri_dict in self.data.items():
+            ds = uri_dict["xr_dset"]
+            # Extract the time slice for the current index
+            variables = uri_dict["variables"]
+            for var in variables:
+                sample_slices.append(ds[var].isel(time=idx).values)  # Shape: (height, width)
+
+        sample = np.stack(sample_slices, axis=0)  # Shape: (num_variables, height, width)
 
         # Apply runtime transforms if any
         for transform in self.runtime_transforms:
-            sample = transform(sample)
+            sample = resolve_transform(transform)(sample)
 
         return sample
     
