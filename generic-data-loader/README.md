@@ -1,5 +1,7 @@
 # Generic data loader for big environmental data
 
+## Overview
+
 This is a design for a PyTorch implementation of data loaders that enables the 
 user to specify a recipe for loading large (TB scale) data subsets from multi-
 dimensional datasets typically held in NetCDF format (and/or other gridded 
@@ -33,3 +35,18 @@ The `BigGeoDataset` class should then be able to detect whether data has been
 pre-cached and prefer to load that version if present. Otherwise it will extract
 subsets and run the `pre_transforms` on-the-fly.
 
+## Test running this approach
+
+Set up env (on JASMIN):
+
+```bash
+source /gws/ssde/j25b/eds_ai/frame-fm/code/envs/torch-basic/bin/activate
+```
+
+Run the example:
+
+```bash
+cd generic-data-loader/
+export PYTHONPATH=.
+python main.py
+```
