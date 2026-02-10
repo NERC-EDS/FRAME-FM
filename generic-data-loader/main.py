@@ -10,7 +10,7 @@ def main():
                 "common": {
                     "subset": {
                         "time": ["2000-01-01 00:00:00", "2000-01-10 23:00:00"],
-                        "latitude": [8, -8],
+                        "latitude": [80, -80],
                         "longitude": [-140, 150.75]
                     },
                     "pre_transforms": [
@@ -30,7 +30,7 @@ def main():
                 "common": {
                     "subset": {
                         "time": ["2000-01-01 00:00:00", "2000-01-10 23:00:00"],
-                        "latitude": [8, -8],
+                        "latitude": [80, -80],
                         "longitude": [-140, 150.75]
                     },
                     "pre_transforms": [
