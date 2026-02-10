@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FRAME_FM.dataloaders.demo_EurosatDataloader &mdash; FRAME-FM 0.0.0a documentation</title>
+  <title>FRAME_FM.dataloaders.demo_eurosat &mdash; FRAME-FM 0.0.0a documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d75fae25" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
@@ -17,12 +17,12 @@
       <link rel="stylesheet" type="text/css" href="../../../_static/dark_mode_css/dark.css?v=70edf1c7" />
 
   
-    <link rel="canonical" href="https://NERC-EDS.github.io/FRAME-FM/_modules/FRAME_FM/dataloaders/demo_EurosatDataloader.html" />
+    <link rel="canonical" href="https://NERC-EDS.github.io/FRAME-FM/_modules/FRAME_FM/dataloaders/demo_eurosat.html" />
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../../../_static/documentation_options.js?v=e8454e50"></script>
-      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../../../_static/copybutton.js?v=df1a032d"></script>
       <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -73,7 +73,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">FRAME_FM.dataloaders.demo_EurosatDataloader</li>
+      <li class="breadcrumb-item active">FRAME_FM.dataloaders.demo_eurosat</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -82,21 +82,20 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for FRAME_FM.dataloaders.demo_EurosatDataloader</h1><div class="highlight"><pre>
-<span></span><span class="c1"># src/FRAME_FM/dataloaders/eurosat_datamodule.py</span>
+  <h1>Source code for FRAME_FM.dataloaders.demo_eurosat</h1><div class="highlight"><pre>
+<span></span><span class="c1"># src/FRAME_FM/dataloaders/demo_dataloader.py</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">torchvision.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">EuroSAT100</span> <span class="k">as</span> <span class="n">EuroSAT</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchvision.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">EuroSAT</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">FRAME_FM.utils.LightningDataModuleWrapper</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseDataModule</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">FRAME_FM.datasets.ImageLabel_Dataset</span><span class="w"> </span><span class="kn">import</span> <span class="n">TransformedDataset</span>
 
-
 <div class="viewcode-block" id="EuroSATDataModule">
-<a class="viewcode-back" href="../../../api/FRAME_FM/dataloaders/demo_EurosatDataloader/index.html#FRAME_FM.dataloaders.demo_EurosatDataloader.EuroSATDataModule">[docs]</a>
+<a class="viewcode-back" href="../../../api/FRAME_FM/dataloaders/demo_eurosat/index.html#FRAME_FM.dataloaders.demo_eurosat.EuroSATDataModule">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EuroSATDataModule</span><span class="p">(</span><span class="n">BaseDataModule</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    FRAME-FM DataModule for EuroSAT.</span>
@@ -125,10 +124,10 @@
         <span class="p">)</span>
 
 <div class="viewcode-block" id="EuroSATDataModule.prepare_data">
-<a class="viewcode-back" href="../../../api/FRAME_FM/dataloaders/demo_EurosatDataloader/index.html#FRAME_FM.dataloaders.demo_EurosatDataloader.EuroSATDataModule.prepare_data">[docs]</a>
+<a class="viewcode-back" href="../../../api/FRAME_FM/dataloaders/demo_eurosat/index.html#FRAME_FM.dataloaders.demo_eurosat.EuroSATDataModule.prepare_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">prepare_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Download EuroSAT once.&quot;&quot;&quot;</span>
-        <span class="n">EuroSAT</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_root</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="n">EuroSAT</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_root</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_raw_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
@@ -136,7 +135,7 @@
 <span class="sd">        Load the full EuroSAT dataset once, with no transform.</span>
 <span class="sd">        Split and per-split transforms are handled later.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">EuroSAT</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_root</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">EuroSAT</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_root</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_create_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>

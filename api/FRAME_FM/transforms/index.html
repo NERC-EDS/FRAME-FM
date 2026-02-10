@@ -3,9 +3,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FRAME_FM.training.logging &mdash; FRAME-FM 0.0.0a documentation</title>
+  <title>FRAME_FM.transforms &mdash; FRAME-FM 0.0.0a documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d75fae25" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
@@ -17,12 +18,12 @@
       <link rel="stylesheet" type="text/css" href="../../../_static/dark_mode_css/dark.css?v=70edf1c7" />
 
   
-    <link rel="canonical" href="https://NERC-EDS.github.io/FRAME-FM/_modules/FRAME_FM/training/logging.html" />
+    <link rel="canonical" href="https://NERC-EDS.github.io/FRAME-FM/api/FRAME_FM/transforms/index.html" />
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../../../_static/documentation_options.js?v=e8454e50"></script>
-      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../../../_static/copybutton.js?v=df1a032d"></script>
       <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -31,7 +32,9 @@
       <script src="../../../_static/dark_mode_js/theme_switcher.js?v=358d3910"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
-    <link rel="search" title="Search" href="../../../search.html" /> 
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="FRAME_FM.utils" href="../utils/index.html" />
+    <link rel="prev" title="FRAME_FM.training.train" href="../training/train/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -54,8 +57,23 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../api/index.html">API Reference</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">FRAME_FM</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../cli/index.html">FRAME_FM.cli</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../dataloaders/index.html">FRAME_FM.dataloaders</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../models/index.html">FRAME_FM.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../training/index.html">FRAME_FM.training</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">FRAME_FM.transforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../utils/index.html">FRAME_FM.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../ImageLabel_Dataset/index.html">ImageLabel_Dataset</a></li>
+</ul>
+</li>
 </ul>
 
         </div>
@@ -72,8 +90,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">FRAME_FM.training.logging</li>
+          <li class="breadcrumb-item"><a href="../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">FRAME_FM</a></li>
+      <li class="breadcrumb-item active">FRAME_FM.transforms</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -82,42 +101,17 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for FRAME_FM.training.logging</h1><div class="highlight"><pre>
-<span></span><span class="c1"># src/FRAME_FM/training/logger.py</span>
+  <section id="module-FRAME_FM.transforms">
+<span id="frame-fm-transforms"></span><h1>FRAME_FM.transforms<a class="headerlink" href="#module-FRAME_FM.transforms" title="Link to this heading"></a></h1>
+</section>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">pytorch_lightning.loggers</span><span class="w"> </span><span class="kn">import</span> <span class="n">MLFlowLogger</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">omegaconf</span><span class="w"> </span><span class="kn">import</span> <span class="n">DictConfig</span>
-
-
-<div class="viewcode-block" id="create_mlflow_logger">
-<a class="viewcode-back" href="../../../api/FRAME_FM/training/logging/index.html#FRAME_FM.training.logging.create_mlflow_logger">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">create_mlflow_logger</span><span class="p">(</span><span class="n">cfg</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MLFlowLogger</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Create an MLFlowLogger from Hydra config.</span>
-
-<span class="sd">    Example config block:</span>
-
-<span class="sd">    logging:</span>
-<span class="sd">      _target_: FRAME_FM.training.logger.create_mlflow_logger</span>
-<span class="sd">      experiment_name: &quot;frame-fm-eurosat-ae&quot;</span>
-<span class="sd">      tracking_uri: ${env:MLFLOW_TRACKING_URI}</span>
-<span class="sd">      run_name: &quot;experiment-1&quot;</span>
-<span class="sd">      tags:</span>
-<span class="sd">        project: &quot;FRAME-FM&quot;</span>
-<span class="sd">        dataset: &quot;EuroSAT&quot;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">MLFlowLogger</span><span class="p">(</span>
-        <span class="n">experiment_name</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">experiment_name</span><span class="p">,</span>
-        <span class="n">tracking_uri</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">tracking_uri</span><span class="p">,</span>
-        <span class="n">run_name</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;run_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-        <span class="n">tags</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tags&quot;</span><span class="p">,</span> <span class="p">{})),</span>
-    <span class="p">)</span></div>
-
-</pre></div>
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../training/train/index.html" class="btn btn-neutral float-left" title="FRAME_FM.training.train" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../utils/index.html" class="btn btn-neutral float-right" title="FRAME_FM.utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

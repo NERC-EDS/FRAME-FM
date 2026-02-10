@@ -21,8 +21,8 @@
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="_static/documentation_options.js?v=e8454e50"></script>
-      <script src="_static/doctools.js?v=9bcbadda"></script>
-      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="_static/copybutton.js?v=df1a032d"></script>
       <script src="_static/design-tabs.js?v=f930bc37"></script>
@@ -91,13 +91,16 @@
  | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
  | <a href="#P"><strong>P</strong></a>
+ | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
  
 </div>
@@ -120,13 +123,15 @@
 </li>
       <li><a href="api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule">BaseDataModule (class in FRAME_FM.utils.LightningDataModuleWrapper)</a>
 </li>
+      <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.BaseEmbedder">BaseEmbedder (class in FRAME_FM.utils.embedders)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE">BaselineConvAE (class in FRAME_FM.model_code.demo_EurosatModel)</a>
-</li>
       <li><a href="api/FRAME_FM/utils/LightningModuleWrapper/index.html#FRAME_FM.utils.LightningModuleWrapper.BaseModule">BaseModule (class in FRAME_FM.utils.LightningModuleWrapper)</a>
 </li>
       <li><a href="api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.batch_size">batch_size (FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule attribute)</a>
+</li>
+      <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.blocks">blocks (FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -134,11 +139,17 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.classifier">classifier (FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE attribute)</a>
+      <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.cls_token">cls_token (FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder attribute)</a>
 </li>
+      <li><a href="api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder.configure_optimizers">configure_optimizers() (FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder method)</a>
+
+      <ul>
+        <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.configure_optimizers">(FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/FRAME_FM/training/logging/index.html#FRAME_FM.training.logging.create_mlflow_logger">create_mlflow_logger() (in module FRAME_FM.training.logging)</a>
+      <li><a href="api/FRAME_FM/training/logging_utils/index.html#FRAME_FM.training.logging_utils.create_mlflow_logger">create_mlflow_logger() (in module FRAME_FM.training.logging_utils)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -148,17 +159,45 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.data_root">data_root (FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule attribute)</a>
 </li>
+      <li><a href="api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder.decoder">decoder (FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder attribute)</a>
+</li>
+      <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.decoder_blocks">decoder_blocks (FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.decoder_embed">decoder_embed (FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder attribute)</a>
+</li>
+      <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.decoder_norm">decoder_norm (FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder attribute)</a>
+</li>
+      <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.PatchEmbed.decoder_pos_embed">decoder_pos_embed (FRAME_FM.utils.embedders.PatchEmbed attribute)</a>
+</li>
+      <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.default_mask_ratio">default_mask_ratio (FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder attribute)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.encoder">encoder (FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE attribute)</a>
+      <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.BaseEmbedder.embed_dim">embed_dim (FRAME_FM.utils.embedders.BaseEmbedder attribute)</a>
+
+      <ul>
+        <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.PatchEmbed.embed_dim">(FRAME_FM.utils.embedders.PatchEmbed attribute)</a>
 </li>
+      </ul></li>
+      <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.BaseEmbedder.embed_pos">embed_pos() (FRAME_FM.utils.embedders.BaseEmbedder method)</a>
+
+      <ul>
+        <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.PatchEmbed.embed_pos">(FRAME_FM.utils.embedders.PatchEmbed method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/FRAME_FM/dataloaders/demo_EurosatDataloader/index.html#FRAME_FM.dataloaders.demo_EurosatDataloader.EuroSATDataModule">EuroSATDataModule (class in FRAME_FM.dataloaders.demo_EurosatDataloader)</a>
+      <li><a href="api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder.encoder">encoder (FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder attribute)</a>
+</li>
+      <li><a href="api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder">EuroSATAutoencoder (class in FRAME_FM.models.demo_autoencoder)</a>
+</li>
+      <li><a href="api/FRAME_FM/dataloaders/demo_eurosat/index.html#FRAME_FM.dataloaders.demo_eurosat.EuroSATDataModule">EuroSATDataModule (class in FRAME_FM.dataloaders.demo_eurosat)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -166,13 +205,34 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.forward">forward() (FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE method)</a>
+      <li><a href="api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder.forward">forward() (FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder method)</a>
+
+      <ul>
+        <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.forward">(FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder method)</a>
+</li>
+        <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.BaseEmbedder.forward">(FRAME_FM.utils.embedders.BaseEmbedder method)</a>
+</li>
+        <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.PatchEmbed.forward">(FRAME_FM.utils.embedders.PatchEmbed method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.forward_decoder">forward_decoder() (FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder method)</a>
+</li>
+      <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.forward_encoder">forward_encoder() (FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder method)</a>
+</li>
+      <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.forward_loss">forward_loss() (FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder method)</a>
 </li>
       <li>
     FRAME_FM
 
       <ul>
         <li><a href="api/FRAME_FM/index.html#module-FRAME_FM">module</a>
+</li>
+      </ul></li>
+      <li>
+    FRAME_FM.cli
+
+      <ul>
+        <li><a href="api/FRAME_FM/cli/index.html#module-FRAME_FM.cli">module</a>
 </li>
       </ul></li>
       <li>
@@ -183,24 +243,33 @@
 </li>
       </ul></li>
       <li>
-    FRAME_FM.dataloaders.demo_EurosatDataloader
+    FRAME_FM.dataloaders.demo_eurosat
 
       <ul>
-        <li><a href="api/FRAME_FM/dataloaders/demo_EurosatDataloader/index.html#module-FRAME_FM.dataloaders.demo_EurosatDataloader">module</a>
+        <li><a href="api/FRAME_FM/dataloaders/demo_eurosat/index.html#module-FRAME_FM.dataloaders.demo_eurosat">module</a>
 </li>
       </ul></li>
       <li>
-    FRAME_FM.model_code
+    FRAME_FM.models
 
       <ul>
-        <li><a href="api/FRAME_FM/model_code/index.html#module-FRAME_FM.model_code">module</a>
+        <li><a href="api/FRAME_FM/models/index.html#module-FRAME_FM.models">module</a>
 </li>
       </ul></li>
       <li>
-    FRAME_FM.model_code.demo_EurosatModel
+    FRAME_FM.models.demo_autoencoder
 
       <ul>
-        <li><a href="api/FRAME_FM/model_code/demo_EurosatModel/index.html#module-FRAME_FM.model_code.demo_EurosatModel">module</a>
+        <li><a href="api/FRAME_FM/models/demo_autoencoder/index.html#module-FRAME_FM.models.demo_autoencoder">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    FRAME_FM.models.mmmae
+
+      <ul>
+        <li><a href="api/FRAME_FM/models/mmmae/index.html#module-FRAME_FM.models.mmmae">module</a>
 </li>
       </ul></li>
       <li>
@@ -210,13 +279,11 @@
         <li><a href="api/FRAME_FM/training/index.html#module-FRAME_FM.training">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
-    FRAME_FM.training.logging
+    FRAME_FM.training.logging_utils
 
       <ul>
-        <li><a href="api/FRAME_FM/training/logging/index.html#module-FRAME_FM.training.logging">module</a>
+        <li><a href="api/FRAME_FM/training/logging_utils/index.html#module-FRAME_FM.training.logging_utils">module</a>
 </li>
       </ul></li>
       <li>
@@ -227,10 +294,24 @@
 </li>
       </ul></li>
       <li>
+    FRAME_FM.transforms
+
+      <ul>
+        <li><a href="api/FRAME_FM/transforms/index.html#module-FRAME_FM.transforms">module</a>
+</li>
+      </ul></li>
+      <li>
     FRAME_FM.utils
 
       <ul>
         <li><a href="api/FRAME_FM/utils/index.html#module-FRAME_FM.utils">module</a>
+</li>
+      </ul></li>
+      <li>
+    FRAME_FM.utils.embedders
+
+      <ul>
+        <li><a href="api/FRAME_FM/utils/embedders/index.html#module-FRAME_FM.utils.embedders">module</a>
 </li>
       </ul></li>
       <li>
@@ -247,7 +328,15 @@
         <li><a href="api/FRAME_FM/utils/LightningModuleWrapper/index.html#module-FRAME_FM.utils.LightningModuleWrapper">module</a>
 </li>
       </ul></li>
-      <li><a href="api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.from_latent">from_latent (FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE attribute)</a>
+      <li><a href="api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder.from_latent">from_latent (FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.get_nd_sincos_pos_embed">get_nd_sincos_pos_embed() (in module FRAME_FM.utils.embedders)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -262,17 +351,31 @@
         <li><a href="api/ImageLabel_Dataset/index.html#module-ImageLabel_Dataset">module</a>
 </li>
       </ul></li>
+      <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.initialize_weights">initialize_weights() (FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder method)</a>
+
+      <ul>
+        <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.BaseEmbedder.initialize_weights">(FRAME_FM.utils.embedders.BaseEmbedder method)</a>
+</li>
+        <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.PatchEmbed.initialize_weights">(FRAME_FM.utils.embedders.PatchEmbed method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.input_embedders">input_embedders (FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder attribute)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/FRAME_FM/utils/LightningModuleWrapper/index.html#FRAME_FM.utils.LightningModuleWrapper.BaseModule.log_metrics">log_metrics() (FRAME_FM.utils.LightningModuleWrapper.BaseModule method)</a>
+      <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.learning_rate">learning_rate (FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.loss_fn">loss_fn (FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE attribute)</a>
+      <li><a href="api/FRAME_FM/utils/LightningModuleWrapper/index.html#FRAME_FM.utils.LightningModuleWrapper.BaseModule.log_metrics">log_metrics() (FRAME_FM.utils.LightningModuleWrapper.BaseModule method)</a>
+</li>
+      <li><a href="api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder.loss_fn">loss_fn (FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -282,27 +385,37 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/FRAME_FM/training/train/index.html#FRAME_FM.training.train.main">main() (in module FRAME_FM.training.train)</a>
 </li>
+      <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.mask_token">mask_token (FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder attribute)</a>
+</li>
       <li>
     module
 
       <ul>
         <li><a href="api/FRAME_FM/index.html#module-FRAME_FM">FRAME_FM</a>
 </li>
+        <li><a href="api/FRAME_FM/cli/index.html#module-FRAME_FM.cli">FRAME_FM.cli</a>
+</li>
         <li><a href="api/FRAME_FM/dataloaders/index.html#module-FRAME_FM.dataloaders">FRAME_FM.dataloaders</a>
 </li>
-        <li><a href="api/FRAME_FM/dataloaders/demo_EurosatDataloader/index.html#module-FRAME_FM.dataloaders.demo_EurosatDataloader">FRAME_FM.dataloaders.demo_EurosatDataloader</a>
+        <li><a href="api/FRAME_FM/dataloaders/demo_eurosat/index.html#module-FRAME_FM.dataloaders.demo_eurosat">FRAME_FM.dataloaders.demo_eurosat</a>
 </li>
-        <li><a href="api/FRAME_FM/model_code/index.html#module-FRAME_FM.model_code">FRAME_FM.model_code</a>
+        <li><a href="api/FRAME_FM/models/index.html#module-FRAME_FM.models">FRAME_FM.models</a>
 </li>
-        <li><a href="api/FRAME_FM/model_code/demo_EurosatModel/index.html#module-FRAME_FM.model_code.demo_EurosatModel">FRAME_FM.model_code.demo_EurosatModel</a>
+        <li><a href="api/FRAME_FM/models/demo_autoencoder/index.html#module-FRAME_FM.models.demo_autoencoder">FRAME_FM.models.demo_autoencoder</a>
+</li>
+        <li><a href="api/FRAME_FM/models/mmmae/index.html#module-FRAME_FM.models.mmmae">FRAME_FM.models.mmmae</a>
 </li>
         <li><a href="api/FRAME_FM/training/index.html#module-FRAME_FM.training">FRAME_FM.training</a>
 </li>
-        <li><a href="api/FRAME_FM/training/logging/index.html#module-FRAME_FM.training.logging">FRAME_FM.training.logging</a>
+        <li><a href="api/FRAME_FM/training/logging_utils/index.html#module-FRAME_FM.training.logging_utils">FRAME_FM.training.logging_utils</a>
 </li>
         <li><a href="api/FRAME_FM/training/train/index.html#module-FRAME_FM.training.train">FRAME_FM.training.train</a>
 </li>
+        <li><a href="api/FRAME_FM/transforms/index.html#module-FRAME_FM.transforms">FRAME_FM.transforms</a>
+</li>
         <li><a href="api/FRAME_FM/utils/index.html#module-FRAME_FM.utils">FRAME_FM.utils</a>
+</li>
+        <li><a href="api/FRAME_FM/utils/embedders/index.html#module-FRAME_FM.utils.embedders">FRAME_FM.utils.embedders</a>
 </li>
         <li><a href="api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#module-FRAME_FM.utils.LightningDataModuleWrapper">FRAME_FM.utils.LightningDataModuleWrapper</a>
 </li>
@@ -312,11 +425,25 @@
 </li>
       </ul></li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder">MultimodalMaskedAutoencoder (class in FRAME_FM.models.mmmae)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.PatchEmbed.n_channels">n_channels (FRAME_FM.utils.embedders.PatchEmbed attribute)</a>
+</li>
+      <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.BaseEmbedder.n_patches">n_patches (FRAME_FM.utils.embedders.BaseEmbedder attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.norm">norm (FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder attribute)</a>
+</li>
+      <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.norm_token_loss">norm_token_loss (FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder attribute)</a>
+</li>
       <li><a href="api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.num_workers">num_workers (FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule attribute)</a>
 </li>
   </ul></td>
@@ -325,14 +452,44 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.PatchEmbed">PatchEmbed (class in FRAME_FM.utils.embedders)</a>
+</li>
       <li><a href="api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.persistent_workers">persistent_workers (FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule attribute)</a>
+</li>
+      <li><a href="api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.pin_memory">pin_memory (FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.pin_memory">pin_memory (FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule attribute)</a>
+      <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.PatchEmbed.pos_embed">pos_embed (FRAME_FM.utils.embedders.PatchEmbed attribute)</a>
 </li>
-      <li><a href="api/FRAME_FM/dataloaders/demo_EurosatDataloader/index.html#FRAME_FM.dataloaders.demo_EurosatDataloader.EuroSATDataModule.prepare_data">prepare_data() (FRAME_FM.dataloaders.demo_EurosatDataloader.EuroSATDataModule method)</a>
+      <li><a href="api/FRAME_FM/dataloaders/demo_eurosat/index.html#FRAME_FM.dataloaders.demo_eurosat.EuroSATDataModule.prepare_data">prepare_data() (FRAME_FM.dataloaders.demo_eurosat.EuroSATDataModule method)</a>
 </li>
+      <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.PatchEmbed.proj">proj (FRAME_FM.utils.embedders.PatchEmbed attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.random_masking">random_masking() (FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder method)</a>
+</li>
+      <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.BaseEmbedder.reconstruct_dim">reconstruct_dim (FRAME_FM.utils.embedders.BaseEmbedder attribute)</a>
+
+      <ul>
+        <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.PatchEmbed.reconstruct_dim">(FRAME_FM.utils.embedders.PatchEmbed attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.PatchEmbed.reconstruct_layer">reconstruct_layer (FRAME_FM.utils.embedders.PatchEmbed attribute)</a>
+</li>
+      <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.BaseEmbedder.reconstruct_tokens">reconstruct_tokens() (FRAME_FM.utils.embedders.BaseEmbedder method)</a>
+
+      <ul>
+        <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.PatchEmbed.reconstruct_tokens">(FRAME_FM.utils.embedders.PatchEmbed method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -343,6 +500,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.sincos_embed_coords">sincos_embed_coords() (in module FRAME_FM.utils.embedders)</a>
+</li>
       <li><a href="api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.split_strategy">split_strategy (FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule attribute)</a>
 </li>
   </ul></td>
@@ -351,8 +510,6 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.test_acc">test_acc (FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE attribute)</a>
-</li>
       <li><a href="api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.test_dataloader">test_dataloader() (FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule method)</a>
 </li>
       <li><a href="api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.test_dataset">test_dataset (FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule attribute)</a>
@@ -361,20 +518,26 @@
 </li>
       <li><a href="api/FRAME_FM/utils/LightningModuleWrapper/index.html#FRAME_FM.utils.LightningModuleWrapper.BaseModule.test_step">test_step() (FRAME_FM.utils.LightningModuleWrapper.BaseModule method)</a>
 </li>
-      <li><a href="api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.test_step_body">test_step_body() (FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE method)</a>
+      <li><a href="api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder.test_step_body">test_step_body() (FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder method)</a>
 
       <ul>
+        <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.test_step_body">(FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder method)</a>
+</li>
         <li><a href="api/FRAME_FM/utils/LightningModuleWrapper/index.html#FRAME_FM.utils.LightningModuleWrapper.BaseModule.test_step_body">(FRAME_FM.utils.LightningModuleWrapper.BaseModule method)</a>
 </li>
       </ul></li>
       <li><a href="api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.test_transforms">test_transforms (FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule attribute)</a>
 </li>
-      <li><a href="api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.to_latent">to_latent (FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE attribute)</a>
+      <li><a href="api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder.to_latent">to_latent (FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder attribute)</a>
 </li>
+      <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.BaseEmbedder.tokenify">tokenify() (FRAME_FM.utils.embedders.BaseEmbedder method)</a>
+
+      <ul>
+        <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.PatchEmbed.tokenify">(FRAME_FM.utils.embedders.PatchEmbed method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.train_acc">train_acc (FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE attribute)</a>
-</li>
       <li><a href="api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.train_dataloader">train_dataloader() (FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule method)</a>
 </li>
       <li><a href="api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.train_dataset">train_dataset (FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule attribute)</a>
@@ -385,9 +548,11 @@
 </li>
       <li><a href="api/FRAME_FM/utils/LightningModuleWrapper/index.html#FRAME_FM.utils.LightningModuleWrapper.BaseModule.training_step">training_step() (FRAME_FM.utils.LightningModuleWrapper.BaseModule method)</a>
 </li>
-      <li><a href="api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.training_step_body">training_step_body() (FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE method)</a>
+      <li><a href="api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder.training_step_body">training_step_body() (FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder method)</a>
 
       <ul>
+        <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.training_step_body">(FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder method)</a>
+</li>
         <li><a href="api/FRAME_FM/utils/LightningModuleWrapper/index.html#FRAME_FM.utils.LightningModuleWrapper.BaseModule.training_step_body">(FRAME_FM.utils.LightningModuleWrapper.BaseModule method)</a>
 </li>
       </ul></li>
@@ -398,26 +563,38 @@
   </ul></td>
 </tr></table>
 
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.BaseEmbedder.untokenify">untokenify() (FRAME_FM.utils.embedders.BaseEmbedder method)</a>
+
+      <ul>
+        <li><a href="api/FRAME_FM/utils/embedders/index.html#FRAME_FM.utils.embedders.PatchEmbed.untokenify">(FRAME_FM.utils.embedders.PatchEmbed method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.val_acc">val_acc (FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE attribute)</a>
-</li>
       <li><a href="api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.val_dataloader">val_dataloader() (FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule method)</a>
 </li>
       <li><a href="api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.val_dataset">val_dataset (FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule attribute)</a>
 </li>
       <li><a href="api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.val_split">val_split (FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/FRAME_FM/utils/LightningDataModuleWrapper/index.html#FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule.val_transforms">val_transforms (FRAME_FM.utils.LightningDataModuleWrapper.BaseDataModule attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/FRAME_FM/utils/LightningModuleWrapper/index.html#FRAME_FM.utils.LightningModuleWrapper.BaseModule.validation_step">validation_step() (FRAME_FM.utils.LightningModuleWrapper.BaseModule method)</a>
 </li>
-      <li><a href="api/FRAME_FM/model_code/demo_EurosatModel/index.html#FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE.validation_step_body">validation_step_body() (FRAME_FM.model_code.demo_EurosatModel.BaselineConvAE method)</a>
+      <li><a href="api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder.validation_step_body">validation_step_body() (FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder method)</a>
 
       <ul>
+        <li><a href="api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.validation_step_body">(FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder method)</a>
+</li>
         <li><a href="api/FRAME_FM/utils/LightningModuleWrapper/index.html#FRAME_FM.utils.LightningModuleWrapper.BaseModule.validation_step_body">(FRAME_FM.utils.LightningModuleWrapper.BaseModule method)</a>
 </li>
       </ul></li>

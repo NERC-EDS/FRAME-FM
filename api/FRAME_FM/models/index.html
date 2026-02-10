@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FRAME_FM.model_code &mdash; FRAME-FM 0.0.0a documentation</title>
+  <title>FRAME_FM.models &mdash; FRAME-FM 0.0.0a documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d75fae25" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
@@ -18,12 +18,12 @@
       <link rel="stylesheet" type="text/css" href="../../../_static/dark_mode_css/dark.css?v=70edf1c7" />
 
   
-    <link rel="canonical" href="https://NERC-EDS.github.io/FRAME-FM/api/FRAME_FM/model_code/index.html" />
+    <link rel="canonical" href="https://NERC-EDS.github.io/FRAME-FM/api/FRAME_FM/models/index.html" />
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../../../_static/documentation_options.js?v=e8454e50"></script>
-      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
       <script src="../../../_static/copybutton.js?v=df1a032d"></script>
       <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
@@ -33,8 +33,8 @@
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="FRAME_FM.model_code.demo_EurosatModel" href="demo_EurosatModel/index.html" />
-    <link rel="prev" title="FRAME_FM.dataloaders.demo_EurosatDataloader" href="../dataloaders/demo_EurosatDataloader/index.html" /> 
+    <link rel="next" title="FRAME_FM.models.demo_autoencoder" href="demo_autoencoder/index.html" />
+    <link rel="prev" title="FRAME_FM.dataloaders.demo_eurosat" href="../dataloaders/demo_eurosat/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -61,9 +61,11 @@
 <li class="toctree-l1 current"><a class="reference internal" href="../../index.html">API Reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html">FRAME_FM</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../cli/index.html">FRAME_FM.cli</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../dataloaders/index.html">FRAME_FM.dataloaders</a></li>
-<li class="toctree-l4 current"><a class="current reference internal" href="#">FRAME_FM.model_code</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">FRAME_FM.models</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../training/index.html">FRAME_FM.training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../transforms/index.html">FRAME_FM.transforms</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../utils/index.html">FRAME_FM.utils</a></li>
 </ul>
 </li>
@@ -90,7 +92,7 @@
       <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../index.html">API Reference</a></li>
           <li class="breadcrumb-item"><a href="../index.html">FRAME_FM</a></li>
-      <li class="breadcrumb-item active">FRAME_FM.model_code</li>
+      <li class="breadcrumb-item active">FRAME_FM.models</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -99,13 +101,14 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-FRAME_FM.model_code">
-<span id="frame-fm-model-code"></span><h1>FRAME_FM.model_code<a class="headerlink" href="#module-FRAME_FM.model_code" title="Link to this heading"></a></h1>
+  <section id="module-FRAME_FM.models">
+<span id="frame-fm-models"></span><h1>FRAME_FM.models<a class="headerlink" href="#module-FRAME_FM.models" title="Link to this heading"></a></h1>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="demo_EurosatModel/index.html">FRAME_FM.model_code.demo_EurosatModel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo_autoencoder/index.html">FRAME_FM.models.demo_autoencoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mmmae/index.html">FRAME_FM.models.mmmae</a></li>
 </ul>
 </div>
 </section>
@@ -115,8 +118,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../dataloaders/demo_EurosatDataloader/index.html" class="btn btn-neutral float-left" title="FRAME_FM.dataloaders.demo_EurosatDataloader" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="demo_EurosatModel/index.html" class="btn btn-neutral float-right" title="FRAME_FM.model_code.demo_EurosatModel" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../dataloaders/demo_eurosat/index.html" class="btn btn-neutral float-left" title="FRAME_FM.dataloaders.demo_eurosat" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="demo_autoencoder/index.html" class="btn btn-neutral float-right" title="FRAME_FM.models.demo_autoencoder" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

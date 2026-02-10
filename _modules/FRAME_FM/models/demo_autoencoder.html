@@ -1,0 +1,330 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FRAME_FM.models.demo_autoencoder &mdash; FRAME-FM 0.0.0a documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d75fae25" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-codeautolink.css?v=b2176991" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=24f8de0c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/dark_mode_css/general.css?v=c0a7eb24" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/dark_mode_css/dark.css?v=70edf1c7" />
+
+  
+    <link rel="canonical" href="https://NERC-EDS.github.io/FRAME-FM/_modules/FRAME_FM/models/demo_autoencoder.html" />
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=e8454e50"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=df1a032d"></script>
+      <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script src="../../../_static/dark_mode_js/default_dark.js?v=fd565c74"></script>
+      <script src="../../../_static/dark_mode_js/theme_switcher.js?v=358d3910"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            FRAME-FM
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">FRAME-FM</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">FRAME_FM.models.demo_autoencoder</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for FRAME_FM.models.demo_autoencoder</h1><div class="highlight"><pre>
+<span></span><span class="c1"># src/FRAME_FM/model_code/demo_model.py</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">EuroSAT Autoencoder (torchvision EuroSAT friendly)</span>
+
+<span class="sd">This module defines a simple convolutional autoencoder intended for use with</span>
+<span class="sd">torchvision.datasets.EuroSAT and a dataloader that yields batches as:</span>
+
+<span class="sd">    batch = (x, y)</span>
+
+<span class="sd">where:</span>
+<span class="sd">  - x is a float Tensor of shape [B, C, H, W]</span>
+<span class="sd">  - y is the class label Tensor [B] (not used for reconstruction loss)</span>
+
+<span class="sd">Important:</span>
+<span class="sd">- Your transforms should convert PIL -&gt; Tensor (e.g., ToTensor()).</span>
+<span class="sd">- For this architecture, it&#39;s simplest to resize images to 64x64 so that</span>
+<span class="sd">  4x MaxPool(2) leads to a 4x4 spatial map.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">FRAME_FM.utils.LightningModuleWrapper</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModule</span>
+
+
+<div class="viewcode-block" id="EuroSATAutoencoder">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EuroSATAutoencoder</span><span class="p">(</span><span class="n">BaseModule</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convolutional autoencoder:</span>
+
+<span class="sd">        x -&gt; encoder -&gt; z -&gt; decoder -&gt; x_recon</span>
+
+<span class="sd">    Uses MSE reconstruction loss.</span>
+
+<span class="sd">    &gt; Thappitla, R.S., Villuri, V.G.K. &amp; Kumar, S. An autoencoder driven deep learning geospatial approach to flood vulnerability analysis</span>
+<span class="sd">      in the upper and middle basin of river Damodar. Sci Rep 15, 33741 (2025). https://doi.org/10.1038/s41598-025-96781-2</span>
+
+<span class="sd">    Hydra config (example):</span>
+<span class="sd">        _target_: FRAME_FM.model_code.demo_model.EuroSATAutoencoder</span>
+<span class="sd">        in_channels: 3</span>
+<span class="sd">        base_ch: 32</span>
+<span class="sd">        k_size: 5</span>
+<span class="sd">        latent_dim: 256</span>
+<span class="sd">        lr: 1e-3</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">base_ch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+        <span class="n">k_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="n">latent_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span>
+        <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            in_channels: Number of input channels (3 for RGB EuroSAT via torchvision).</span>
+<span class="sd">            base_ch: Base channel width for conv blocks.</span>
+<span class="sd">            k_size: Kernel size for convolutions.</span>
+<span class="sd">            latent_dim: Dimensionality of the latent vector z.</span>
+<span class="sd">            lr: Learning rate for Adam.</span>
+<span class="sd">            **kwargs: Ignored extra Hydra keys (keeps config flexible).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_hyperparameters</span><span class="p">()</span>
+
+        <span class="c1"># ---- Encoder ----</span>
+        <span class="c1"># Four downsampling steps: H,W -&gt; H/16,W/16 (64 -&gt; 4 if resized to 64)</span>
+        <span class="n">chs</span> <span class="o">=</span> <span class="p">[</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">base_ch</span><span class="p">,</span> <span class="n">base_ch</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">base_ch</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="n">base_ch</span> <span class="o">*</span> <span class="mi">8</span><span class="p">]</span>
+
+        <span class="n">pad</span> <span class="o">=</span> <span class="n">k_size</span> <span class="o">//</span> <span class="mi">2</span>
+
+<div class="viewcode-block" id="EuroSATAutoencoder.encoder">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder.encoder">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">chs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="n">k_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">pad</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">chs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="n">k_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">pad</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">chs</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="n">k_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">pad</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">chs</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="n">k_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">pad</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">4</span><span class="p">]),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
+
+        <span class="c1"># ---- Latent projection ----</span>
+        <span class="c1"># Assumes encoder output spatial size is 4x4 (e.g., input 64x64).</span>
+<div class="viewcode-block" id="EuroSATAutoencoder.to_latent">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder.to_latent">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_latent</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(),</span>                              <span class="c1"># [B, chs[4]*4*4]</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">),</span>      <span class="c1"># [B, latent_dim]</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EuroSATAutoencoder.from_latent">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder.from_latent">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">from_latent</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">latent_dim</span><span class="p">,</span> <span class="n">chs</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">*</span> <span class="mi">4</span><span class="p">),</span>      <span class="c1"># [B, chs[4]*4*4]</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Unflatten</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)),</span>            <span class="c1"># [B, chs[4], 4, 4]</span>
+        <span class="p">)</span></div>
+
+
+        <span class="c1"># ---- Decoder ----</span>
+<div class="viewcode-block" id="EuroSATAutoencoder.decoder">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder.decoder">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Upsample</span><span class="p">(</span><span class="n">scale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">),</span>  <span class="c1"># 4-&gt;8</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">chs</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="n">k_size</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">pad</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+
+            <span class="n">nn</span><span class="o">.</span><span class="n">Upsample</span><span class="p">(</span><span class="n">scale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">),</span>  <span class="c1"># 8-&gt;16</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">chs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="n">k_size</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">pad</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+
+            <span class="n">nn</span><span class="o">.</span><span class="n">Upsample</span><span class="p">(</span><span class="n">scale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">),</span>  <span class="c1"># 16-&gt;32</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">chs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="n">k_size</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">pad</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+
+            <span class="n">nn</span><span class="o">.</span><span class="n">Upsample</span><span class="p">(</span><span class="n">scale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">),</span>  <span class="c1"># 32-&gt;64</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">chs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="n">k_size</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">pad</span><span class="p">),</span>
+            <span class="c1"># No final activation: depends on how you normalize inputs.</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EuroSATAutoencoder.loss_fn">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder.loss_fn">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="EuroSATAutoencoder.forward">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            x: Tensor [B, C, H, W]</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            x_recon: Tensor [B, C, H, W]</span>
+<span class="sd">            z: Tensor [B, latent_dim]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_latent</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+        <span class="n">x_recon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">from_latent</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">x_recon</span><span class="p">,</span> <span class="n">z</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_shared_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">stage</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Shared step for train/val/test.</span>
+
+<span class="sd">        Expects torchvision-style batches: (x, y)</span>
+<span class="sd">        y is unused for the loss, but kept for compatibility/logging.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">batch</span>  <span class="c1"># torchvision EuroSAT returns (image, label)</span>
+        <span class="n">x_recon</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">(</span><span class="n">x_recon</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># Simple reconstruction metric: fraction of pixels close to target</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">recon_acc</span> <span class="o">=</span> <span class="p">((</span><span class="n">x_recon</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+        <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stage</span><span class="si">}</span><span class="s2">/loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stage</span><span class="si">}</span><span class="s2">/recon_acc&quot;</span><span class="p">:</span> <span class="n">recon_acc</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">logs</span>
+
+    <span class="c1"># BaseModule wrapper is expecting these *_step_body methods</span>
+<div class="viewcode-block" id="EuroSATAutoencoder.training_step_body">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder.training_step_body">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">training_step_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shared_step</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">stage</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EuroSATAutoencoder.validation_step_body">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder.validation_step_body">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validation_step_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shared_step</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">stage</span><span class="o">=</span><span class="s2">&quot;val&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EuroSATAutoencoder.test_step_body">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder.test_step_body">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_step_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shared_step</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">stage</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EuroSATAutoencoder.configure_optimizers">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_autoencoder/index.html#FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder.configure_optimizers">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="o">.</span><span class="n">lr</span><span class="p">))</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Adam Ward, National Oceanography Centre.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

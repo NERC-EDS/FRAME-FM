@@ -1,0 +1,472 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FRAME_FM.models.mmmae &mdash; FRAME-FM 0.0.0a documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d75fae25" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-codeautolink.css?v=b2176991" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=24f8de0c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/dark_mode_css/general.css?v=c0a7eb24" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/dark_mode_css/dark.css?v=70edf1c7" />
+
+  
+    <link rel="canonical" href="https://NERC-EDS.github.io/FRAME-FM/_modules/FRAME_FM/models/mmmae.html" />
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=e8454e50"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=df1a032d"></script>
+      <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script src="../../../_static/dark_mode_js/default_dark.js?v=fd565c74"></script>
+      <script src="../../../_static/dark_mode_js/theme_switcher.js?v=358d3910"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            FRAME-FM
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">FRAME-FM</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">FRAME_FM.models.mmmae</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for FRAME_FM.models.mmmae</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) Matt Arran.</span>
+
+<span class="c1"># This source code is adapted from code (c) Meta Platforms, Inc. and affiliates,</span>
+<span class="c1"># licensed under the license in the licences/LICENSE_MAE.txt file.</span>
+<span class="c1"># --------------------------------------------------------</span>
+<span class="c1"># References:</span>
+<span class="c1"># MAE: https://github.com/facebookresearch/mae/tree/main</span>
+<span class="c1"># timm: https://github.com/rwightman/pytorch-image-models/tree/master/timm</span>
+<span class="c1"># --------------------------------------------------------</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">timm.models.vision_transformer</span><span class="w"> </span><span class="kn">import</span> <span class="n">Block</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch</span><span class="w"> </span><span class="kn">import</span> <span class="n">nn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils.embedders</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseEmbedder</span><span class="p">,</span> <span class="n">PatchEmbed</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils.LightningModuleWrapper</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModule</span>
+
+
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MultimodalMaskedAutoencoder</span><span class="p">(</span><span class="n">BaseModule</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Masked Autoencoder with flexible multi-input embeddings and transformer backbone</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.input_embedders">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.input_embedders">[docs]</a>
+    <span class="n">input_embedders</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BaseEmbedder</span><span class="p">]</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">input_shapes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span>
+                 <span class="n">n_channels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+                 <span class="n">patch_shapes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span>
+                 <span class="n">encoder_embed_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+                 <span class="n">encoder_depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">24</span><span class="p">,</span>
+                 <span class="n">encoder_num_heads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+                 <span class="n">decoder_embed_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+                 <span class="n">decoder_depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+                 <span class="n">decoder_num_heads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+                 <span class="n">mlp_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">4.</span><span class="p">,</span>
+                 <span class="n">norm_layer</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">,</span>
+                 <span class="n">norm_token_loss</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="n">learning_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.e-3</span><span class="p">,</span>
+                 <span class="n">default_mask_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.75</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate Multimodal Masked Autoencoder</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input_shapes (list[tuple[int, ...]]): Shapes of each model input.</span>
+<span class="sd">            n_channels (list[int]): Numbers of channels in each model input.</span>
+<span class="sd">            patch_shapes (list[tuple[int, ...]]): Sizes of patches into which to divide each input.</span>
+<span class="sd">            encoder_embed_dim (int). Dimensions into which to embed each patch. Defaults to 16.</span>
+<span class="sd">            encoder_depth (int, optional): Number of attention layers for encoding. Defaults to 24.</span>
+<span class="sd">            encoder_num_heads (int, optional): Number of attention heads per layer. Defaults to 16.</span>
+<span class="sd">            decoder_embed_dim (int). Dimensions from which to reconstruct each patch. Defaults to 16.</span>
+<span class="sd">            decoder_depth (int, optional): Number of attention layers for decoding. Defaults to 8.</span>
+<span class="sd">            decoder_num_heads (int, optional): Number of attention heads per layer. Defaults to 16.</span>
+<span class="sd">            mlp_ratio (float, optional): Ratio of MLP and embedding dimensions in attention blocks.</span>
+<span class="sd">                Defaults to 4..</span>
+<span class="sd">            norm_layer (type[nn.LayerNorm], optional): Layer class for [en/de]coder normalisation.</span>
+<span class="sd">                Defaults to nn.LayerNorm.</span>
+<span class="sd">            norm_token_loss (bool, optional): Whether to variance-normalise per-token loss.</span>
+<span class="sd">                Defaults to False.</span>
+<span class="sd">            learning_rate (float): Initial learning rate for Adam optimizer. Defaults to 1.e-3.</span>
+<span class="sd">            default_mask_ratio (float): Default proportion of token embeddings to mask per batch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="c1"># --------------------------------------------------------------------------</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_embedders</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([</span>
+            <span class="n">PatchEmbed</span><span class="p">(</span>
+                <span class="n">input_shape</span><span class="p">,</span>
+                <span class="n">patch_shape</span><span class="p">,</span>
+                <span class="n">n_channel</span><span class="p">,</span>
+                <span class="n">encoder_embed_dim</span><span class="p">,</span>
+                <span class="n">decoder_embed_dim</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">input_shape</span><span class="p">,</span> <span class="n">patch_shape</span><span class="p">,</span> <span class="n">n_channel</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">input_shapes</span><span class="p">,</span> <span class="n">patch_shapes</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">)</span>
+        <span class="p">])</span>  <span class="c1"># type: ignore</span>
+
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.cls_token">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.cls_token">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cls_token</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">encoder_embed_dim</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.blocks">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.blocks">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blocks</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([</span>
+            <span class="n">Block</span><span class="p">(</span><span class="n">encoder_embed_dim</span><span class="p">,</span> <span class="n">encoder_num_heads</span><span class="p">,</span> <span class="n">mlp_ratio</span><span class="p">,</span>
+                  <span class="n">qkv_bias</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="n">norm_layer</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">encoder_depth</span><span class="p">)</span>
+            <span class="p">])</span></div>
+
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.norm">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.norm">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">norm_layer</span><span class="p">(</span><span class="n">encoder_embed_dim</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.decoder_embed">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.decoder_embed">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder_embed</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">encoder_embed_dim</span><span class="p">,</span> <span class="n">decoder_embed_dim</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.mask_token">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.mask_token">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask_token</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">decoder_embed_dim</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.decoder_blocks">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.decoder_blocks">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder_blocks</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([</span>
+            <span class="n">Block</span><span class="p">(</span><span class="n">decoder_embed_dim</span><span class="p">,</span> <span class="n">decoder_num_heads</span><span class="p">,</span> <span class="n">mlp_ratio</span><span class="p">,</span>
+                  <span class="n">qkv_bias</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="n">norm_layer</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">decoder_depth</span><span class="p">)</span>
+            <span class="p">])</span></div>
+
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.decoder_norm">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.decoder_norm">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder_norm</span> <span class="o">=</span> <span class="n">norm_layer</span><span class="p">(</span><span class="n">decoder_embed_dim</span><span class="p">)</span></div>
+
+        <span class="c1"># --------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.norm_token_loss">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.norm_token_loss">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm_token_loss</span> <span class="o">=</span> <span class="n">norm_token_loss</span></div>
+
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.learning_rate">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.learning_rate">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">learning_rate</span> <span class="o">=</span> <span class="n">learning_rate</span></div>
+
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.default_mask_ratio">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.default_mask_ratio">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_mask_ratio</span> <span class="o">=</span> <span class="n">default_mask_ratio</span></div>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize_weights</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.initialize_weights">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.initialize_weights">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">initialize_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise layer weights and parameters, including in input embedders.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># initialization</span>
+        <span class="k">for</span> <span class="n">input_embedder</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_embedders</span><span class="p">:</span>
+            <span class="n">input_embedder</span><span class="o">.</span><span class="n">initialize_weights</span><span class="p">()</span>
+        <span class="c1"># timm&#39;s trunc_normal_(std=.02) is effectively normal_(std=0.02) as cutoff is too big (2.)</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">normal_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cls_token</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">.02</span><span class="p">)</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">normal_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mask_token</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">.02</span><span class="p">)</span>
+
+        <span class="c1"># initialize nn.Linear and nn.LayerNorm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_init_weights</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">):</span>
+            <span class="c1"># we use xavier_uniform following official JAX ViT:</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">xavier_uniform_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">)</span> <span class="ow">and</span> <span class="n">m</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">constant_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">):</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">constant_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">constant_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.random_masking">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.random_masking">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">random_masking</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">mask_ratio</span><span class="p">:</span> <span class="nb">float</span>
+                       <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Shuffle batched token embeddings and mask random selection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): Batched token embeddings, shape [B, L, D].</span>
+<span class="sd">            mask_ratio (float): Proportion p of token embeddings to mask per batch.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[torch.Tensor, torch.Tensor, torch.Tensor]:</span>
+<span class="sd">             * Randomly selected token embeddings, shape [B, pL, D].</span>
+<span class="sd">             * Mask with 0 where token extracted, 1 otherwise, shape [B, L].</span>
+<span class="sd">             * IDs with which to restore original, unshuffled token embeddings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">B</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">D</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># batch, length, dim</span>
+        <span class="n">len_keep</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">L</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">mask_ratio</span><span class="p">))</span>
+
+        <span class="n">noise</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>  <span class="c1"># noise in [0, 1]</span>
+
+        <span class="c1"># sort noise for each sample</span>
+        <span class="n">ids_shuffle</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">noise</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># ascend: small is keep, large is remove</span>
+        <span class="n">ids_restore</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">ids_shuffle</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># keep the first subset</span>
+        <span class="n">ids_keep</span> <span class="o">=</span> <span class="n">ids_shuffle</span><span class="p">[:,</span> <span class="p">:</span><span class="n">len_keep</span><span class="p">]</span>
+        <span class="n">x_masked</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">ids_keep</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">D</span><span class="p">))</span>
+
+        <span class="c1"># generate the binary mask: 0 is keep, 1 is remove</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="n">B</span><span class="p">,</span> <span class="n">L</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">mask</span><span class="p">[:,</span> <span class="p">:</span><span class="n">len_keep</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># unshuffle to get the binary mask</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">ids_restore</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">x_masked</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">ids_restore</span></div>
+
+
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.forward_encoder">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.forward_encoder">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward_encoder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">mask_ratio</span><span class="p">:</span> <span class="nb">float</span>
+                        <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Tokenise and embed inputs, randomly mask tokens, and encode using a transformer.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (list[torch.Tensor]): Batched model inputs, for conversion by</span>
+<span class="sd">                input_embedders into token embeddings of shapes ([B, L_i, D])_i.</span>
+<span class="sd">            mask_ratio (float): Proportion p of token embeddings to mask per batch.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[torch.Tensor, torch.Tensor, torch.Tensor]:</span>
+<span class="sd">             * Encodings of randomly selected input embeddings, shape [B, 1 + (1-p)sum(L_i), D].</span>
+<span class="sd">             * Mask with 0 where token extracted, 1 otherwise, shape [B, sum(L_i)].</span>
+<span class="sd">             * IDs with which to restore original, unshuffled token embeddings, shape [B, sum(L_i)].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># embed patches</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">embed</span><span class="p">(</span><span class="n">inpt</span><span class="p">)</span> <span class="k">for</span> <span class="n">embed</span><span class="p">,</span> <span class="n">inpt</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_embedders</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># masking: length -&gt; length * mask_ratio</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">ids_restore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_masking</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mask_ratio</span><span class="p">)</span>
+
+        <span class="c1"># append cls token</span>
+        <span class="n">cls_token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cls_token</span>
+        <span class="n">cls_tokens</span> <span class="o">=</span> <span class="n">cls_token</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">cls_tokens</span><span class="p">,</span> <span class="n">x</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># apply Transformer blocks</span>
+        <span class="k">for</span> <span class="n">blk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocks</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">blk</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">ids_restore</span></div>
+
+
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.forward_decoder">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.forward_decoder">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward_decoder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">ids_restore</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+                        <span class="n">positions</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform encoding of masked inputs, decode using a transformer, and reconstruct tokens.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): Encodings of shuffled, masked tokens, shape [B, 1 + (1-p)L, D].</span>
+<span class="sd">            ids_restore (torch.Tensor): IDs with which to restore original, unshuffled encodings,</span>
+<span class="sd">                shape [B, L].</span>
+<span class="sd">            positions (Sequence[torch.Tensor | None]): List with token positions for each input,</span>
+<span class="sd">                if variable position embedding is implemented for that input, otherwise None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[torch.Tensor]: Decoded tokens for each input, as reconstructed by input_embedders,</span>
+<span class="sd">                shapes ([B, L_i, D_i])_i with sum(L_i) = L.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># embed tokens</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder_embed</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># append mask tokens to sequence, excluding cls token</span>
+        <span class="n">mask_tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_token</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ids_restore</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">x_</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">:],</span> <span class="n">mask_tokens</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># unshuffle</span>
+        <span class="n">x_</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">x_</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">ids_restore</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+        <span class="c1"># add pos embed</span>
+        <span class="n">x_</span> <span class="o">=</span> <span class="n">x_</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">ie</span><span class="o">.</span><span class="n">embed_pos</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span> <span class="k">for</span> <span class="n">ie</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_embedders</span><span class="p">,</span> <span class="n">positions</span><span class="p">)],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span>
+        <span class="c1"># append cls token</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">x_</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># apply Transformer blocks</span>
+        <span class="k">for</span> <span class="n">blk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder_blocks</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">blk</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder_norm</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># predictor projection</span>
+        <span class="n">preds</span><span class="p">,</span> <span class="n">start_patch</span> <span class="o">=</span> <span class="p">[],</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">embedder</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_embedders</span><span class="p">:</span>
+            <span class="n">end_patch</span> <span class="o">=</span> <span class="n">start_patch</span> <span class="o">+</span> <span class="n">embedder</span><span class="o">.</span><span class="n">n_patches</span>
+            <span class="n">preds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">embedder</span><span class="o">.</span><span class="n">reconstruct_tokens</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span> <span class="n">start_patch</span><span class="p">:</span><span class="n">end_patch</span><span class="p">]))</span>
+            <span class="n">start_patch</span> <span class="o">=</span> <span class="n">end_patch</span>
+
+        <span class="k">return</span> <span class="n">preds</span></div>
+
+
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.forward_loss">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.forward_loss">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">predictions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+                     <span class="n">mask</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate masked-token MSE between batched inputs and model predictions.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (list[torch.Tensor]):  Batched model inputs, for conversion by</span>
+<span class="sd">                input_embedders into tokens of shapes ([B, L_i, D_i])_i.</span>
+<span class="sd">            predictions (list[torch.Tensor]): Model predictions, shapes ([B, L_i, D_i])_i.</span>
+<span class="sd">            mask (torch.Tensor): Mask with 1 where token masked, shape [B, sum(L_i)].</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: Average mean squared error over the batch, shape [1].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">losses</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ie</span><span class="p">,</span> <span class="n">inpt</span><span class="p">,</span> <span class="n">prediction</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_embedders</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">predictions</span><span class="p">):</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">ie</span><span class="o">.</span><span class="n">tokenify</span><span class="p">(</span><span class="n">inpt</span><span class="p">)</span>
+            <span class="n">norm</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm_token_loss</span> <span class="k">else</span> <span class="mi">1</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">prediction</span> <span class="o">-</span> <span class="n">target</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">norm</span>
+            <span class="n">losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loss</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">losses</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">loss</span> <span class="o">*</span> <span class="n">mask</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">loss</span></div>
+
+
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.forward">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">mask_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.75</span>
+                <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply MMMAE to inputs and return the loss, predictions, and mask.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (list[torch.Tensor]): Batched model inputs.</span>
+<span class="sd">            mask_ratio (float, optional): Proportion of token embeddings to mask per batch.</span>
+<span class="sd">                Defaults to 0.75.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[torch.Tensor, list[torch.Tensor], torch.Tensor]:</span>
+<span class="sd">             * Mean squared error of model predictions, over masked tokens, shape [1].</span>
+<span class="sd">             * Model predictions of input tokens, shapes ([B, L_i, D_i])_i.</span>
+<span class="sd">             * Mask with 0 where token extracted, 1 otherwise, shape [B, sum(L_i)].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">positions</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">))]</span>
+        <span class="c1"># Positions not yet implemented</span>
+        <span class="n">latent</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">ids_restore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward_encoder</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">mask_ratio</span><span class="p">)</span>
+        <span class="n">preds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward_decoder</span><span class="p">(</span><span class="n">latent</span><span class="p">,</span> <span class="n">ids_restore</span><span class="p">,</span> <span class="n">positions</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward_loss</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">preds</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">preds</span><span class="p">,</span> <span class="n">mask</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sharedStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+        <span class="n">loss</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">mask_ratio</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">default_mask_ratio</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.training_step_body">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.training_step_body">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">training_step_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sharedStep</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.validation_step_body">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.validation_step_body">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validation_step_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sharedStep</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.test_step_body">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.test_step_body">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_step_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sharedStep</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MultimodalMaskedAutoencoder.configure_optimizers">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/mmmae/index.html#FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.configure_optimizers">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">learning_rate</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">optimizer</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Adam Ward, National Oceanography Centre.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
