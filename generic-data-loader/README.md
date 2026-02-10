@@ -2,6 +2,10 @@
 
 ## Overview
 
+Sometimes it's easiest to start with a picture:
+
+![Image of BIG Geo Dataset workflow](big_geo_dataset_overview.png)
+
 This is a design for a PyTorch implementation of data loaders that enables the 
 user to specify a recipe for loading large (TB scale) data subsets from multi-
 dimensional datasets typically held in NetCDF format (and/or other gridded 
@@ -50,3 +54,5 @@ cd generic-data-loader/
 export PYTHONPATH=.
 python main.py
 ```
+
+
