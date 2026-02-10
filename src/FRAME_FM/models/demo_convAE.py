@@ -29,7 +29,13 @@ class ConvAutoencoder(BaseModule):
 
     "Class for defining the AE, train and validation steps"
 
-    def __init__(self, in_channels: int=3, base_channels: int=32, kernel_size: int=3, latent_dim: int=256, lr=0e-3, weight_decay=1e-5):
+    def __init__(self, 
+                 in_channels: int=3, 
+                 base_channels: int=32, 
+                 kernel_size: int=3, 
+                 latent_dim: int=256, 
+                 lr=0e-3, 
+                 weight_decay=1e-5):
         super().__init__()  # stores config in self.hparams per as per wrapper convention -- no need to directly save here
 
         self.in_channels = in_channels
@@ -246,7 +252,13 @@ class ConvAutoencoder(BaseModule):
 # for this class the only change is tha the batch contains data values and coordinates
 # of grid cell centroids - has the same forward pas as ConvAutoencoder
 class ConvAutoencoderWithLocation(ConvAutoencoder):
-    def __init__(self, in_channels: int=3, base_channels: int=32, kernel_size: int=3, latent_dim: int=256, lr=0e-3, weight_decay=1e-5):
+    def __init__(self, 
+                in_channels: int=3, 
+                base_channels: int=32, 
+                kernel_size: int=3, 
+                latent_dim: int=256, 
+                lr=0e-3, 
+                weight_decay=1e-5):
         super().__init__(in_channels, base_channels, kernel_size, latent_dim)
         # Additional layers or modifications to incorporate location information
         # can be added here
@@ -277,21 +289,20 @@ class ConvAutoencoderWithLocation(ConvAutoencoder):
         return loss, logs
     
     def validation_step_body(self, batch, batch_idx):
-        
         x, coords = batch # input and coords - there must be a better way to call batch elements, perhaps calling them by pre-specified keys
         reconstructed, z = self(x) #self(x) is equivalent to self.forward(x)
 
         loss = self.loss_fn(reconstructed, x)
 
-        # Collect a capped sample of latents for plotting
-        if len(self.latent_buffer) < self.max_latents_per_epoch:
-            with torch.no_grad():
-                # Keep only as many as we can fit in the cap
-                remaining = self.max_latents_per_epoch - len(self.latent_buffer)
-                take = min(remaining, z.size(0))
-                z_take = z[:remaining].detach().cpu()
-                # self.latent_buffer.append(z_take)
-                # print(f"[val_step] collected={take}, total_so_far={sum(t.size(0) for t in self.latent_buffer)}")
+        # # Collect a capped sample of latents for plotting
+        # if len(self.latent_buffer) < self.max_latents_per_epoch:
+        #     with torch.no_grad():
+        #         # Keep only as many as we can fit in the cap
+        #         remaining = self.max_latents_per_epoch - len(self.latent_buffer)
+        #         take = min(remaining, z.size(0))
+        #         z_take = z[:remaining].detach().cpu()
+        #         # self.latent_buffer.append(z_take)
+        #         # print(f"[val_step] collected={take}, total_so_far={sum(t.size(0) for t in self.latent_buffer)}")
                 
         # Collect a single batch of the input and output per epoch for visualisation
         if len(self.input_tile_buffer) == 0 and len(self.reconstructed_tile_buffer) == 0:

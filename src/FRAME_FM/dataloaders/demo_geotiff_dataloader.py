@@ -1,19 +1,13 @@
 import matplotlib
+from sqlalchemy import exists
 matplotlib.use("Agg") #Ensure a non-interactive Matplotlib backend
 import matplotlib.pyplot as plt
 import os
-import sys
 import torch
-# import pytorch_lightning as pl
-# import xarray as xr
 import rioxarray as rxr
 from typing import Optional, Any
 import pyproj
 
-
-# add src to python path
-sys.path.append(os.path.abspath(os.path.join(os.getcwd(), 'src')))
-print("Python path:", sys.path)
 
 from FRAME_FM.utils.LightningDataModuleWrapper import BaseDataModule
 from FRAME_FM.datasets.InputOnly_Dataset import TransformedInputDataset, TransformedInputCoordsDataset
@@ -114,23 +108,38 @@ class XarrayStaticDataModule(BaseDataModule):
         )
 
 
-class XarrayFromConfig(BaseDataModule):
-    def __init__(self, config) -> None:
+class XarrayStaticWCoordsData(BaseDataModule):
+    def __init__(
+            self,
+            data_root: str ,
+            batch_size: int = 32,
+            num_workers: int = 4,
+            pin_memory: bool = True,
+            persistent_workers: bool = False,
+            train_split: float = 0.85,
+            val_split: float = 0.15,
+            test_split: float = 0.0,
+            split_strategy: str = "fraction",
+            train_transforms: Optional[callable] = None,
+            val_transforms: Optional[callable] = None,
+            test_transforms: Optional[callable] = None,
+            tile_size: int = 256,
+        ) -> None:
         super().__init__(
-            data_root=config.data_root,
-            batch_size=config.batch_size,
-            num_workers=config.num_workers,
-            pin_memory=config.pin_memory,
-            persistent_workers=config.persistent_workers,
-            train_split=config.train_split,
-            val_split=config.val_split,
-            test_split=config.test_split,
-            split_strategy=config.split_strategy,
-            train_transforms=config.train_transforms,
-            val_transforms=config.val_transforms,
-            test_transforms=config.test_transforms,
+            data_root=data_root,
+            batch_size=batch_size,
+            num_workers=num_workers,
+            pin_memory=pin_memory,
+            persistent_workers=persistent_workers,
+            train_split=train_split,
+            val_split=val_split,
+            test_split=test_split,
+            split_strategy=split_strategy,
+            train_transforms=train_transforms,
+            val_transforms=val_transforms,
+            test_transforms=test_transforms,
         )
-        self.tile_size = config.tile_size
+        self.tile_size = tile_size
     
     def _load_raw_data(self):
         # currently reading a single file
@@ -157,6 +166,7 @@ class XarrayFromConfig(BaseDataModule):
         tile_coords = self._get_tile_coords(tile_values)
         # to tensor
         tile_values = torch.tensor(tile_values.values, dtype=torch.float32)
+        tile_coords = torch.tensor(tile_coords, dtype=torch.float32)
         batch_ready = list(zip(tile_values, tile_coords))
         # split into subsets
         split_datasets = self._split_dataset(batch_ready)
@@ -185,8 +195,8 @@ class XarrayFromConfig(BaseDataModule):
         x_centroids = tile_stack.x_coarse + self.tile_size // 2
         y_centroids = tile_stack.y_coarse + self.tile_size // 2
         # convert to lat/lon if the dataset has a CRS (Coordinate Reference System) defined
-        if 'crs' in tile_stack.attrs:
-            crs = tile_stack.attrs['crs']
+        if tile_stack.rio.crs is not None:
+            crs = tile_stack.rio.crs
             transformer = pyproj.Transformer.from_crs(crs, target_crs, always_xy=True)
             lon_centroids, lat_centroids = transformer.transform(x_centroids.values, y_centroids.values)
             return list(zip(lon_centroids, lat_centroids))
@@ -198,7 +208,7 @@ def main():
     PLot example batches and try creating the data module.
     Currently not using hydra.
     """
-    Plotting = True
+    Plotting = False
     Debug = True
     fig_path = "./experiments/figures/"
     os.makedirs(fig_path, exist_ok=True)
@@ -251,14 +261,14 @@ def main():
     
     # try initializing the dataloader
     tile_size = 128
-    data_module = XarrayStaticDataModule(data_root=geotiff_path, tile_size=tile_size)
+    data_module = XarrayStaticWCoordsData(data_root=geotiff_path, tile_size=tile_size)
     data_module.setup() 
     if Debug:
         print(f"Train dataset length: {len(data_module.train_dataset)}. Data type: {type(data_module.train_dataset)}")
         print(f"Validation dataset length: {len(data_module.val_dataset)}. Data type: {type(data_module.val_dataset)}")
         first_item = data_module.train_dataset[0]
-        print(first_item) # making sure it is a tensor not a tuple
-        print(f"First item shape (should be nBands, tile_size, tile_size): {first_item.shape}")
+        print(first_item) # if input only it will be a tensor, if it inclues coordinates it will be a tuple of (tensor, coordinates)
+        print(f"First item shape (should be nBands, tile_size, tile_size): {first_item[0].shape}")
         if data_module.test_dataset is not None:
             print(f"Test dataset length: {len(data_module.test_dataset)}. Data type: {type(data_module.test_dataset)}")
     

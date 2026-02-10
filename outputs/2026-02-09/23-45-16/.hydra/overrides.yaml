@@ -1,4 +1,0 @@
-- model=convAE
-- data=land_cover_map
-- trainer=convAE_trainer
-- logging=mlflow_land_cover
