@@ -26,3 +26,22 @@ class TransformedInputDataset(Dataset):
         if self.transform is not None:
             tile = self.transform(tile)
         return tile
+    
+class TransformedInputCoordsDataset(Dataset):
+    """
+    This class applies to input only in the dataset that also passes grid tile coordinates.
+
+    """
+
+    def __init__(self, base: Dataset, transform: Optional[Any] = None) -> None:
+        self.base = base
+        self.transform = transform
+
+    def __len__(self) -> int:
+        return len(self.base)
+
+    def __getitem__(self, idx: int):
+        tile, coordinates = self.base[idx] # expected dimensions are (C x H x W) or (T x C x H x W)
+        if self.transform is not None:
+            tile = self.transform(tile)
+        return tile, coordinates

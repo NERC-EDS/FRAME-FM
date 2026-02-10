@@ -8,6 +8,7 @@ import torch
 # import xarray as xr
 import rioxarray as rxr
 from typing import Optional, Any
+import pyproj
 
 
 # add src to python path
@@ -15,7 +16,7 @@ sys.path.append(os.path.abspath(os.path.join(os.getcwd(), 'src')))
 print("Python path:", sys.path)
 
 from FRAME_FM.utils.LightningDataModuleWrapper import BaseDataModule
-from FRAME_FM.datasets.InputOnly_Dataset import TransformedInputDataset
+from FRAME_FM.datasets.InputOnly_Dataset import TransformedInputDataset, TransformedInputCoordsDataset
 
 class XarrayStaticDataModule(BaseDataModule):
     '''
@@ -111,7 +112,86 @@ class XarrayStaticDataModule(BaseDataModule):
             if test_base is not None
             else None
         )
+
+
+class XarrayFromConfig(BaseDataModule):
+    def __init__(self, config) -> None:
+        super().__init__(
+            data_root=config.data_root,
+            batch_size=config.batch_size,
+            num_workers=config.num_workers,
+            pin_memory=config.pin_memory,
+            persistent_workers=config.persistent_workers,
+            train_split=config.train_split,
+            val_split=config.val_split,
+            test_split=config.test_split,
+            split_strategy=config.split_strategy,
+            train_transforms=config.train_transforms,
+            val_transforms=config.val_transforms,
+            test_transforms=config.test_transforms,
+        )
+        self.tile_size = config.tile_size
+    
+    def _load_raw_data(self):
+        # currently reading a single file
+        ds = rxr.open_rasterio(self.data_root)
+        return ds
+    
+    def _create_datasets(self, stage: Optional[str] = None) -> None:
         
+        """
+        Reads the DataArray from attributes, tiles it, gets tile centroids,
+        converts to lat/lon if CRS defined, and outputs a dataset of (tile, coordinates) tuples.
+        """
+        array = self._raw_data
+        _, nY, nX = array.shape
+        # sanity check
+        if nY < self.tile_size or nX < self.tile_size:
+            raise ValueError(f"DataArray is smaller than minimal tile size required for encoding: {self.tile_size}x{self.tile_size}")
+        # tile
+        tiles = array.coarsen(x=self.tile_size, y=self.tile_size, boundary='pad').construct(x=("x_coarse", "x_fine"), y=("y_coarse", "y_fine"))
+        # stack tiles
+        stacked_tiles = tiles.stack(batch_dim=("x_coarse", "y_coarse"))
+        tile_values = stacked_tiles.transpose("batch_dim", "band", "y_fine", "x_fine")
+        # get coordinates for each tile
+        tile_coords = self._get_tile_coords(tile_values)
+        # to tensor
+        tile_values = torch.tensor(tile_values.values, dtype=torch.float32)
+        batch_ready = list(zip(tile_values, tile_coords))
+        # split into subsets
+        split_datasets = self._split_dataset(batch_ready)
+        # transform datasets
+        train_base, val_base, test_base = split_datasets
+        self.train_dataset = TransformedInputCoordsDataset(
+            train_base,
+            transform=self.train_transforms,
+        )
+        self.val_dataset = TransformedInputCoordsDataset(
+            val_base,
+            transform=self.val_transforms,
+        )
+        # test_base may be None if no test split configured
+        self.test_dataset = (
+            TransformedInputCoordsDataset(
+                test_base, 
+                transform=self.test_transforms)
+            if test_base is not None
+            else None
+        )
+        
+    def _get_tile_coords(self, tile_stack, target_crs="EPSG:4326"):
+        # is this correct level of abstraction?
+        # get centroid coordinates for each tile
+        x_centroids = tile_stack.x_coarse + self.tile_size // 2
+        y_centroids = tile_stack.y_coarse + self.tile_size // 2
+        # convert to lat/lon if the dataset has a CRS (Coordinate Reference System) defined
+        if 'crs' in tile_stack.attrs:
+            crs = tile_stack.attrs['crs']
+            transformer = pyproj.Transformer.from_crs(crs, target_crs, always_xy=True)
+            lon_centroids, lat_centroids = transformer.transform(x_centroids.values, y_centroids.values)
+            return list(zip(lon_centroids, lat_centroids))
+        else:
+            raise ValueError("CRS not defined in dataset attributes, cannot convert to lat/lon")
 
 def main():
     """ 

@@ -1,0 +1,14 @@
+artifact_uri: file:///gws/ssde/j25b/eds_ai/frame-fm/users/akadobgs/FRAME-FM/outputs/2026-02-09/23-45-16/mlruns/919460998118013571/a16f1c0f70a3450e8531c976fc3a738d/artifacts
+end_time: 1770682855262
+entry_point_name: ''
+experiment_id: '919460998118013571'
+lifecycle_stage: active
+run_id: a16f1c0f70a3450e8531c976fc3a738d
+run_name: land_cover_convae
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1770680719485
+status: 3
+tags: []
+user_id: akadobgs

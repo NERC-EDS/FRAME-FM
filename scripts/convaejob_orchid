@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --job-name="ConvAE train"
 #SBATCH --time=2:00:00
-#SBATCH --mem=16G
-#SBATCH --account=orchid
+#SBATCH --mem=4G
 #SBATCH --partition=orchid
+#SBATCH --account=orchid
 #SBATCH --qos=orchid
 #SBATCH --gres=gpu:1
 #SBATCH -o %j.out
@@ -12,4 +12,4 @@
 # executable
 source .venv/bin/activate
 export PYTHONPATH="$PWD/src:$PYTHONPATH" # this is necessary at the moment because baseline modules are in src/
-python experiments/demo_convAE_train.py # not sure if it need hydra config location as an argument
+python src/FRAME_FM/training/train.py model=convAE data=land_cover_map trainer=convAE_trainer logging=mlflow_land_cover

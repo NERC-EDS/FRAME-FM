@@ -5,13 +5,12 @@ _target_: FRAME_FM.models.demo_convAE.ConvAutoencoder
 in_channels: 10         # currently set up only for 10-band land cover map
 base_channels: 32       # maps to chs[0] in the first layer of the encoder
 kernel_size: 3          # kernel size for all convolutional layers; currently set to 3 to maintain spatial dimensions across layers (with padding=1)
-latent_dim: 256         # dimension of the latent space
+latent_dim: 1024         # dimension of the latent space
 
 
 # Optimisation hyperparameters
 lr: 1e-3
 weight_decay: 1e-5
+  
 
-# Optional
-num_classes: 17    
 

@@ -13,13 +13,13 @@ train_split: 0.85
 val_split: 0.15
 test_split: 0.0
 
-# Explicit indices not used here (fractions take over)
-train_indices: null
-val_indices: null
-test_indices: null
+# # Explicit indices not used here (fractions take over)
+# train_indices: null
+# val_indices: null
+# test_indices: null
 
 # Tile size for tiling the input data (if applicable)
-tile_size: 64
+tile_size: 32
 
 # --- Transforms: config-driven, per split ---
 
