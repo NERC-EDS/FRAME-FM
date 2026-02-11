@@ -7,15 +7,6 @@ from omegaconf import DictConfig
 from hydra.utils import instantiate
 import os
 
-# # add src to python path
-# import sys
-# sys.path.append(os.path.abspath(os.path.join(os.getcwd(), 'src')))
-
-from FRAME_FM.training.logger import (
-    create_mlflow_logger,
-)  # used via config instantiation
-
-
 @hydra_main(version_base=None, config_path="../../../configs", config_name="config")
 def main(cfg: DictConfig) -> None:
     # Ensure reproducibility
