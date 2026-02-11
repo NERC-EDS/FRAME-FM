@@ -1,7 +1,7 @@
 # configs/config.yaml
 defaults:
-  - data: eurosat
-  - model: EuroSATConvAE
+  - data: demo_eurosat
+  - model: demo_autoencoder
   - trainer: default
   - logging: mlflow
   - _self_
