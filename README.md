@@ -1,3 +1,8 @@
+![ChatGPT](https://img.shields.io/badge/chatGPT-74aa9c?style=for-the-badge&logo=openai&logoColor=white) ![GitHub Copilot](https://img.shields.io/badge/github_copilot-8957E5?style=for-the-badge&logo=github-copilot&logoColor=white)
+! Disclaimer: Some parts of this repo were generated with assistance from AI tools, such as ChatGPT and GitHub Copilot. All generated content has been reviewed for accuracy and relevance to the project.
+----
+
+
 # FRAME-FM
 **Framework for the Rapid development of Environmental Foundation Models**
 
