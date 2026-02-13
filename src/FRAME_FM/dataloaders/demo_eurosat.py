@@ -46,7 +46,7 @@ class EuroSATDataModule(BaseDataModule):
         Load the full EuroSAT dataset once, with no transform.
         Split and per-split transforms are handled later.
         """
-        return EuroSAT(root=self.data_root, download=False, transform=None)
+        return EuroSAT(root=self.data_root, download=False)
 
     def _create_datasets(self, stage: Optional[str] = None) -> None:
         """
@@ -86,4 +86,4 @@ class EuroSAT100DataModule(EuroSATDataModule):
 
     def _load_raw_data(self) -> Any:
         """Load the full EuroSAT100 dataset once, with no transform."""
-        return EuroSAT100(root=self.data_root, download=False, transform=None)
+        return EuroSAT100(root=self.data_root, download=False)
