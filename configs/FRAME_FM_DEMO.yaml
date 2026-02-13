@@ -5,11 +5,12 @@
 defaults:
   - data: MVP_EuroSAT100
   - model: DEMO-AE-EuroSAT100-FullSpectrum-S.yaml
-  - trainer: default
-  - logging: demo_mlflow 
+  - trainer: DEMO-Trainer.yaml
+  - logging: DEMO-mlflow_EuroSAT100.yaml
   - _self_
 
 seed: 42
+run_test: true  # flag for evaluating on test set after training
 
 hydra:
   run:

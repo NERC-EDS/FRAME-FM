@@ -6,6 +6,7 @@ from hydra import main as hydra_main
 from omegaconf import DictConfig
 from hydra.utils import instantiate
 
+
 @hydra_main(version_base=None, config_path="../../../configs", config_name="config")
 def main(cfg: DictConfig) -> None:
     # Ensure reproducibility
@@ -27,7 +28,7 @@ def main(cfg: DictConfig) -> None:
     trainer.fit(model, datamodule=datamodule)
 
     # Optional: test after training
-    if hasattr(cfg.trainer, "run_test") and cfg.trainer.run_test:
+    if cfg.get("run_test", False):
         trainer.test(model, datamodule=datamodule)
 
 
