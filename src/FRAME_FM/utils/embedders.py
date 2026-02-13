@@ -22,56 +22,53 @@ _conv_dim_dict: dict[int, type[torch.nn.modules.conv._ConvNd]] = {
     }
 
 
-def get_nd_sincos_pos_embed(
-        embed_dim: int,
-        grid_shape: tuple[int, ...],
-        cls_token: bool = False,
-        ) -> np.ndarray:
-    """Create a sin-cos embedding of positions on an n-dimensional grid.
-
-    Args:
-        embed_dim (int): Number of dimensions into which to embed grid positions.
-        grid_shape (Tuple[int, ...]): Shape of grid for which to create an embedding.
-        cls_token (bool, optional): Whether to add a whole-input class token. Defaults to False.
-
-    Returns:
-        np.ndarray: Array with each row the sin-cos embedding of a grid position.
-    """
-    # Divide sin and cos embeddings according to size of grid in each dimension
-    embed_dims = np.round(
-        [embed_dim // 2 * grid_s / sum(grid_shape) for grid_s in grid_shape]
-        ).astype(int)
-    embed_dims[embed_dims.argmin()] += embed_dim // 2 - embed_dims.sum()
-
-    grid = np.meshgrid(*[
-        np.arange(grid_s, dtype=np.float32) for grid_s in grid_shape
-        ])  # len(grid_shape)-tuple of np.arrays of shape grid_shape
-    embedding = np.concatenate([
-        sincos_embed_coords(dim, coords.flatten()) for dim, coords in zip(embed_dims, grid)
-        ], axis=1)  # np.array of shape (prod(grid_shape), 2 * sum(sin_embed_dims))
-    if cls_token:
-        embedding = np.concatenate([np.zeros([1, 2 * sum(embed_dims)]), embedding], axis=0)
-    return embedding
-
-
 def sincos_embed_coords(
-        embed_dim: int, coordinates: np.ndarray, max_period: int = 10000
-        ) -> np.ndarray:
+        embed_dim: int, coordinates: torch.Tensor, max_period: float = 10000
+        ) -> torch.Tensor:
     """Create a sin-cos embedding of an array of 1D coordinates.
 
     Args:
         embed_dim (int): Number of dimensions in which to embed coordinates.
-        coordinates (np.ndarray): Coordinates to embed.
+        coordinates (torch.Tensor): Coordinates to embed.
         max_period (int, optional): Maximum sin-cos period. Defaults to 10000.
 
     Returns:
-        np.ndarray: Array with each row the sin-cos embedding of a coordinate.
+        torch.Tensor: Array with each row the sin-cos embedding of a coordinate.
     """
-    omega = 2 * np.pi / max_period**np.linspace(0, 1, embed_dim, dtype=float)  # (D,)
-    out = np.einsum('m,d->md', coordinates, omega)  # (M, D), outer product
-    sin_embedding = np.sin(out)  # (M, D)
-    cos_embedding = np.cos(out)  # (M, D)
-    return np.concatenate([sin_embedding, cos_embedding], axis=1)  # (M, 2D)
+    omega = 2 * np.pi / max_period**torch.linspace(0, 1, embed_dim)  # (D,)
+    phases = torch.einsum('m,d->md', coordinates, omega)  # (M, D), outer product
+    sin_embedding = torch.sin(phases)  # (M, D)
+    cos_embedding = torch.cos(phases)  # (M, D)
+    return torch.cat([sin_embedding, cos_embedding], dim=1)  # (M, 2D)
+
+
+def get_nd_sincos_grid_embed(
+        embed_dim: int,
+        grid_shape: tuple[int, ...],
+        ) -> torch.Tensor:
+    """Create a sin-cos embedding of positions on an n-dimensional grid.
+
+    Args:
+        embed_dim (int): Number of dimensions into which to embed grid positions.
+        grid_shape (tuple[int, ...]): Shape of grid for which to create an embedding.
+
+    Returns:
+        torch.Tensor: Array with each row the sin-cos embedding of a grid position.
+    """
+    # Divide sin and cos embeddings according to size of grid in each dimension
+    sin_embed_dims = np.round(
+        [embed_dim // 2 * grid_s / sum(grid_shape) for grid_s in grid_shape]
+        ).astype(int)
+    sin_embed_dims[sin_embed_dims.argmin()] += embed_dim // 2 - sin_embed_dims.sum()
+    # Define grid: len(grid_shape)-tuple of np.arrays of shape grid_shape
+    grid = torch.meshgrid([
+        torch.arange(grid_s, dtype=torch.float32) for grid_s in grid_shape
+        ], indexing='ij')
+    # Create sincos embedding: np.array of shape (prod(grid_shape), 2 * sum(sin_embed_dims))
+    embedding = torch.cat([
+        sincos_embed_coords(dim, coords.flatten()) for dim, coords in zip(sin_embed_dims, grid)
+        ], dim=1)
+    return embedding
 
 
 def _count_patches(input_shape, patch_shape):
@@ -92,9 +89,6 @@ class BaseEmbedder(torch.nn.Module):
         raise NotImplementedError
 
     def forward(self, inpt: torch.Tensor) -> torch.Tensor:
-        raise NotImplementedError
-
-    def embed_pos(self, pos: torch.Tensor | None) -> torch.Tensor:
         raise NotImplementedError
 
     def reconstruct_tokens(self, embedding: torch.Tensor) -> torch.Tensor:
@@ -145,17 +139,11 @@ class PatchEmbed(BaseEmbedder):
             bias=bias,
             **conv_kwargs
             )
-        self.pos_embed = torch.nn.Parameter(
-            torch.zeros(1, self.n_patches, embed_dim), requires_grad=False
-            )  # fixed sin-cos embedding
         if norm_layer is None:
             self.norm = torch.nn.Identity()
         else:
             self.norm = norm_layer(embed_dim)
         self.reconstruct_dim = reconstruct_dim
-        self.decoder_pos_embed = torch.nn.Parameter(
-            torch.zeros(1, self.n_patches, reconstruct_dim), requires_grad=False
-            )  # fixed sin-cos embedding
         self.reconstruct_layer = torch.nn.Linear(
             reconstruct_dim, prod(patch_shape) * n_channels, bias=True
             )
@@ -164,15 +152,14 @@ class PatchEmbed(BaseEmbedder):
         """Set up embedder weights and parameters.
         """
         # define fixed sin-cos embeddings of patch position within image
-        pos_embed = get_nd_sincos_pos_embed(
-            self.embed_dim, self.grid_shape, cls_token=False
+        pos_embed = get_nd_sincos_grid_embed(self.embed_dim, self.grid_shape)
+        self.pos_embed = torch.nn.Parameter(
+            pos_embed.float().unsqueeze(0), requires_grad=False
             )
-        self.pos_embed.data.copy_(torch.from_numpy(pos_embed).float().unsqueeze(0))
-        decoder_pos_embed = get_nd_sincos_pos_embed(
-            self.reconstruct_dim, self.grid_shape, cls_token=False
+        decoder_pos_embed = get_nd_sincos_grid_embed(self.embed_dim, self.grid_shape)
+        self.decoder_pos_embed = torch.nn.Parameter(
+            decoder_pos_embed.float().unsqueeze(0), requires_grad=False
             )
-        self.decoder_pos_embed.data.copy_(torch.from_numpy(decoder_pos_embed).float().unsqueeze(0))
-
         # initialize projection like nn.Linear (instead of nn.Conv2d)
         w = self.proj.weight.data
         torch.nn.init.xavier_uniform_(w.view([w.shape[0], -1]))
@@ -251,7 +238,7 @@ class PatchEmbed(BaseEmbedder):
         # (N, C, H h, W w) for 2D patches
         return imgs
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """Convert batched input n-D images into sequences of patch embeddings.
 
         Shapes are given for the example of a batch of B, C-channel 2D images,
@@ -261,7 +248,9 @@ class PatchEmbed(BaseEmbedder):
             x (torch.Tensor): Batched sequence of images, shape e.g. [B, C, Hh, Ww].
 
         Returns:
-            torch.Tensor: Batched sequences of embeddings, shape e.g. [B, HW, D]
+            tuple[torch.Tensor, torch.Tensor]:
+                * Batched sequences of embeddings, shape e.g. [B, HW, D]
+                * Batched sequences of positions, shape e.g. [B, HW, D]
         """
         for dim, (s_actual, s_expected) in enumerate(zip(x.shape[2:], self.input_shape)):
             torch._assert(
@@ -272,12 +261,7 @@ class PatchEmbed(BaseEmbedder):
         x = x.flatten(start_dim=2).transpose(1, 2)  # (B, D, H, W) -> (B, HW, D) for 2D patches
         x = self.norm(x)
         x = x + self.pos_embed
-        return x
-
-    def embed_pos(self, pos: torch.Tensor | None) -> torch.Tensor:
-        """Return fixed embedding of patch positions into reconstruction space.
-        """
-        return self.decoder_pos_embed
+        return x, self.decoder_pos_embed
 
     def reconstruct_tokens(self, x: torch.Tensor) -> torch.Tensor:
         """Reconstruct patch tokens from an embedding.

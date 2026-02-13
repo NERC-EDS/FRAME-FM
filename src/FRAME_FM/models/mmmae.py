@@ -11,7 +11,6 @@
 from timm.models.vision_transformer import Block
 import torch
 from torch import nn
-from typing import Sequence
 
 from ..utils.embedders import BaseEmbedder, PatchEmbed
 from ..utils.LightningModuleWrapper import BaseModule
@@ -151,7 +150,7 @@ class MultimodalMaskedAutoencoder(BaseModule):
         return x_masked, mask, ids_restore
 
     def forward_encoder(self, inputs: list[torch.Tensor], mask_ratio: float
-                        ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+                        ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """Tokenise and embed inputs, randomly mask tokens, and encode using a transformer.
 
         Args:
@@ -162,11 +161,18 @@ class MultimodalMaskedAutoencoder(BaseModule):
         Returns:
             tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
              * Encodings of randomly selected input embeddings, shape [B, 1 + (1-p)sum(L_i), D].
+             * Batched position embeddings for decoder, shape [B, sum(L_i), D_d]
              * Mask with 0 where token extracted, 1 otherwise, shape [B, sum(L_i)].
              * IDs with which to restore original, unshuffled token embeddings, shape [B, sum(L_i)].
         """
-        # embed patches
-        x = torch.cat([embed(inpt) for embed, inpt in zip(self.input_embedders, inputs)], dim=1)
+        # embed inputs and positions
+        x, pos_embed = [], []
+        for embed, inpt in zip(self.input_embedders, inputs):
+            embedding, decoder_pos_embedding = embed(inpt)
+            x.append(embedding)
+            pos_embed.append(decoder_pos_embedding)
+        x = torch.cat(x, dim=1)
+        pos_embed = torch.cat(pos_embed, dim=1)
 
         # masking: length -> length * mask_ratio
         x, mask, ids_restore = self.random_masking(x, mask_ratio)
@@ -181,35 +187,31 @@ class MultimodalMaskedAutoencoder(BaseModule):
             x = blk(x)
         x = self.norm(x)
 
-        return x, mask, ids_restore
+        return x, pos_embed, mask, ids_restore
 
     def forward_decoder(self, x: torch.Tensor, ids_restore: torch.Tensor,
-                        positions: Sequence[torch.Tensor | None]) -> list[torch.Tensor]:
+                        pos_embed: torch.Tensor) -> list[torch.Tensor]:
         """Transform encoding of masked inputs, decode using a transformer, and reconstruct tokens.
 
         Args:
             x (torch.Tensor): Encodings of shuffled, masked tokens, shape [B, 1 + (1-p)L, D].
             ids_restore (torch.Tensor): IDs with which to restore original, unshuffled encodings,
                 shape [B, L].
-            positions (Sequence[torch.Tensor | None]): List with token positions for each input,
-                if variable position embedding is implemented for that input, otherwise None.
+            pos_embed (torch.Tensor): Encodings of input positions, shape [B, L, D_d]
 
         Returns:
             list[torch.Tensor]: Decoded tokens for each input, as reconstructed by input_embedders,
                 shapes ([B, L_i, D_i])_i with sum(L_i) = L.
         """
-        # embed tokens
+        # embed latent representation in decoder space
         x = self.decoder_embed(x)
-
         # append mask tokens to sequence, excluding cls token
         mask_tokens = self.mask_token.repeat(x.shape[0], ids_restore.shape[1] + 1 - x.shape[1], 1)
         x_ = torch.cat([x[:, 1:, :], mask_tokens], dim=1)
         # unshuffle
         x_ = torch.gather(x_, dim=1, index=ids_restore.unsqueeze(-1).repeat(1, 1, x.shape[2]))
-        # add pos embed
-        x_ = x_ + torch.cat(
-            [ie.embed_pos(pos) for ie, pos in zip(self.input_embedders, positions)], dim=1
-            )
+        # add position embedding
+        x_ = x_ + pos_embed
         # append cls token
         x = torch.cat([x[:, :1, :], x_], dim=1)
 
@@ -266,10 +268,9 @@ class MultimodalMaskedAutoencoder(BaseModule):
              * Model predictions of input tokens, shapes ([B, L_i, D_i])_i.
              * Mask with 0 where token extracted, 1 otherwise, shape [B, sum(L_i)].
         """
-        positions = [None for _ in range(len(inputs))]
         # Positions not yet implemented
-        latent, mask, ids_restore = self.forward_encoder(inputs, mask_ratio)
-        preds = self.forward_decoder(latent, ids_restore, positions)
+        latent, pos_embed, mask, ids_restore = self.forward_encoder(inputs, mask_ratio)
+        preds = self.forward_decoder(latent, ids_restore, pos_embed)
         loss = self.forward_loss(inputs, preds, mask)
         return loss, preds, mask
 
