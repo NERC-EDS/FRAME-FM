@@ -2,7 +2,7 @@
 _target_: FRAME_FM.models.demo_autoencoder.EuroSATAutoencoder
 
 # Architecture
-in_channels: 3          # RGB Bands
+in_channels: 13          # Full Spectrum Bands
 base_ch: 32              # renamed from base_channels
 k_size: 5                # kernel size (default was 5)
 latent_dim: 256
