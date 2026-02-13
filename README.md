@@ -78,7 +78,10 @@ OR you can install all sources using the `data` extra;
 uv sync --extra data
 ```
 
-
+## 4. Activate the virtual environment
+```bash
+source .venv/bin/activate
+```
 
 
 ---
