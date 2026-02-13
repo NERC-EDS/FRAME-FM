@@ -24,6 +24,13 @@ def main(cfg: DictConfig) -> None:
     # Instantiate PL Trainer
     trainer = instantiate(cfg.trainer, logger=logger)
 
+    # Output some debug info about the model and data (optional)
+    print(f"Model instantiated: {model.__class__.__name__}")
+    print(f"DataModule instantiated: {datamodule.__class__.__name__}")
+    print(f"Trainer instantiated: {trainer.__class__.__name__}")
+    if logger is not None:
+        print(f"Logger instantiated: {logger.__class__.__name__}")
+
     # Train
     trainer.fit(model, datamodule=datamodule)
 
