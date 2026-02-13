@@ -1,0 +1,410 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FRAME_FM.dataloaders.demo_geotiff_dataloader &mdash; FRAME-FM 0.0.0a documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d75fae25" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-codeautolink.css?v=b2176991" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=24f8de0c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/dark_mode_css/general.css?v=c0a7eb24" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/dark_mode_css/dark.css?v=70edf1c7" />
+
+  
+    <link rel="canonical" href="https://NERC-EDS.github.io/FRAME-FM/_modules/FRAME_FM/dataloaders/demo_geotiff_dataloader.html" />
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=e8454e50"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=df1a032d"></script>
+      <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script src="../../../_static/dark_mode_js/default_dark.js?v=fd565c74"></script>
+      <script src="../../../_static/dark_mode_js/theme_switcher.js?v=358d3910"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            FRAME-FM
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">FRAME-FM</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">FRAME_FM.dataloaders.demo_geotiff_dataloader</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for FRAME_FM.dataloaders.demo_geotiff_dataloader</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sqlalchemy</span><span class="w"> </span><span class="kn">import</span> <span class="n">exists</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s2">&quot;Agg&quot;</span><span class="p">)</span> <span class="c1">#Ensure a non-interactive Matplotlib backend</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">rioxarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rxr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyproj</span>
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">FRAME_FM.utils.LightningDataModuleWrapper</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseDataModule</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">FRAME_FM.datasets.InputOnly_Dataset</span><span class="w"> </span><span class="kn">import</span> <span class="n">TransformedInputDataset</span><span class="p">,</span> <span class="n">TransformedInputCoordsDataset</span>
+
+<div class="viewcode-block" id="XarrayStaticDataModule">
+<a class="viewcode-back" href="../../../api/FRAME_FM/dataloaders/demo_geotiff_dataloader/index.html#FRAME_FM.dataloaders.demo_geotiff_dataloader.XarrayStaticDataModule">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">XarrayStaticDataModule</span><span class="p">(</span><span class="n">BaseDataModule</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    A simple DataModule for loading static data from geotiff files using xarray.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data_root</span><span class="p">:</span> <span class="nb">str</span> <span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">pin_memory</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">persistent_workers</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">train_split</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.85</span><span class="p">,</span>
+        <span class="n">val_split</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.15</span><span class="p">,</span>
+        <span class="n">test_split</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">split_strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;fraction&quot;</span><span class="p">,</span>
+        <span class="n">train_transforms</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">val_transforms</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">test_transforms</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tile_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">data_root</span><span class="o">=</span><span class="n">data_root</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
+            <span class="n">pin_memory</span><span class="o">=</span><span class="n">pin_memory</span><span class="p">,</span>
+            <span class="n">persistent_workers</span><span class="o">=</span><span class="n">persistent_workers</span><span class="p">,</span>
+            <span class="n">train_split</span><span class="o">=</span><span class="n">train_split</span><span class="p">,</span>
+            <span class="n">val_split</span><span class="o">=</span><span class="n">val_split</span><span class="p">,</span>
+            <span class="n">test_split</span><span class="o">=</span><span class="n">test_split</span><span class="p">,</span>
+            <span class="n">split_strategy</span><span class="o">=</span><span class="n">split_strategy</span><span class="p">,</span>
+            <span class="n">train_transforms</span><span class="o">=</span><span class="n">train_transforms</span><span class="p">,</span>
+            <span class="n">val_transforms</span><span class="o">=</span><span class="n">val_transforms</span><span class="p">,</span>
+            <span class="n">test_transforms</span><span class="o">=</span><span class="n">test_transforms</span><span class="p">,</span>
+        <span class="p">)</span>
+<div class="viewcode-block" id="XarrayStaticDataModule.tile_size">
+<a class="viewcode-back" href="../../../api/FRAME_FM/dataloaders/demo_geotiff_dataloader/index.html#FRAME_FM.dataloaders.demo_geotiff_dataloader.XarrayStaticDataModule.tile_size">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span> <span class="o">=</span> <span class="n">tile_size</span></div>
+
+
+    <span class="c1"># def __len__(self):</span>
+    <span class="c1">#     return len(self.ar[self.batch_dim])</span>
+
+    <span class="c1"># def __getitem__(self, idx):</span>
+    <span class="c1">#     return self.ar[{self.batch_dim: idx}].values</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_raw_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># currently reading a single file</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">rxr</span><span class="o">.</span><span class="n">open_rasterio</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_root</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ds</span>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads the DataArray from the attributes, tiles it into patches along x</span>
+<span class="sd">        and y axis, and outputs stacked tiles. This dataset contains only</span>
+<span class="sd">        inputs to b</span>
+<span class="sd">        </span>
+<span class="sd">        AK: the tiling in this way does not preserve relative positions of</span>
+<span class="sd">        tiles, so for the exrension to multiple layers the bands need to be</span>
+<span class="sd">        stacked first, then tiled.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_data</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">nY</span><span class="p">,</span> <span class="n">nX</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span>
+        <span class="c1"># sanity check</span>
+        <span class="k">if</span> <span class="n">nY</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span> <span class="ow">or</span> <span class="n">nX</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DataArray is smaller than minimal tile size required for encoding: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># tile</span>
+        <span class="n">tiles</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">coarsen</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="p">,</span> <span class="n">boundary</span><span class="o">=</span><span class="s1">&#39;pad&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">construct</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;x_coarse&quot;</span><span class="p">,</span> <span class="s2">&quot;x_fine&quot;</span><span class="p">),</span> <span class="n">y</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;y_coarse&quot;</span><span class="p">,</span> <span class="s2">&quot;y_fine&quot;</span><span class="p">))</span>
+        <span class="c1"># stack</span>
+        <span class="n">stacked_tiles</span> <span class="o">=</span> <span class="n">tiles</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">batch_dim</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;x_coarse&quot;</span><span class="p">,</span> <span class="s2">&quot;y_coarse&quot;</span><span class="p">))</span>
+        <span class="c1">## THIS WILL CHANGE</span>
+        <span class="c1"># replace nans with zeros (if any - this is required for latent space visualization, otherwise the PCA will fail)</span>
+        <span class="n">stacked_tiles</span> <span class="o">=</span> <span class="n">stacked_tiles</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># transpose to have batch dim first</span>
+        <span class="n">batch_ready</span> <span class="o">=</span> <span class="n">stacked_tiles</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="s2">&quot;batch_dim&quot;</span><span class="p">,</span> <span class="s2">&quot;band&quot;</span><span class="p">,</span> <span class="s2">&quot;y_fine&quot;</span><span class="p">,</span> <span class="s2">&quot;x_fine&quot;</span><span class="p">)</span>
+        <span class="c1"># to tensor</span>
+        <span class="n">batch_ready</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">batch_ready</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="c1"># split into subsets</span>
+        <span class="n">split_datasets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_dataset</span><span class="p">(</span><span class="n">batch_ready</span><span class="p">)</span>
+        <span class="c1"># transform datasets</span>
+        <span class="n">train_base</span><span class="p">,</span> <span class="n">val_base</span><span class="p">,</span> <span class="n">test_base</span> <span class="o">=</span> <span class="n">split_datasets</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_dataset</span> <span class="o">=</span> <span class="n">TransformedInputDataset</span><span class="p">(</span>
+            <span class="n">train_base</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">train_transforms</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val_dataset</span> <span class="o">=</span> <span class="n">TransformedInputDataset</span><span class="p">(</span>
+            <span class="n">val_base</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">val_transforms</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># test_base may be None if no test split configured</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_dataset</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">TransformedInputDataset</span><span class="p">(</span>
+                <span class="n">test_base</span><span class="p">,</span> 
+                <span class="n">transform</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_transforms</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">test_base</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="kc">None</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="XarrayStaticWCoordsData">
+<a class="viewcode-back" href="../../../api/FRAME_FM/dataloaders/demo_geotiff_dataloader/index.html#FRAME_FM.dataloaders.demo_geotiff_dataloader.XarrayStaticWCoordsData">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">XarrayStaticWCoordsData</span><span class="p">(</span><span class="n">BaseDataModule</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">data_root</span><span class="p">:</span> <span class="nb">str</span> <span class="p">,</span>
+            <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+            <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+            <span class="n">pin_memory</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="n">persistent_workers</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="n">train_split</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.85</span><span class="p">,</span>
+            <span class="n">val_split</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.15</span><span class="p">,</span>
+            <span class="n">test_split</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="n">split_strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;fraction&quot;</span><span class="p">,</span>
+            <span class="n">train_transforms</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">val_transforms</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">test_transforms</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">tile_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">data_root</span><span class="o">=</span><span class="n">data_root</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
+            <span class="n">pin_memory</span><span class="o">=</span><span class="n">pin_memory</span><span class="p">,</span>
+            <span class="n">persistent_workers</span><span class="o">=</span><span class="n">persistent_workers</span><span class="p">,</span>
+            <span class="n">train_split</span><span class="o">=</span><span class="n">train_split</span><span class="p">,</span>
+            <span class="n">val_split</span><span class="o">=</span><span class="n">val_split</span><span class="p">,</span>
+            <span class="n">test_split</span><span class="o">=</span><span class="n">test_split</span><span class="p">,</span>
+            <span class="n">split_strategy</span><span class="o">=</span><span class="n">split_strategy</span><span class="p">,</span>
+            <span class="n">train_transforms</span><span class="o">=</span><span class="n">train_transforms</span><span class="p">,</span>
+            <span class="n">val_transforms</span><span class="o">=</span><span class="n">val_transforms</span><span class="p">,</span>
+            <span class="n">test_transforms</span><span class="o">=</span><span class="n">test_transforms</span><span class="p">,</span>
+        <span class="p">)</span>
+<div class="viewcode-block" id="XarrayStaticWCoordsData.tile_size">
+<a class="viewcode-back" href="../../../api/FRAME_FM/dataloaders/demo_geotiff_dataloader/index.html#FRAME_FM.dataloaders.demo_geotiff_dataloader.XarrayStaticWCoordsData.tile_size">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span> <span class="o">=</span> <span class="n">tile_size</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_raw_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># currently reading a single file</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">rxr</span><span class="o">.</span><span class="n">open_rasterio</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_root</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ds</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads the DataArray from attributes, tiles it, gets tile centroids,</span>
+<span class="sd">        converts to lat/lon if CRS defined, and outputs a dataset of (tile, coordinates) tuples.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_data</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">nY</span><span class="p">,</span> <span class="n">nX</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span>
+        <span class="c1"># sanity check</span>
+        <span class="k">if</span> <span class="n">nY</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span> <span class="ow">or</span> <span class="n">nX</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DataArray is smaller than minimal tile size required for encoding: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># tile</span>
+        <span class="n">tiles</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">coarsen</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="p">,</span> <span class="n">boundary</span><span class="o">=</span><span class="s1">&#39;pad&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">construct</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;x_coarse&quot;</span><span class="p">,</span> <span class="s2">&quot;x_fine&quot;</span><span class="p">),</span> <span class="n">y</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;y_coarse&quot;</span><span class="p">,</span> <span class="s2">&quot;y_fine&quot;</span><span class="p">))</span>
+        <span class="c1"># stack tiles</span>
+        <span class="n">stacked_tiles</span> <span class="o">=</span> <span class="n">tiles</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">batch_dim</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;x_coarse&quot;</span><span class="p">,</span> <span class="s2">&quot;y_coarse&quot;</span><span class="p">))</span>
+        <span class="n">tile_values</span> <span class="o">=</span> <span class="n">stacked_tiles</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="s2">&quot;batch_dim&quot;</span><span class="p">,</span> <span class="s2">&quot;band&quot;</span><span class="p">,</span> <span class="s2">&quot;y_fine&quot;</span><span class="p">,</span> <span class="s2">&quot;x_fine&quot;</span><span class="p">)</span>
+        <span class="c1"># get coordinates for each tile</span>
+        <span class="n">tile_coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tile_coords</span><span class="p">(</span><span class="n">tile_values</span><span class="p">)</span>
+        <span class="c1"># to tensor</span>
+        <span class="n">tile_values</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">tile_values</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">tile_coords</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">tile_coords</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">batch_ready</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">tile_values</span><span class="p">,</span> <span class="n">tile_coords</span><span class="p">))</span>
+        <span class="c1"># split into subsets</span>
+        <span class="n">split_datasets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_dataset</span><span class="p">(</span><span class="n">batch_ready</span><span class="p">)</span>
+        <span class="c1"># transform datasets</span>
+        <span class="n">train_base</span><span class="p">,</span> <span class="n">val_base</span><span class="p">,</span> <span class="n">test_base</span> <span class="o">=</span> <span class="n">split_datasets</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_dataset</span> <span class="o">=</span> <span class="n">TransformedInputCoordsDataset</span><span class="p">(</span>
+            <span class="n">train_base</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">train_transforms</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val_dataset</span> <span class="o">=</span> <span class="n">TransformedInputCoordsDataset</span><span class="p">(</span>
+            <span class="n">val_base</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">val_transforms</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># test_base may be None if no test split configured</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_dataset</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">TransformedInputCoordsDataset</span><span class="p">(</span>
+                <span class="n">test_base</span><span class="p">,</span> 
+                <span class="n">transform</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_transforms</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">test_base</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="kc">None</span>
+        <span class="p">)</span>
+        
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_tile_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tile_stack</span><span class="p">,</span> <span class="n">target_crs</span><span class="o">=</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">):</span>
+        <span class="c1"># is this correct level of abstraction?</span>
+        <span class="c1"># get centroid coordinates for each tile</span>
+        <span class="n">x_centroids</span> <span class="o">=</span> <span class="n">tile_stack</span><span class="o">.</span><span class="n">x_coarse</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">y_centroids</span> <span class="o">=</span> <span class="n">tile_stack</span><span class="o">.</span><span class="n">y_coarse</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="c1"># convert to lat/lon if the dataset has a CRS (Coordinate Reference System) defined</span>
+        <span class="k">if</span> <span class="n">tile_stack</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">crs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">crs</span> <span class="o">=</span> <span class="n">tile_stack</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">crs</span>
+            <span class="n">transformer</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">crs</span><span class="p">,</span> <span class="n">target_crs</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">lon_centroids</span><span class="p">,</span> <span class="n">lat_centroids</span> <span class="o">=</span> <span class="n">transformer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">x_centroids</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">y_centroids</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">lon_centroids</span><span class="p">,</span> <span class="n">lat_centroids</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;CRS not defined in dataset attributes, cannot convert to lat/lon&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../../../api/FRAME_FM/dataloaders/demo_geotiff_dataloader/index.html#FRAME_FM.dataloaders.demo_geotiff_dataloader.main">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    PLot example batches and try creating the data module.</span>
+<span class="sd">    Currently not using hydra.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Plotting</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">Debug</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">fig_path</span> <span class="o">=</span> <span class="s2">&quot;./experiments/figures/&quot;</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">fig_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># example usage</span>
+    <span class="n">geotiff_path</span> <span class="o">=</span> <span class="s2">&quot;/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/land_cover_map_2015/data/LCM2015_GB_1km_percent_cover_aggregate_class.tif&quot;</span>
+    <span class="n">geotiff_da</span> <span class="o">=</span> <span class="n">rxr</span><span class="o">.</span><span class="n">open_rasterio</span><span class="p">(</span><span class="n">geotiff_path</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">Plotting</span><span class="p">:</span>
+        <span class="c1"># see what the values are...</span>
+        <span class="n">nBands</span><span class="p">,</span> <span class="n">nY</span><span class="p">,</span> <span class="n">nX</span> <span class="o">=</span> <span class="n">geotiff_da</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">nBands</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">iBand</span> <span class="ow">in</span> <span class="n">geotiff_da</span><span class="o">.</span><span class="n">band</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">iBand</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="n">geotiff_da</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="n">iBand</span><span class="p">)</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="c1"># flip updown</span>
+            <span class="n">temp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Band </span><span class="si">{</span><span class="n">iBand</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">collections</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">colorbar</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">right</span><span class="o">=</span><span class="mf">0.85</span><span class="p">)</span>
+        <span class="n">cbar_ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">([</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">])</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="n">geotiff_da</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">vmax</span><span class="o">=</span><span class="n">geotiff_da</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        <span class="c1"># dummy mappable for colorbar</span>
+        <span class="n">sm</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">ScalarMappable</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;viridis&quot;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">)</span>
+        <span class="n">sm</span><span class="o">.</span><span class="n">set_array</span><span class="p">([])</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">sm</span><span class="p">,</span> <span class="n">cax</span><span class="o">=</span><span class="n">cbar_ax</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Cover Percentage&quot;</span><span class="p">)</span>
+        <span class="c1"># fig.tight_layout()</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fig_path</span><span class="p">,</span> <span class="s2">&quot;geotiff_bands.png&quot;</span><span class="p">))</span>
+        <span class="c1"># ^ this is meant to be in percentages of 10 aggregate classes</span>
+
+    
+    <span class="c1">#tile the dataarray into patches using coarsen (from https://docs.xarray.dev/en/stable/user-guide/reshaping.html)</span>
+    <span class="n">tiles</span> <span class="o">=</span> <span class="n">geotiff_da</span><span class="o">.</span><span class="n">coarsen</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">70</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">130</span><span class="p">,</span> <span class="n">boundary</span><span class="o">=</span><span class="s1">&#39;pad&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">construct</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;x_coarse&quot;</span><span class="p">,</span> <span class="s2">&quot;x_fine&quot;</span><span class="p">),</span> <span class="n">y</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;y_coarse&quot;</span><span class="p">,</span> <span class="s2">&quot;y_fine&quot;</span><span class="p">))</span> 
+    <span class="k">if</span> <span class="n">Debug</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Tiled array shape:&quot;</span><span class="p">,</span> <span class="n">tiles</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="c1"># expected shape of the above is (nBands, y_coarse, y_tile_dim, x_coarse, x_tile_dim)</span>
+    <span class="k">if</span> <span class="n">Plotting</span><span class="p">:</span>
+        <span class="n">iBand</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="c1"># plot for the first band only</span>
+        <span class="n">tiles</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="n">band</span><span class="o">=</span><span class="n">iBand</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s2">&quot;x_fine&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;y_fine&quot;</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="s2">&quot;x_coarse&quot;</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="s2">&quot;y_coarse&quot;</span><span class="p">,</span> <span class="n">yincrease</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fig_path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;tiling_results_on_band_</span><span class="si">{</span><span class="n">iBand</span><span class="si">}</span><span class="s2">.png&quot;</span><span class="p">))</span>
+    
+    <span class="c1"># Stack tiles with fine dimenstion</span>
+    <span class="n">stacked_tiles</span> <span class="o">=</span> <span class="n">tiles</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">batch_dim</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;x_coarse&quot;</span><span class="p">,</span> <span class="s2">&quot;y_coarse&quot;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">Debug</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Stacked tiles shape:&quot;</span><span class="p">,</span> <span class="n">stacked_tiles</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+         <span class="c1"># expected shape of the above is (nBands,  y_tile_dim, x_tile_dim, y_coarse * x_coarse)</span>
+  
+    
+    <span class="c1"># try initializing the dataloader</span>
+    <span class="n">tile_size</span> <span class="o">=</span> <span class="mi">128</span>
+    <span class="n">data_module</span> <span class="o">=</span> <span class="n">XarrayStaticWCoordsData</span><span class="p">(</span><span class="n">data_root</span><span class="o">=</span><span class="n">geotiff_path</span><span class="p">,</span> <span class="n">tile_size</span><span class="o">=</span><span class="n">tile_size</span><span class="p">)</span>
+    <span class="n">data_module</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span> 
+    <span class="k">if</span> <span class="n">Debug</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Train dataset length: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data_module</span><span class="o">.</span><span class="n">train_dataset</span><span class="p">)</span><span class="si">}</span><span class="s2">. Data type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">data_module</span><span class="o">.</span><span class="n">train_dataset</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Validation dataset length: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data_module</span><span class="o">.</span><span class="n">val_dataset</span><span class="p">)</span><span class="si">}</span><span class="s2">. Data type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">data_module</span><span class="o">.</span><span class="n">val_dataset</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">first_item</span> <span class="o">=</span> <span class="n">data_module</span><span class="o">.</span><span class="n">train_dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">first_item</span><span class="p">)</span> <span class="c1"># if input only it will be a tensor, if it inclues coordinates it will be a tuple of (tensor, coordinates)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;First item shape (should be nBands, tile_size, tile_size): </span><span class="si">{</span><span class="n">first_item</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data_module</span><span class="o">.</span><span class="n">test_dataset</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Test dataset length: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data_module</span><span class="o">.</span><span class="n">test_dataset</span><span class="p">)</span><span class="si">}</span><span class="s2">. Data type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">data_module</span><span class="o">.</span><span class="n">test_dataset</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="n">train_loader</span> <span class="o">=</span> <span class="n">data_module</span><span class="o">.</span><span class="n">train_dataloader</span><span class="p">()</span>
+    <span class="n">val_loader</span> <span class="o">=</span> <span class="n">data_module</span><span class="o">.</span><span class="n">val_dataloader</span><span class="p">()</span>
+    <span class="k">return</span> <span class="kc">None</span>      </div>
+
+    
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Adam Ward, National Oceanography Centre.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

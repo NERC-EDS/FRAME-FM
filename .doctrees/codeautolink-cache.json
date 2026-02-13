@@ -1,6 +1,7 @@
 {
   "api/FRAME_FM/cli/index": [],
   "api/FRAME_FM/dataloaders/demo_eurosat/index": [],
+  "api/FRAME_FM/dataloaders/demo_geotiff_dataloader/index": [],
   "api/FRAME_FM/dataloaders/index": [],
   "api/FRAME_FM/index": [],
   "api/FRAME_FM/models/demo_autoencoder/index": [
@@ -29,6 +30,34 @@
         ]
       },
       "doc_lineno": 202
+    }
+  ],
+  "api/FRAME_FM/models/demo_convAE/index": [
+    {
+      "source": "lr_scheduler_config = {\n    # REQUIRED: The scheduler instance\n    \"scheduler\": lr_scheduler,\n    # The unit of the scheduler's step size, could also be 'step'.\n    # 'epoch' updates the scheduler on epoch end whereas 'step'\n    # updates it after a optimizer update.\n    \"interval\": \"epoch\",\n    # How many epochs/steps should pass between calls to\n    # `scheduler.step()`. 1 corresponds to updating the learning\n    # rate after every epoch/step.\n    \"frequency\": 1,\n    # Metric to monitor for schedulers like `ReduceLROnPlateau`\n    \"monitor\": \"val_loss\",\n    # If set to `True`, will enforce that the value specified 'monitor'\n    # is available when the scheduler is updated, thus stopping\n    # training if not found. If set to `False`, it will only produce a warning\n    \"strict\": True,\n    # If using the `LearningRateMonitor` callback to monitor the\n    # learning rate progress, this keyword can be used to specify\n    # a custom logged name\n    \"name\": None,\n}",
+      "names": [],
+      "example": {
+        "document": "api/FRAME_FM/models/demo_convAE/index",
+        "ref_id": "module-contents",
+        "headings": [
+          "FRAME_FM.models.demo_convAE",
+          "Module Contents"
+        ]
+      },
+      "doc_lineno": 236
+    },
+    {
+      "source": "# The ReduceLROnPlateau scheduler requires a monitor\ndef configure_optimizers(self):\n    optimizer = Adam(...)\n    return {\n        \"optimizer\": optimizer,\n        \"lr_scheduler\": {\n            \"scheduler\": ReduceLROnPlateau(optimizer, ...),\n            \"monitor\": \"metric_to_track\",\n            \"frequency\": \"indicates how often the metric is updated\",\n            # If \"monitor\" references validation metrics, then \"frequency\" should be set to a\n            # multiple of \"trainer.check_val_every_n_epoch\".\n        },\n    }\n\n# In the case of two optimizers, only one using the ReduceLROnPlateau scheduler\ndef configure_optimizers(self):\n    optimizer1 = Adam(...)\n    optimizer2 = SGD(...)\n    scheduler1 = ReduceLROnPlateau(optimizer1, ...)\n    scheduler2 = LambdaLR(optimizer2, ...)\n    return (\n        {\n            \"optimizer\": optimizer1,\n            \"lr_scheduler\": {\n                \"scheduler\": scheduler1,\n                \"monitor\": \"metric_to_track\",\n            },\n        },\n        {\"optimizer\": optimizer2, \"lr_scheduler\": scheduler2},\n    )",
+      "names": [],
+      "example": {
+        "document": "api/FRAME_FM/models/demo_convAE/index",
+        "ref_id": "module-contents",
+        "headings": [
+          "FRAME_FM.models.demo_convAE",
+          "Module Contents"
+        ]
+      },
+      "doc_lineno": 266
     }
   ],
   "api/FRAME_FM/models/index": [],
@@ -61,6 +90,7 @@
     }
   ],
   "api/FRAME_FM/training/index": [],
+  "api/FRAME_FM/training/logger/index": [],
   "api/FRAME_FM/training/logging_utils/index": [],
   "api/FRAME_FM/training/train/index": [],
   "api/FRAME_FM/transforms/index": [],
@@ -94,6 +124,7 @@
   ],
   "api/FRAME_FM/utils/index": [],
   "api/ImageLabel_Dataset/index": [],
+  "api/InputOnly_Dataset/index": [],
   "api/index": [],
   "index": []
 }

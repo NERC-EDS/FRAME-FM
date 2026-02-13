@@ -1,0 +1,511 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FRAME_FM.models.demo_convAE &mdash; FRAME-FM 0.0.0a documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d75fae25" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-codeautolink.css?v=b2176991" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=24f8de0c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/dark_mode_css/general.css?v=c0a7eb24" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/dark_mode_css/dark.css?v=70edf1c7" />
+
+  
+    <link rel="canonical" href="https://NERC-EDS.github.io/FRAME-FM/_modules/FRAME_FM/models/demo_convAE.html" />
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=e8454e50"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=df1a032d"></script>
+      <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script src="../../../_static/dark_mode_js/default_dark.js?v=fd565c74"></script>
+      <script src="../../../_static/dark_mode_js/theme_switcher.js?v=358d3910"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            FRAME-FM
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">FRAME-FM</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">FRAME_FM.models.demo_convAE</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for FRAME_FM.models.demo_convAE</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This demo shows the application of convolutional autoencoder to a stack of</span>
+<span class="sd">geospatial tiles. Two classes are defined - ConvAutoencoder and</span>
+<span class="sd">ConvAutoencoderWithLocation. Bof have the same forward method</span>
+<span class="sd">The first one takes only the tile data as input, while the second one also takes</span>
+<span class="sd">the coordinates of the tile centroids for potential use in aligning data from</span>
+<span class="sd">different sources. &quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s2">&quot;Agg&quot;</span><span class="p">)</span> <span class="c1">#Ensure a non-interactive Matplotlib backend</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hydra</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">omegaconf</span><span class="w"> </span><span class="kn">import</span> <span class="n">DictConfig</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.optim</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">optim</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pytorch_lightning</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">random_split</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">mlflow</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">mlflow.pytorch</span>
+
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">FRAME_FM.utils.LightningModuleWrapper</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModule</span>
+
+
+<div class="viewcode-block" id="ConvAutoencoder">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoder">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConvAutoencoder</span><span class="p">(</span><span class="n">BaseModule</span><span class="p">):</span>
+
+    <span class="s2">&quot;Class for defining the AE, train and validation steps&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                 <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> 
+                 <span class="n">base_channels</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> 
+                 <span class="n">kernel_size</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> 
+                 <span class="n">latent_dim</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> 
+                 <span class="n">lr</span><span class="o">=</span><span class="mf">0e-3</span><span class="p">,</span> 
+                 <span class="n">weight_decay</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>  <span class="c1"># stores config in self.hparams per as per wrapper convention -- no need to directly save here</span>
+
+<div class="viewcode-block" id="ConvAutoencoder.in_channels">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoder.in_channels">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span> <span class="o">=</span> <span class="n">in_channels</span></div>
+
+<div class="viewcode-block" id="ConvAutoencoder.base_ch">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoder.base_ch">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_ch</span>     <span class="o">=</span> <span class="n">base_channels</span></div>
+
+<div class="viewcode-block" id="ConvAutoencoder.k_size">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoder.k_size">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k_size</span>      <span class="o">=</span> <span class="n">kernel_size</span></div>
+
+<div class="viewcode-block" id="ConvAutoencoder.latent_dim">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoder.latent_dim">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">latent_dim</span>  <span class="o">=</span> <span class="n">latent_dim</span></div>
+
+
+        <span class="c1">#These are to store per epoch vectors from latent space, input tiles and reconstructed tiles for plotting and visualisation at the end of each epoch</span>
+<div class="viewcode-block" id="ConvAutoencoder.latent_buffer">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoder.latent_buffer">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">latent_buffer</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="ConvAutoencoder.input_tile_buffer">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoder.input_tile_buffer">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_tile_buffer</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="ConvAutoencoder.reconstructed_tile_buffer">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoder.reconstructed_tile_buffer">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reconstructed_tile_buffer</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="ConvAutoencoder.max_latents_per_epoch">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoder.max_latents_per_epoch">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_latents_per_epoch</span> <span class="o">=</span> <span class="mi">2000</span>  </div>
+
+
+        <span class="c1">#Number of channels</span>
+        <span class="n">chs</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_ch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_ch</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_ch</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_ch</span> <span class="o">*</span> <span class="mi">8</span><span class="p">]</span>
+
+        <span class="c1">#Encoder</span>
+        <span class="c1"># input =  [batch_size, chs[0], W, H] #Batch, InChannel, Width, Height; Expected input size (B, InChannel, 64, 64)</span>
+<div class="viewcode-block" id="ConvAutoencoder.encoder">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoder.encoder">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">chs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">chs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">k_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="c1"># Output - (B, 32, W, H)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="c1"># Normalise each output to smoothen the loss plot wrt parameters - loss will converge better #output shape unchanged as above</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="c1"># Activation, shape unchanged</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span> <span class="c1">#Reduces feature maps by taking the max value in each region, output shape is (B, 32, 32, 32)</span>
+            
+            <span class="c1">#Layer 2 (B, 32, 32, 32) --&gt; (B, 64, 16,16)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">chs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">chs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">k_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span> 
+            
+            <span class="c1"># Layer 3 (B, 64, 16,16) --&gt; (B, 128, 8,8)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">chs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">chs</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">k_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span> 
+            
+            <span class="c1"># Layer 4 (B, 128, 8,8) --&gt; (B, 256, 4,4)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">chs</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">chs</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">k_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> 
+            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">4</span><span class="p">]),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
+
+        <span class="c1">#Input to Latent space is of size (B, 256, 4, 4)</span>
+        <span class="c1">#Flatten and compress to latent space</span>
+<div class="viewcode-block" id="ConvAutoencoder.to_latent">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoder.to_latent">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_latent</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(),</span> <span class="c1"># expected output size (B, 256 * 4 * 4)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="n">chs</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">latent_dim</span><span class="p">),</span> <span class="c1"># expected output size (B, 256)</span>
+        <span class="p">)</span></div>
+
+
+        <span class="c1">#From Latent space back to feature maps -- input to decoder</span>
+<div class="viewcode-block" id="ConvAutoencoder.from_latent">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoder.from_latent">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">from_latent</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">latent_dim</span><span class="p">,</span> <span class="n">chs</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="mi">2</span><span class="p">),</span>               <span class="c1"># (B, 256*4)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Unflatten</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>                     <span class="c1"># (B, 256, 4, 4)</span>
+        <span class="p">)</span></div>
+
+        <span class="c1">#Decoder</span>
+<div class="viewcode-block" id="ConvAutoencoder.decoder">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoder.decoder">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            
+            <span class="c1">#Layer 1 -- (B, 256, 2, 2) -&gt; (B, 128, 4, 4) All *2 now since the input is (B, 256, 4, 4) not (B, 256, 2, 2)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Upsample</span><span class="p">(</span><span class="n">scale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">),</span> <span class="c1"># (B, 256, 4, 4)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">chs</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">k_size</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="c1"># (B, 128, 4, 4)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> 
+
+            <span class="c1">#Layer 2 -- (B, 128, 4, 4) -&gt; (B, 64, 8, 8)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Upsample</span><span class="p">(</span><span class="n">scale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">),</span> <span class="c1"># (B, 256, 4, 4)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">chs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">k_size</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="c1"># (B, 128, 4, 4)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> 
+
+            <span class="c1">#Layer 3 -- (B, 64, 8, 8) -&gt; (B, 32, 16, 16)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Upsample</span><span class="p">(</span><span class="n">scale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">),</span> <span class="c1"># (B, 256, 4, 4)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">chs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">k_size</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="c1"># (B, 128, 4, 4)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> 
+
+            <span class="c1">#Layer 4 -- (B, 32, 16, 16) -&gt; (B, inchannels, 32, 32)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Upsample</span><span class="p">(</span><span class="n">scale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">),</span> <span class="c1"># (B, 256, 4, 4)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">chs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">k_size</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="c1"># (B, 128, 4, 4) #No other layers as final layer; output not passed</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ConvAutoencoder.loss_fn">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoder.loss_fn">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ConvAutoencoder.forward">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoder.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="c1"># print(&quot;Input shape:&quot;, x.shape)</span>
+        <span class="n">encoded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="c1"># print(&quot;After Encoding: &quot;, x.shape)</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_latent</span><span class="p">(</span><span class="n">encoded</span><span class="p">)</span>
+        <span class="c1"># print(&quot;Latent Vis Output: &quot;, z.shape)</span>
+        <span class="n">reconstructed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">from_latent</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+        <span class="c1"># print(&quot;Reconstructed Output: &quot;, reconstructed.shape)</span>
+        <span class="k">return</span> <span class="n">reconstructed</span><span class="p">,</span> <span class="n">z</span></div>
+
+
+    <span class="c1">#What happens in each trainning step</span>
+<div class="viewcode-block" id="ConvAutoencoder.training_step_body">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoder.training_step_body">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">training_step_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span> <span class="c1"># note that there is no label - entire batch is the input</span>
+        <span class="c1"># y = batch.get(&quot;label&quot;, None) #In case label is not present</span>
+        <span class="c1"># print(x.shape)</span>
+        <span class="n">reconstructed</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="c1">#self(x) is equivalent to self.forward(x), but we should call it as self(x) (that’s the PyTorch usual way).</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">(</span><span class="n">reconstructed</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">acc</span> <span class="o">=</span> <span class="p">((</span><span class="n">reconstructed</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">tp</span> <span class="o">=</span> <span class="p">(((</span><span class="n">reconstructed</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+            <span class="n">fp</span> <span class="o">=</span> <span class="p">(((</span><span class="n">reconstructed</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+            <span class="n">fn</span> <span class="o">=</span> <span class="p">(((</span><span class="n">reconstructed</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+            <span class="n">precision</span> <span class="o">=</span> <span class="n">tp</span> <span class="o">/</span> <span class="p">(</span><span class="n">tp</span> <span class="o">+</span> <span class="n">fp</span> <span class="o">+</span> <span class="mf">1e-8</span><span class="p">)</span>
+            <span class="n">recall</span>   <span class="o">=</span> <span class="n">tp</span> <span class="o">/</span> <span class="p">(</span><span class="n">tp</span> <span class="o">+</span> <span class="n">fn</span> <span class="o">+</span> <span class="mf">1e-8</span><span class="p">)</span>
+
+        <span class="n">logs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;train_loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span>
+            <span class="s2">&quot;train_acc&quot;</span><span class="p">:</span> <span class="n">acc</span><span class="p">,</span>
+            <span class="s2">&quot;train_precision&quot;</span><span class="p">:</span> <span class="n">precision</span><span class="p">,</span>
+            <span class="s2">&quot;train_recall&quot;</span><span class="p">:</span> <span class="n">recall</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">logs</span></div>
+
+
+<div class="viewcode-block" id="ConvAutoencoder.on_validation_epoch_start">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoder.on_validation_epoch_start">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_validation_epoch_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">latent_buffer</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="ConvAutoencoder.validation_step_body">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoder.validation_step_body">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validation_step_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>        
+        <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span> <span class="c1"># note that there is no label - entire batch is the input</span>
+
+        <span class="n">reconstructed</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="c1">#self(x) is equivalent to self.forward(x)</span>
+
+        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">(</span><span class="n">reconstructed</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># Collect a capped sample of latents for plotting</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">latent_buffer</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_latents_per_epoch</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                <span class="c1"># Keep only as many as we can fit in the cap</span>
+                <span class="n">remaining</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_latents_per_epoch</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">latent_buffer</span><span class="p">)</span>
+                <span class="n">take</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">remaining</span><span class="p">,</span> <span class="n">z</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+                <span class="n">z_take</span> <span class="o">=</span> <span class="n">z</span><span class="p">[:</span><span class="n">remaining</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+                <span class="c1"># self.latent_buffer.append(z_take)</span>
+                <span class="c1"># print(f&quot;[val_step] collected={take}, total_so_far={sum(t.size(0) for t in self.latent_buffer)}&quot;)</span>
+                
+        <span class="c1"># Collect a single batch of the input and output per epoch for visualisation</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_tile_buffer</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reconstructed_tile_buffer</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">input_tile_buffer</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">reconstructed_tile_buffer</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reconstructed</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
+
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">acc</span> <span class="o">=</span> <span class="p">((</span><span class="n">reconstructed</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">tp</span> <span class="o">=</span> <span class="p">(((</span><span class="n">reconstructed</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+            <span class="n">fp</span> <span class="o">=</span> <span class="p">(((</span><span class="n">reconstructed</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+            <span class="n">fn</span> <span class="o">=</span> <span class="p">(((</span><span class="n">reconstructed</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+            <span class="n">precision</span> <span class="o">=</span> <span class="n">tp</span> <span class="o">/</span> <span class="p">(</span><span class="n">tp</span> <span class="o">+</span> <span class="n">fp</span> <span class="o">+</span> <span class="mf">1e-8</span><span class="p">)</span>
+            <span class="n">recall</span>   <span class="o">=</span> <span class="n">tp</span> <span class="o">/</span> <span class="p">(</span><span class="n">tp</span> <span class="o">+</span> <span class="n">fn</span> <span class="o">+</span> <span class="mf">1e-8</span><span class="p">)</span>
+
+        <span class="n">logs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;val_loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span>
+            <span class="s2">&quot;val_acc&quot;</span><span class="p">:</span> <span class="n">acc</span><span class="p">,</span>
+            <span class="s2">&quot;val_precision&quot;</span><span class="p">:</span> <span class="n">precision</span><span class="p">,</span>
+            <span class="s2">&quot;val_recall&quot;</span><span class="p">:</span> <span class="n">recall</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">logs</span></div>
+
+    
+
+<div class="viewcode-block" id="ConvAutoencoder.on_validation_epoch_end">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoder.on_validation_epoch_end">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_validation_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># plor input and reconstrtucted tiles every now and then</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_tile_buffer</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">reconstructed_tile_buffer</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span> <span class="o">%</span> <span class="mi">50</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># Plot the first batch of input and reconstructed tiles side by side for visual comparison</span>
+                <span class="n">input_tiles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_tile_buffer</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># (B, C, W, H)</span>
+                <span class="n">recon_tiles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reconstructed_tile_buffer</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># (B, C, W, H)</span>
+
+                <span class="c1"># For simplicity, we&#39;ll just plot the first tile in the batch</span>
+                <span class="n">nChannels</span> <span class="o">=</span> <span class="n">input_tiles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="c1"># each channel is a separate image, so we can plot them in a grid</span>
+                <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">nChannels</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">nChannels</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nChannels</span><span class="p">):</span>
+                    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">input_tiles</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+                    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input Channel </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+
+                    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">recon_tiles</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+                    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reconstructed Channel </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+                    
+                <span class="c1"># Save locally</span>
+                <span class="n">out_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">&quot;tile_viz&quot;</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">out_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;tiles_epoch_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="si">:</span><span class="s2">03d</span><span class="si">}</span><span class="s2">.png&quot;</span><span class="p">)</span>
+                <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+                <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">out_path</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+
+                <span class="c1"># # Log to MLflow under the active run</span>
+                <span class="c1"># try:</span>
+                <span class="c1">#     mlflow.log_artifact(out_path, artifact_path=&quot;tile_viz&quot;)</span>
+                <span class="c1"># except Exception as e:</span>
+                <span class="c1">#     print(f&quot;[val_epoch_end] MLflow artifact log failed: {e}&quot;)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">latent_buffer</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">input_tile_buffer</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reconstructed_tile_buffer</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ConvAutoencoder.configure_optimizers">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoder.configure_optimizers">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">lr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hparams</span><span class="p">,</span> <span class="s2">&quot;lr&quot;</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">)</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">)</span>
+        <span class="n">scheduler</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">ReduceLROnPlateau</span><span class="p">(</span>
+            <span class="n">optimizer</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">patience</span><span class="o">=</span><span class="mi">5</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">optimizer</span><span class="p">,</span>
+            <span class="s2">&quot;lr_scheduler&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;scheduler&quot;</span><span class="p">:</span> <span class="n">scheduler</span><span class="p">,</span> <span class="s2">&quot;monitor&quot;</span><span class="p">:</span> <span class="s2">&quot;val/val_loss&quot;</span><span class="p">},</span>
+        <span class="p">}</span></div>
+</div>
+
+
+
+
+<span class="c1"># for this class the only change is tha the batch contains data values and coordinates</span>
+<span class="c1"># of grid cell centroids - has the same forward pas as ConvAutoencoder</span>
+<div class="viewcode-block" id="ConvAutoencoderWithLocation">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoderWithLocation">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConvAutoencoderWithLocation</span><span class="p">(</span><span class="n">ConvAutoencoder</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> 
+                <span class="n">base_channels</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> 
+                <span class="n">kernel_size</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> 
+                <span class="n">latent_dim</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> 
+                <span class="n">lr</span><span class="o">=</span><span class="mf">0e-3</span><span class="p">,</span> 
+                <span class="n">weight_decay</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">base_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">)</span>
+        <span class="c1"># Additional layers or modifications to incorporate location information</span>
+        <span class="c1"># can be added here</span>
+        
+       
+    <span class="c1">#What happens in each trainning step  </span>
+<div class="viewcode-block" id="ConvAutoencoderWithLocation.training_step_body">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoderWithLocation.training_step_body">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">training_step_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">coords</span> <span class="o">=</span> <span class="n">batch</span> <span class="c1"># note that there is no label - entire batch is the input</span>
+        <span class="c1"># y = batch.get(&quot;label&quot;, None) #In case label is not present</span>
+        <span class="c1"># print(x.shape)</span>
+        <span class="n">reconstructed</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="c1">#self(x) is equivalent to self.forward(x), but we should call it as self(x) (that’s the PyTorch usual way).</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">(</span><span class="n">reconstructed</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">acc</span> <span class="o">=</span> <span class="p">((</span><span class="n">reconstructed</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">tp</span> <span class="o">=</span> <span class="p">(((</span><span class="n">reconstructed</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+            <span class="n">fp</span> <span class="o">=</span> <span class="p">(((</span><span class="n">reconstructed</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+            <span class="n">fn</span> <span class="o">=</span> <span class="p">(((</span><span class="n">reconstructed</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+            <span class="n">precision</span> <span class="o">=</span> <span class="n">tp</span> <span class="o">/</span> <span class="p">(</span><span class="n">tp</span> <span class="o">+</span> <span class="n">fp</span> <span class="o">+</span> <span class="mf">1e-8</span><span class="p">)</span>
+            <span class="n">recall</span>   <span class="o">=</span> <span class="n">tp</span> <span class="o">/</span> <span class="p">(</span><span class="n">tp</span> <span class="o">+</span> <span class="n">fn</span> <span class="o">+</span> <span class="mf">1e-8</span><span class="p">)</span>
+
+        <span class="n">logs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;train_loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span>
+            <span class="s2">&quot;train_acc&quot;</span><span class="p">:</span> <span class="n">acc</span><span class="p">,</span>
+            <span class="s2">&quot;train_precision&quot;</span><span class="p">:</span> <span class="n">precision</span><span class="p">,</span>
+            <span class="s2">&quot;train_recall&quot;</span><span class="p">:</span> <span class="n">recall</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">logs</span></div>
+
+    
+<div class="viewcode-block" id="ConvAutoencoderWithLocation.validation_step_body">
+<a class="viewcode-back" href="../../../api/FRAME_FM/models/demo_convAE/index.html#FRAME_FM.models.demo_convAE.ConvAutoencoderWithLocation.validation_step_body">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validation_step_body</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">coords</span> <span class="o">=</span> <span class="n">batch</span> <span class="c1"># input and coords - there must be a better way to call batch elements, perhaps calling them by pre-specified keys</span>
+        <span class="n">reconstructed</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="c1">#self(x) is equivalent to self.forward(x)</span>
+
+        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">(</span><span class="n">reconstructed</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># # Collect a capped sample of latents for plotting</span>
+        <span class="c1"># if len(self.latent_buffer) &lt; self.max_latents_per_epoch:</span>
+        <span class="c1">#     with torch.no_grad():</span>
+        <span class="c1">#         # Keep only as many as we can fit in the cap</span>
+        <span class="c1">#         remaining = self.max_latents_per_epoch - len(self.latent_buffer)</span>
+        <span class="c1">#         take = min(remaining, z.size(0))</span>
+        <span class="c1">#         z_take = z[:remaining].detach().cpu()</span>
+        <span class="c1">#         # self.latent_buffer.append(z_take)</span>
+        <span class="c1">#         # print(f&quot;[val_step] collected={take}, total_so_far={sum(t.size(0) for t in self.latent_buffer)}&quot;)</span>
+                
+        <span class="c1"># Collect a single batch of the input and output per epoch for visualisation</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_tile_buffer</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reconstructed_tile_buffer</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">input_tile_buffer</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">reconstructed_tile_buffer</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reconstructed</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
+
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">acc</span> <span class="o">=</span> <span class="p">((</span><span class="n">reconstructed</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">tp</span> <span class="o">=</span> <span class="p">(((</span><span class="n">reconstructed</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+            <span class="n">fp</span> <span class="o">=</span> <span class="p">(((</span><span class="n">reconstructed</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+            <span class="n">fn</span> <span class="o">=</span> <span class="p">(((</span><span class="n">reconstructed</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+            <span class="n">precision</span> <span class="o">=</span> <span class="n">tp</span> <span class="o">/</span> <span class="p">(</span><span class="n">tp</span> <span class="o">+</span> <span class="n">fp</span> <span class="o">+</span> <span class="mf">1e-8</span><span class="p">)</span>
+            <span class="n">recall</span>   <span class="o">=</span> <span class="n">tp</span> <span class="o">/</span> <span class="p">(</span><span class="n">tp</span> <span class="o">+</span> <span class="n">fn</span> <span class="o">+</span> <span class="mf">1e-8</span><span class="p">)</span>
+
+        <span class="n">logs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;val_loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span>
+            <span class="s2">&quot;val_acc&quot;</span><span class="p">:</span> <span class="n">acc</span><span class="p">,</span>
+            <span class="s2">&quot;val_precision&quot;</span><span class="p">:</span> <span class="n">precision</span><span class="p">,</span>
+            <span class="s2">&quot;val_recall&quot;</span><span class="p">:</span> <span class="n">recall</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">logs</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Adam Ward, National Oceanography Centre.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

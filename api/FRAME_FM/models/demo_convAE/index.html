@@ -1,0 +1,397 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FRAME_FM.models.demo_convAE &mdash; FRAME-FM 0.0.0a documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=d75fae25" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-codeautolink.css?v=b2176991" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=24f8de0c" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/dark_mode_css/general.css?v=c0a7eb24" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/dark_mode_css/dark.css?v=70edf1c7" />
+
+  
+    <link rel="canonical" href="https://NERC-EDS.github.io/FRAME-FM/api/FRAME_FM/models/demo_convAE/index.html" />
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=e8454e50"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../../_static/copybutton.js?v=df1a032d"></script>
+      <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script src="../../../../_static/dark_mode_js/default_dark.js?v=fd565c74"></script>
+      <script src="../../../../_static/dark_mode_js/theme_switcher.js?v=358d3910"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="FRAME_FM.models.mmmae" href="../mmmae/index.html" />
+    <link rel="prev" title="FRAME_FM.models.demo_autoencoder" href="../demo_autoencoder/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            FRAME-FM
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">FRAME_FM</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../cli/index.html">FRAME_FM.cli</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../dataloaders/index.html">FRAME_FM.dataloaders</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">FRAME_FM.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../training/index.html">FRAME_FM.training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../transforms/index.html">FRAME_FM.transforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/index.html">FRAME_FM.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../InputOnly_Dataset/index.html">InputOnly_Dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../ImageLabel_Dataset/index.html">ImageLabel_Dataset</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">FRAME-FM</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">FRAME_FM</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">FRAME_FM.models</a></li>
+      <li class="breadcrumb-item active">FRAME_FM.models.demo_convAE</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-FRAME_FM.models.demo_convAE">
+<span id="frame-fm-models-demo-convae"></span><h1>FRAME_FM.models.demo_convAE<a class="headerlink" href="#module-FRAME_FM.models.demo_convAE" title="Link to this heading"></a></h1>
+<p>This demo shows the application of convolutional autoencoder to a stack of
+geospatial tiles. Two classes are defined - ConvAutoencoder and
+ConvAutoencoderWithLocation. Bof have the same forward method
+The first one takes only the tile data as input, while the second one also takes
+the coordinates of the tile centroids for potential use in aligning data from
+different sources.</p>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder" title="FRAME_FM.models.demo_convAE.ConvAutoencoder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConvAutoencoder</span></code></a></p></td>
+<td><p>Class for defining the AE, train and validation steps</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#FRAME_FM.models.demo_convAE.ConvAutoencoderWithLocation" title="FRAME_FM.models.demo_convAE.ConvAutoencoderWithLocation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConvAutoencoderWithLocation</span></code></a></p></td>
+<td><p>Class for defining the AE, train and validation steps</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoder">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">FRAME_FM.models.demo_convAE.</span></span><span class="sig-name descname"><span class="pre">ConvAutoencoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../utils/LightningModuleWrapper/index.html#FRAME_FM.utils.LightningModuleWrapper.BaseModule" title="FRAME_FM.utils.LightningModuleWrapper.BaseModule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FRAME_FM.utils.LightningModuleWrapper.BaseModule</span></code></a></p>
+<p>Class for defining the AE, train and validation steps</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoder.in_channels">
+<span class="sig-name descname"><span class="pre">in_channels</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoder.in_channels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder.in_channels" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoder.base_ch">
+<span class="sig-name descname"><span class="pre">base_ch</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">32</span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoder.base_ch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder.base_ch" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoder.k_size">
+<span class="sig-name descname"><span class="pre">k_size</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoder.k_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder.k_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoder.latent_dim">
+<span class="sig-name descname"><span class="pre">latent_dim</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">256</span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoder.latent_dim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder.latent_dim" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoder.latent_buffer">
+<span class="sig-name descname"><span class="pre">latent_buffer</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoder.latent_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder.latent_buffer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoder.input_tile_buffer">
+<span class="sig-name descname"><span class="pre">input_tile_buffer</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoder.input_tile_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder.input_tile_buffer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoder.reconstructed_tile_buffer">
+<span class="sig-name descname"><span class="pre">reconstructed_tile_buffer</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoder.reconstructed_tile_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder.reconstructed_tile_buffer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoder.max_latents_per_epoch">
+<span class="sig-name descname"><span class="pre">max_latents_per_epoch</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2000</span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoder.max_latents_per_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder.max_latents_per_epoch" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoder.encoder">
+<span class="sig-name descname"><span class="pre">encoder</span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoder.encoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder.encoder" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoder.to_latent">
+<span class="sig-name descname"><span class="pre">to_latent</span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoder.to_latent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder.to_latent" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoder.from_latent">
+<span class="sig-name descname"><span class="pre">from_latent</span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoder.from_latent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder.from_latent" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoder.decoder">
+<span class="sig-name descname"><span class="pre">decoder</span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoder.decoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder.decoder" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoder.loss_fn">
+<span class="sig-name descname"><span class="pre">loss_fn</span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoder.loss_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder.loss_fn" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoder.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoder.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder.forward" title="Link to this definition"></a></dt>
+<dd><p>Same as <code class="xref py py-meth docutils literal notranslate"><span class="pre">torch.nn.Module.forward()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> – Whatever you decide to pass into the forward method.</p></li>
+<li><p><strong>**kwargs</strong> – Keyword arguments are also possible.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Your model’s output</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoder.training_step_body">
+<span class="sig-name descname"><span class="pre">training_step_body</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoder.training_step_body"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder.training_step_body" title="Link to this definition"></a></dt>
+<dd><p>Subclasses implement this instead of training_step.
+Should return (loss, logs_dict).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoder.on_validation_epoch_start">
+<span class="sig-name descname"><span class="pre">on_validation_epoch_start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoder.on_validation_epoch_start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder.on_validation_epoch_start" title="Link to this definition"></a></dt>
+<dd><p>Called in the validation loop at the very beginning of the epoch.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoder.validation_step_body">
+<span class="sig-name descname"><span class="pre">validation_step_body</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoder.validation_step_body"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder.validation_step_body" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoder.on_validation_epoch_end">
+<span class="sig-name descname"><span class="pre">on_validation_epoch_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoder.on_validation_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder.on_validation_epoch_end" title="Link to this definition"></a></dt>
+<dd><p>Called in the validation loop at the very end of the epoch.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoder.configure_optimizers">
+<span class="sig-name descname"><span class="pre">configure_optimizers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoder.configure_optimizers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder.configure_optimizers" title="Link to this definition"></a></dt>
+<dd><p>Choose what optimizers and learning-rate schedulers to use in your optimization. Normally you’d need one.
+But in the case of GANs or similar you might have multiple. Optimization with multiple optimizers only works in
+the manual optimization mode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p>Any of these 6 options.</p>
+<ul class="simple">
+<li><p><strong>Single optimizer</strong>.</p></li>
+<li><p><strong>List or Tuple</strong> of optimizers.</p></li>
+<li><p><strong>Two lists</strong> - The first list has multiple optimizers, and the second has multiple LR schedulers
+(or multiple <code class="docutils literal notranslate"><span class="pre">lr_scheduler_config</span></code>).</p></li>
+<li><p><strong>Dictionary</strong>, with an <code class="docutils literal notranslate"><span class="pre">&quot;optimizer&quot;</span></code> key, and (optionally) a <code class="docutils literal notranslate"><span class="pre">&quot;lr_scheduler&quot;</span></code>
+key whose value is a single LR scheduler or <code class="docutils literal notranslate"><span class="pre">lr_scheduler_config</span></code>.</p></li>
+<li><p><strong>None</strong> - Fit will run without any optimizer.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p>The <code class="docutils literal notranslate"><span class="pre">lr_scheduler_config</span></code> is a dictionary which contains the scheduler and its associated configuration.
+The default configuration is shown below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">lr_scheduler_config</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># REQUIRED: The scheduler instance</span>
+    <span class="s2">&quot;scheduler&quot;</span><span class="p">:</span> <span class="n">lr_scheduler</span><span class="p">,</span>
+    <span class="c1"># The unit of the scheduler&#39;s step size, could also be &#39;step&#39;.</span>
+    <span class="c1"># &#39;epoch&#39; updates the scheduler on epoch end whereas &#39;step&#39;</span>
+    <span class="c1"># updates it after a optimizer update.</span>
+    <span class="s2">&quot;interval&quot;</span><span class="p">:</span> <span class="s2">&quot;epoch&quot;</span><span class="p">,</span>
+    <span class="c1"># How many epochs/steps should pass between calls to</span>
+    <span class="c1"># `scheduler.step()`. 1 corresponds to updating the learning</span>
+    <span class="c1"># rate after every epoch/step.</span>
+    <span class="s2">&quot;frequency&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="c1"># Metric to monitor for schedulers like `ReduceLROnPlateau`</span>
+    <span class="s2">&quot;monitor&quot;</span><span class="p">:</span> <span class="s2">&quot;val_loss&quot;</span><span class="p">,</span>
+    <span class="c1"># If set to `True`, will enforce that the value specified &#39;monitor&#39;</span>
+    <span class="c1"># is available when the scheduler is updated, thus stopping</span>
+    <span class="c1"># training if not found. If set to `False`, it will only produce a warning</span>
+    <span class="s2">&quot;strict&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="c1"># If using the `LearningRateMonitor` callback to monitor the</span>
+    <span class="c1"># learning rate progress, this keyword can be used to specify</span>
+    <span class="c1"># a custom logged name</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>When there are schedulers in which the <code class="docutils literal notranslate"><span class="pre">.step()</span></code> method is conditioned on a value, such as the
+<code class="xref py py-class docutils literal notranslate"><span class="pre">torch.optim.lr_scheduler.ReduceLROnPlateau</span></code> scheduler, Lightning requires that the
+<code class="docutils literal notranslate"><span class="pre">lr_scheduler_config</span></code> contains the keyword <code class="docutils literal notranslate"><span class="pre">&quot;monitor&quot;</span></code> set to the metric name that the scheduler
+should be conditioned on.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># The ReduceLROnPlateau scheduler requires a monitor</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">optimizer</span><span class="p">,</span>
+        <span class="s2">&quot;lr_scheduler&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;scheduler&quot;</span><span class="p">:</span> <span class="n">ReduceLROnPlateau</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+            <span class="s2">&quot;monitor&quot;</span><span class="p">:</span> <span class="s2">&quot;metric_to_track&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;frequency&quot;</span><span class="p">:</span> <span class="s2">&quot;indicates how often the metric is updated&quot;</span><span class="p">,</span>
+            <span class="c1"># If &quot;monitor&quot; references validation metrics, then &quot;frequency&quot; should be set to a</span>
+            <span class="c1"># multiple of &quot;trainer.check_val_every_n_epoch&quot;.</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+
+<span class="c1"># In the case of two optimizers, only one using the ReduceLROnPlateau scheduler</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">optimizer1</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="n">optimizer2</span> <span class="o">=</span> <span class="n">SGD</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="n">scheduler1</span> <span class="o">=</span> <span class="n">ReduceLROnPlateau</span><span class="p">(</span><span class="n">optimizer1</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+    <span class="n">scheduler2</span> <span class="o">=</span> <span class="n">LambdaLR</span><span class="p">(</span><span class="n">optimizer2</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">optimizer1</span><span class="p">,</span>
+            <span class="s2">&quot;lr_scheduler&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;scheduler&quot;</span><span class="p">:</span> <span class="n">scheduler1</span><span class="p">,</span>
+                <span class="s2">&quot;monitor&quot;</span><span class="p">:</span> <span class="s2">&quot;metric_to_track&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">optimizer2</span><span class="p">,</span> <span class="s2">&quot;lr_scheduler&quot;</span><span class="p">:</span> <span class="n">scheduler2</span><span class="p">},</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>Metrics can be made available to monitor by simply logging it using
+<code class="docutils literal notranslate"><span class="pre">self.log('metric_to_track',</span> <span class="pre">metric_val)</span></code> in your <code class="xref py py-class docutils literal notranslate"><span class="pre">LightningModule</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Some things to know:</p>
+<ul class="simple">
+<li><p>Lightning calls <code class="docutils literal notranslate"><span class="pre">.backward()</span></code> and <code class="docutils literal notranslate"><span class="pre">.step()</span></code> automatically in case of automatic optimization.</p></li>
+<li><p>If a learning rate scheduler is specified in <code class="docutils literal notranslate"><span class="pre">configure_optimizers()</span></code> with key
+<code class="docutils literal notranslate"><span class="pre">&quot;interval&quot;</span></code> (default “epoch”) in the scheduler configuration, Lightning will call
+the scheduler’s <code class="docutils literal notranslate"><span class="pre">.step()</span></code> method automatically in case of automatic optimization.</p></li>
+<li><p>If you use 16-bit precision (<code class="docutils literal notranslate"><span class="pre">precision=16</span></code>), Lightning will automatically handle the optimizer.</p></li>
+<li><p>If you use <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.optim.LBFGS</span></code>, Lightning handles the closure function automatically for you.</p></li>
+<li><p>If you use multiple optimizers, you will have to switch to ‘manual optimization’ mode and step them
+yourself.</p></li>
+<li><p>If you need to control how often the optimizer steps, override the <code class="xref py py-meth docutils literal notranslate"><span class="pre">optimizer_step()</span></code> hook.</p></li>
+</ul>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoderWithLocation">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">FRAME_FM.models.demo_convAE.</span></span><span class="sig-name descname"><span class="pre">ConvAutoencoderWithLocation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoderWithLocation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoderWithLocation" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#FRAME_FM.models.demo_convAE.ConvAutoencoder" title="FRAME_FM.models.demo_convAE.ConvAutoencoder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConvAutoencoder</span></code></a></p>
+<p>Class for defining the AE, train and validation steps</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoderWithLocation.training_step_body">
+<span class="sig-name descname"><span class="pre">training_step_body</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoderWithLocation.training_step_body"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoderWithLocation.training_step_body" title="Link to this definition"></a></dt>
+<dd><p>Subclasses implement this instead of training_step.
+Should return (loss, logs_dict).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FRAME_FM.models.demo_convAE.ConvAutoencoderWithLocation.validation_step_body">
+<span class="sig-name descname"><span class="pre">validation_step_body</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/FRAME_FM/models/demo_convAE.html#ConvAutoencoderWithLocation.validation_step_body"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.models.demo_convAE.ConvAutoencoderWithLocation.validation_step_body" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../demo_autoencoder/index.html" class="btn btn-neutral float-left" title="FRAME_FM.models.demo_autoencoder" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../mmmae/index.html" class="btn btn-neutral float-right" title="FRAME_FM.models.mmmae" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Adam Ward, National Oceanography Centre.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
