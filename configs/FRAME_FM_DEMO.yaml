@@ -1,0 +1,18 @@
+# configs/FRAME_FM_DEMO.yml
+# FRAME-FM Demo Config
+# This is a config file that represents an MVP for FRAME-FM. 
+
+defaults:
+  - data: MVP_EuroSAT100
+  - model: DEMO-AE-EuroSAT100-FullSpectrum-S.yaml
+  - trainer: default
+  - logging: demo_mlflow 
+  - _self_
+
+seed: 42
+
+hydra:
+  run:
+    dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  job:
+    chdir: true

@@ -6,6 +6,6 @@ tracking_uri: ${oc.env:MLFLOW_TRACKING_URI,${hydra:runtime.cwd}/mlruns}
 run_name: "demo_autoencoder"
 
 tags:
-  project: "FRAME-FM"
-  dataset: "EuroSAT"
-  model: "EuroSAT Autoencoder"
+  project: "FRAME-FM Demo"
+  dataset: "EuroSAT100"
+  model: "EuroSAT100 Autoencoder"

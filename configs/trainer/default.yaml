@@ -14,4 +14,4 @@ enable_model_summary: true
 # Optional extra flags:
 # gradient_clip_val: 0.0
 # deterministic: true
-# run_test: true  # flag for evaluating on test set after training
+run_test: true  # flag for evaluating on test set after training
