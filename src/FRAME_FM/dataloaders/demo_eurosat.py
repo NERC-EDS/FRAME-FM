@@ -7,7 +7,7 @@ from typing import Optional, Any
 from torchgeo.datasets import EuroSAT, EuroSAT100
 
 from FRAME_FM.utils.LightningDataModuleWrapper import BaseDataModule
-from FRAME_FM.datasets.ImageLabel_Dataset import TransformedDataset
+from FRAME_FM.datasets.ImageLabel_Dataset import SplitTransformDataset
 
 
 class EuroSATDataModule(BaseDataModule):
@@ -16,7 +16,7 @@ class EuroSATDataModule(BaseDataModule):
 
     - Uses BaseDataModule for split logic (`split_strategy`, indices/fractions).
     - Uses Hydra-provided transforms (`train_transforms`, `val_transforms`, `test_transforms`).
-    - Wraps split datasets in `TransformedDataset` so each split can have its own transform.
+    - Wraps split datasets in `SplitTransformDataset` so each split can have its own transform.
     """
 
     def __init__(
@@ -53,23 +53,23 @@ class EuroSATDataModule(BaseDataModule):
         - Take the full dataset (`self._raw_data`).
         - Use BaseDataModule._split_dataset(...) to create train/val/test splits
           based on `split_strategy` + indices/fractions from config.
-        - Wrap each split in TransformedDataset with the appropriate transform
+        - Wrap each split in SplitTransformDataset with the appropriate transform
           provided via Hydra (train_transforms, val_transforms, test_transforms).
         """
         full_ds = self._raw_data
         train_base, val_base, test_base = self._split_dataset(full_ds)
 
-        self.train_dataset = TransformedDataset(
+        self.train_dataset = SplitTransformDataset(
             train_base,
             transform=self.train_transforms,
         )
-        self.val_dataset = TransformedDataset(
+        self.val_dataset = SplitTransformDataset(
             val_base,
             transform=self.val_transforms,
         )
         # test_base may be None if no test split configured
         self.test_dataset = (
-            TransformedDataset(test_base, transform=self.test_transforms)
+            SplitTransformDataset(test_base, transform=self.test_transforms)
             if test_base is not None
             else None
         )
