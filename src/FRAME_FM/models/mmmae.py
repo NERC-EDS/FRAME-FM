@@ -12,7 +12,7 @@ from timm.models.vision_transformer import Block
 import torch
 from torch import nn
 
-from ..utils.embedders import BaseEmbedder, PatchEmbed
+from ..utils.embedders import BaseEmbedder, PatchEmbed, STPatchEmbed
 from ..utils.LightningModuleWrapper import BaseModule
 
 
@@ -25,6 +25,9 @@ class MultimodalMaskedAutoencoder(BaseModule):
                  input_shapes: list[tuple[int, ...]],
                  n_channels: list[int],
                  patch_shapes: list[tuple[int, ...]],
+                 inputs_positioned: list[bool] | bool = False,
+                 position_space: tuple[tuple[float, float], ...] | None = None,
+                 pos_embed_ratio: tuple[float, ...] | None = None,
                  encoder_embed_dim: int = 16,
                  encoder_depth: int = 24,
                  encoder_num_heads: int = 16,
@@ -42,6 +45,12 @@ class MultimodalMaskedAutoencoder(BaseModule):
             input_shapes (list[tuple[int, ...]]): Shapes of each model input.
             n_channels (list[int]): Numbers of channels in each model input.
             patch_shapes (list[tuple[int, ...]]): Sizes of patches into which to divide each input.
+            input_positions (list[bool] | bool): Whether each model input has associated positions,
+                with any boolean value applying to all inputs. Defaults to False.
+            position_space (tuple[tuple[float, float], ...] | None): Space in which positions lie,
+                or None if no input has positions. Defaults to None.
+            pos_embed_ratio (tuple[float, ...] | None): Relative sizes of position embedding dim.s,
+                or None if no input has positions. Defaults to None.
             encoder_embed_dim (int). Dimensions into which to embed each patch. Defaults to 16.
             encoder_depth (int, optional): Number of attention layers for encoding. Defaults to 24.
             encoder_num_heads (int, optional): Number of attention heads per layer. Defaults to 16.
@@ -59,15 +68,31 @@ class MultimodalMaskedAutoencoder(BaseModule):
         """
         super().__init__()
         # --------------------------------------------------------------------------
+        if isinstance(inputs_positioned, bool):
+            inputs_positioned = [inputs_positioned for _ in input_shapes]
+        if any(inputs_positioned):
+            assert position_space is not None, \
+                "If any inputs have positions, position_space must not be None."
+            assert pos_embed_ratio is not None, \
+                "If any inputs have positions, pos_space_ratio must not be None."
+        input_properties = zip(input_shapes, patch_shapes, n_channels, inputs_positioned)
         self.input_embedders = nn.ModuleList([
-            PatchEmbed(
+            STPatchEmbed(
+                input_shape,
+                patch_shape,
+                n_channel,
+                position_space,  # type: ignore
+                encoder_embed_dim,
+                decoder_embed_dim,
+                pos_embed_ratio,  # type: ignore
+            ) if positioned else PatchEmbed(
                 input_shape,
                 patch_shape,
                 n_channel,
                 encoder_embed_dim,
                 decoder_embed_dim
             )
-            for input_shape, patch_shape, n_channel in zip(input_shapes, patch_shapes, n_channels)
+            for input_shape, patch_shape, n_channel, positioned in input_properties
         ])  # type: ignore
 
         self.cls_token = nn.Parameter(torch.zeros(1, 1, encoder_embed_dim))
@@ -268,7 +293,6 @@ class MultimodalMaskedAutoencoder(BaseModule):
              * Model predictions of input tokens, shapes ([B, L_i, D_i])_i.
              * Mask with 0 where token extracted, 1 otherwise, shape [B, sum(L_i)].
         """
-        # Positions not yet implemented
         latent, pos_embed, mask, ids_restore = self.forward_encoder(inputs, mask_ratio)
         preds = self.forward_decoder(latent, ids_restore, pos_embed)
         loss = self.forward_loss(inputs, preds, mask)
