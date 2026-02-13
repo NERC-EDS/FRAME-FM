@@ -56,7 +56,7 @@ class BaseModule(pl.LightningModule):
 
     def test_step(self, batch: Any, batch_idx: int) -> Any:
         """Default behaviour: call a user-overridable hook and log loss."""
-        loss, logs = self.testing_step_body(batch, batch_idx)
+        loss, logs = self.test_step_body(batch, batch_idx)
 
         self.log(
             "test/loss", loss, on_step=False, on_epoch=True, prog_bar=True, logger=True
