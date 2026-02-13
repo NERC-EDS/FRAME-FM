@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from typing import Optional, Any
 
-from torchvision.datasets import EuroSAT
+from torchgeo.datasets import EuroSAT, EuroSAT100
 
 from FRAME_FM.utils.LightningDataModuleWrapper import BaseDataModule
 from FRAME_FM.datasets.ImageLabel_Dataset import TransformedDataset
+
 
 class EuroSATDataModule(BaseDataModule):
     """
@@ -72,3 +73,17 @@ class EuroSATDataModule(BaseDataModule):
             if test_base is not None
             else None
         )
+
+
+class EuroSAT100DataModule(EuroSATDataModule):
+    """
+    Same as EuroSATDataModule but for the smaller EuroSAT100 dataset.
+    """
+
+    def prepare_data(self) -> None:
+        """Download EuroSAT100 once."""
+        EuroSAT100(root=self.data_root, download=True)
+
+    def _load_raw_data(self) -> Any:
+        """Load the full EuroSAT100 dataset once, with no transform."""
+        return EuroSAT100(root=self.data_root, download=False, transform=None)
