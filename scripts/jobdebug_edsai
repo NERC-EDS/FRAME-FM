@@ -1,0 +1,16 @@
+#!/bin/bash
+#SBATCH --job-name="testing scheduler"
+#SBATCH --time=00:30:00
+#SBATCH --mem=1M
+#SBATCH --account=eds_ai
+#SBATCH --partition=debug
+#SBATCH --qos=debug
+#SBATCH -o %j.out
+#SBATCH -e %j.err
+
+# executable
+source .venv/bin/activate # just to simulate some work
+export PYTHONPATH="$PWD/src:$PYTHONPATH" # this is necessary at the moment because baseline modules are in src/
+echo $PYTHONPATH
+sleep 300
+
