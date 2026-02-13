@@ -1,6 +1,6 @@
 ### Virtual Environment
 .venv
-.python-version
+
 ### Python Cache
 __pycache__/
 *.py[cod]
@@ -21,3 +21,12 @@ experiments/*
 
 # But keep the README
 !experiments/experiments_README.md
+
+outputs/
+
+# Ignore everything under mlruns/
+.mlruns/*
+
+docs/_build/
+
+src/frame_fm.egg-info/
