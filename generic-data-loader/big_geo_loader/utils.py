@@ -1,6 +1,8 @@
 import xarray as xr
 from pathlib import Path
 from typing import Type
+from collections import defaultdict
+import hashlib
 import yaml
 
 from .settings import DEBUG, DefaultSettings as DEFAULTS
@@ -73,6 +75,13 @@ def convert_subset_selectors_to_slices(selector: dict) -> dict:
     return new_selector
 
 
+def hash_selector(selector: dict) -> str:
+    # Create a hash of the selector dictionary to use for caching
+    # This function should generate a unique hash based on the contents of the selector
+    selector_str = str(selector).encode("utf-8")
+    return hashlib.md5(selector_str).hexdigest()
+
+
 def check_object_type(obj: object, allowed_types: object | tuple[object, ...]) -> object:
     # Check if allowed_types is a single type, if so convert it to a tuple
     if isinstance(allowed_types, type):
@@ -120,22 +129,46 @@ def load_selectors_from_yaml(yaml_path: str) -> list[dict]:
     return selectors
 
 
-def open_zarrs(data_dict: dict) -> dict:
-    ds_map = {}
+def create_zarr_name(data_uri: str) -> str:
+    """
+    Create a Zarr file name based on the data URI.
+    Args:
+        data_uri (str): The URI of the data source.
+    Returns:
+        str: A string representing the Zarr file name.
+    """
+    # Extract the base name from the data URI to create a unique Zarr file name
+    base_name = Path(data_uri).stem
+    zarr_name = f"{base_name}.zarr"
+    return zarr_name
 
-    for uri, content in data_dict.items():
-        zarr_path = content.get("zarr_path")
+
+def create_cache_path(data_uri: str, cache_dir: Path | str) -> Path:
+    "Create cache path from URI."
+    zarr_name  = create_zarr_name(data_uri)
+    cache_path = Path(cache_dir) / zarr_name
+    return cache_path   
+
+
+def get_variables(ds: xr.Dataset) -> list[str]: 
+    """
+    Returns a list of variable IDs from an xarray Dataset, excluding coordinate variables.
+    """
+    return [v for v in ds.variables if v not in ds.coords]
+
+
+def open_cached_zarrs(uris: list[str], cache_dir: Path | str) -> dict:
+    var_zarr_dict = defaultdict(dict)
+
+    for uri in uris:
+        zarr_path = create_cache_path(uri, cache_dir)
         print(f"Opening Zarr file for URI '{uri}' at path: {zarr_path}")
-        ds = xr.open_zarr(zarr_path, zarr_version=DEFAULTS.zarr_version)
-        ds_map[uri] = ds
+        ds = xr.open_zarr(zarr_path, zarr_format=DEFAULTS.zarr_format)
+        var_zarr_dict[uri]["xr_dset"] = ds
+        var_zarr_dict[uri]["variables"] = get_variables(ds)
+        print(f"Dataset for URI '{uri}' has variables: {var_zarr_dict[uri]['variables']}")
 
-    # Add datasets to the input dictionary
-    for uri, ds in ds_map.items():
-        print(f"Dataset for URI '{uri}' has variables: {list(ds.data_vars)} and dimensions: {list(ds.dims)}")
-        data_dict[uri]["xr_dset"] = ds
-
-    return data_dict
-
+    return var_zarr_dict
 
 def load_data_from_uri(uri: str, subset_selection: dict) -> xr.Dataset:
     # Load dataset from URI

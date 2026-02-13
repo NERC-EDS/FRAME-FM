@@ -1,0 +1,53 @@
+selectors:
+- common:
+    chunks:
+      time: 48
+    pre_transform_rule: append
+    pre_transforms:
+    - new_name: dewpoint_temperature
+      type: rename
+      var_id: d2m
+    - dim: longitude
+      shift: null
+      type: roll
+    - dim: latitude
+      type: reverse_axis
+    subset:
+      latitude:
+      - 60
+      - -67.8
+      longitude:
+      - 10
+      - 137.8
+      time:
+      - '2000-01-01 00:00:00'
+      - '2000-01-10 23:00:00'
+  uri: https://gws-access.jasmin.ac.uk/public/eds_ai/era5_repack/aggregations/data/ecmwf-era5X_oper_an_sfc_2000_2020_2d_repack.kr1.0.json
+  variables:
+    d2m: {}
+- common:
+    chunks:
+      time: 48
+    pre_transform_rule: append
+    pre_transforms:
+    - new_name: surface_temperature
+      type: rename
+      var_id: t2m
+    - dim: longitude
+      shift: null
+      type: roll
+    - dim: latitude
+      type: reverse_axis
+    subset:
+      latitude:
+      - 60
+      - -67.8
+      longitude:
+      - 10
+      - 137.8
+      time:
+      - '2000-01-01 00:00:00'
+      - '2000-01-10 23:00:00'
+  uri: https://gws-access.jasmin.ac.uk/public/eds_ai/era5_repack/aggregations/data/ecmwf-era5X_oper_an_sfc_2000_2020_2t_repack.kr1.0.json
+  variables:
+    t2m: {}

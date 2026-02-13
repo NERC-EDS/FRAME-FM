@@ -15,4 +15,4 @@ class DatasetSettings:
 
 class DefaultSettings:
     chunks: dict[str, int] = {"time": 24}
-    zarr_version: int = 2
+    zarr_format: int = 2

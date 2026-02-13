@@ -1,0 +1,13 @@
+aiohttp
+cfapyx
+dask
+gcsfs # For loading from Google Cloud storage
+kerchunk
+matplotlib
+mpl-tools
+netcdf4
+numpy
+pandas
+requests
+torch
+xarray

@@ -1,0 +1,1 @@
+- [ ] Decide how to handle "rolling" of longitude. Needs to happen BEFORE selection.

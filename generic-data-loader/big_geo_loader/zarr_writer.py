@@ -1,4 +1,4 @@
-from .utils import load_data_from_selector, safely_remove_dir
+from .utils import load_data_from_selector, open_cached_zarrs, safely_remove_dir, create_cache_path, hash_selector
 from .transforms import *
 from .settings import DEBUG, DefaultSettings as DEFAULTS
 
@@ -6,20 +6,6 @@ from pathlib import Path
 
 import dask
 import xarray as xr
-
-
-def create_zarr_name(data_uri: str) -> str:
-    """
-    Create a Zarr file name based on the data URI.
-    Args:
-        data_uri (str): The URI of the data source.
-    Returns:
-        str: A string representing the Zarr file name.
-    """
-    # Extract the base name from the data URI to create a unique Zarr file name
-    base_name = Path(data_uri).stem
-    zarr_name = f"{base_name}.zarr"
-    return zarr_name
 
 
 def cache_data_to_zarr(selectors: list[dict], 
@@ -38,11 +24,14 @@ def cache_data_to_zarr(selectors: list[dict],
     # Ensure pre_transformas are list
     pre_transforms = pre_transforms or []
 
-    # Set up a dictionary to keep track of the mapping from (uri, var_id) to Zarr file paths
-    var_zarr_dict = {}
+    # # Set up a dictionary to keep track of the mapping from (uri, var_id) to Zarr file paths
+    # var_zarr_dict = {}
 
     # Create the cache directory if it doesn't exist
     Path(cache_dir).mkdir(parents=True, exist_ok=True)
+
+    # Collect data_uris for later
+    data_uris = []
 
     for selector in selectors:
         # Load the data from the URI
@@ -67,14 +56,19 @@ def cache_data_to_zarr(selectors: list[dict],
             ds = resolve_transform(transform)(ds)
 
         # Cache the dataset to Zarr
-        data_uri = selector["uri"]
-        zarr_name = create_zarr_name(data_uri)
-        cache_path = Path(cache_dir) / zarr_name
+        cache_path = create_cache_path(selector["uri"], cache_dir)
 
         # Clear any existing cache files before caching new data (note that it is a directory)
         safely_remove_dir(cache_path)
 
+        data_uri = selector["uri"]
+        data_uris.append(data_uri)
         print(f"\nCaching data to {cache_path} from {data_uri}")
+
+        # Compute a hash of the selector for caching purposes
+        selector_hash = hash_selector(selector)
+        print(f"Computed hash for selector: {selector_hash}")
+        ds.attrs["_selection_cache_hash"] = selector_hash  # Store the hash in the dataset attributes for reference
 
         USE_CHUNKED_METHOD = True  # Set to True to use chunked writing method, False for direct writing
         if USE_CHUNKED_METHOD:
@@ -83,18 +77,21 @@ def cache_data_to_zarr(selectors: list[dict],
             write_zarr(ds, cache_path, chunks=selector.get("common", {}).get("chunks", DEFAULTS.chunks))
         else:
             ds.compute()  # Ensure the dataset is computed before writing to Zarr
-            _ = ds.to_zarr(cache_path, mode="w", zarr_version=2)
+            _ = ds.to_zarr(cache_path, mode="w", zarr_format=2)
             print(f"Finished caching data to {cache_path}")
 
         if generate_stats:
             # Generate and save statistics for the cached data
             print("\nHandle Stats here... (placeholder)")
 
-        # Update the response dictionary
-        processed_var_ids = [v for v in ds.variables if v not in ds.coords]
-        var_zarr_dict[data_uri] = {"zarr_path": cache_path, "variables": processed_var_ids}
+        # # Update the response dictionary
+        # processed_var_ids = [v for v in ds.variables if v not in ds.coords]
+        # var_zarr_dict[data_uri] = {"zarr_path": cache_path, "variables": processed_var_ids}
 
     print("\nFinished processing all selectors.")
+
+    # Now load the cached Zarr files into memory and add to the response dictionary
+    var_zarr_dict = open_cached_zarrs(uris=data_uris, cache_dir=cache_dir)
     return var_zarr_dict
 
 
@@ -109,7 +106,7 @@ def write_zarr(ds: xr.Dataset,  output_path: Path | str, chunks: dict[str, int] 
     #  - https://github.com/roocs/rook/issues/55
     #  - https://docs.dask.org/en/latest/scheduling.html
     with dask.config.set(scheduler="synchronous"):
-        delayed_obj = chunked_ds.to_zarr(output_path, zarr_version=DEFAULTS.zarr_version, compute=False)
+        delayed_obj = chunked_ds.to_zarr(output_path, zarr_format=DEFAULTS.zarr_format, compute=False)
         delayed_obj.compute()
 
     print(f"Wrote output file: {output_path}")
