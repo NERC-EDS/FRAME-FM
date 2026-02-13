@@ -1,4 +1,4 @@
-# src/FRAME_FM/model_code/demo_model.py
+# src/FRAME_FM/models/demo_autoencoder.py
 """
 EuroSAT Autoencoder (torchvision EuroSAT friendly)
 
