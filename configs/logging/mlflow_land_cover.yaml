@@ -1,0 +1,11 @@
+# configs/logging/mlflow.yaml
+_target_: FRAME_FM.training.logger.create_mlflow_logger
+
+experiment_name: "frame-fm-land-cover-convae"
+tracking_uri: ${oc.env:MLFLOW_TRACKING_URI, "file:./mlruns"}
+run_name: "land_cover_convae"
+
+tags:
+  project: "FRAME-FM"
+  dataset: "Land Cover Map"
+  model: "Land Cover Convolutional Autoencoder"

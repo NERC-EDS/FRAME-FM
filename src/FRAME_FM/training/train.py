@@ -5,6 +5,7 @@ import pytorch_lightning as pl
 from hydra import main as hydra_main
 from omegaconf import DictConfig
 from hydra.utils import instantiate
+import os
 
 @hydra_main(version_base=None, config_path="../../../configs", config_name="config")
 def main(cfg: DictConfig) -> None:

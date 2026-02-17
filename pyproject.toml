@@ -9,6 +9,7 @@ dependencies = [
     "kerchunk>=0.2.9",
     "mlflow>=3.6.0",
     "pytorch-lightning>=2.6.0",
+    "rioxarray>=0.19.0",
     "tensorboard>=2.20.0",
     "timm>=1.0.24",
     "torch>=2.9.1",
@@ -72,3 +73,6 @@ explicit = true
 name = "pytorch-cu126"
 url = "https://download.pytorch.org/whl/cu126"
 explicit = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/FRAME_FM"]
