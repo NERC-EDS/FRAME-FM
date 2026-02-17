@@ -1,7 +1,7 @@
 # Copyright (c) Matt Arran.
 
 # This source code is adapted from Masked Autoencoder (MAE) code, copyright
-# Meta Platforms, Inc. and affiliates, licensed under the license found in the
+# Meta Platforms, Inc. and affiliates, licensed under the licence found in the
 # licences/LICENSE_MAE.txt file.
 # PatchEmbed is inspired by the equivalent class in PyTorch Image Models (timm).
 # --------------------------------------------------------
