@@ -268,7 +268,7 @@ class PatchEmbed(BaseEmbedder):
         x = x.flatten(start_dim=2).transpose(1, 2)  # (B, D, H, W) -> (B, HW, D) for 2D patches
         x = self.norm(x)
         x = x + self.pos_embed
-        return x, self.decoder_pos_embed
+        return x, self.decoder_pos_embed.expand(x.shape[0], -1, -1)
 
     def reconstruct_tokens(self, x: torch.Tensor) -> torch.Tensor:
         """Reconstruct patch tokens from an embedding.
@@ -329,12 +329,21 @@ class STPatchEmbed(PatchEmbed):
         # Divide sin and cos embeddings according to size of grid in each dimension
         embed_dims = partition_embed_dim(embed_dim, dim_ratio=self.pos_embed_ratio)
         st_dim = len(self.position_space)
-        conv_fn = _conv_dim_dict[st_dim]
+        conv_fn = _conv_dim_dict[len(self.input_shape)]
         conv_kernel = torch.ones((st_dim, 1) + self.patch_shape) / prod(self.patch_shape)
 
         def embedding(pos: torch.Tensor) -> torch.Tensor:
             # pos shape B, 2, Hh, Ww for 2D patches
             batch_size = pos.shape[0]
+            torch._assert(
+                pos.shape[1] == len(self.position_space),
+                f"{pos.shape[1]}-D position space doesn't match spec. ({len(self.position_space)})"
+                )
+            for dim, (s_pos, s_spec) in enumerate(zip(pos.shape[2:], self.input_shape)):
+                torch._assert(
+                    s_pos == s_spec,
+                    f"Input positions dimension {dim} ({s_pos}) doesn't match spec. ({s_spec})"
+                    )
             pos = conv_fn(
                 pos, conv_kernel, stride=self.patch_shape, groups=st_dim
                 )  # B, 2, H, W for 2D patches
@@ -356,44 +365,54 @@ class STPatchEmbed(PatchEmbed):
         w = self.proj.weight.data
         torch.nn.init.xavier_uniform_(w.view([w.shape[0], -1]))
 
-    def forward(self, x: torch.Tensor, pos: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, st_input: tuple[torch.Tensor, torch.Tensor]
+                ) -> tuple[torch.Tensor, torch.Tensor]:
         """Convert batched spatiotemporal inputs into sequences of patch embeddings.
 
         Shapes are given for the example of a batch of B, C-channel 2D inputs in N-D space,
         with image size (Hh, Ww) and patch size (h, w), with a D-D embedding.
 
         Args:
-            x (torch.Tensor): Batched sequence of inputs, shape e.g. [B, C, Hh, Ww].
-            pos (torch.Tensor): Batched sequence of input locations, shape e.g. [B, Hh, Ww, N].
+            st_input (tuple[torch.Tensor, torch.Tensor]): Spatiotemporal input, combining:
+             * Batched sequence of values, shape e.g. [B, C, Hh, Ww].
+             * Batched sequence of positions, shape e.g. [B, N, Hh, Ww].
 
         Returns:
             tuple[torch.Tensor, torch.Tensor]:
              * Batched sequences of embeddings, shape e.g. [B, HW, D]
              * Batched sequences of position embeddings, shape e.g. [B, HW, D_d]
         """
+        x, pos = st_input
         torch._assert(
             x.shape[1] == self.n_channels,
             f"# of input channels ({x.shape[1]}) doesn't match spec. ({self.n_channels})"
             )
-        torch._assert(
-            pos.shape[1] == len(self.position_space),
-            f"({pos.shape[1]})-D position space doesn't match spec. ({len(self.position_space)})"
-            )
-        sizes_iterator = enumerate(zip(x.shape[2:], pos.shape[2:], self.input_shape))
-        for dim, (s_x, s_pos, s_spec) in sizes_iterator:
+        for dim, (s_x, s_spec) in enumerate(zip(x.shape[2:], self.input_shape)):
             torch._assert(
                 s_x == s_spec,
                 f"Input values dimension {dim} ({s_x}) doesn't match spec. ({s_spec})"
-                )
-            torch._assert(
-                s_pos == s_spec,
-                f"Input positions dimension {dim} ({s_pos}) doesn't match spec. ({s_spec})"
                 )
         x = self.proj(x)  # Project each patch into embedding, by convolution
         x = x.flatten(start_dim=2).transpose(1, 2)  # (B, D, H, W) -> (B, HW, D) for 2D patches
         x = self.norm(x)
         x = x + self.pos_embed(pos)
         return x, self.decoder_pos_embed(pos)
+
+    def tokenify(self, inputs: tuple[torch.Tensor, torch.Tensor]) -> torch.Tensor:
+        """Reshape batched n-D input values into sequences of patch tokens.
+
+        Shapes are given for the example of a batch of B, C-channel 2D images,
+        with image size (Hh, Ww) and patch size (h, w).
+
+        Args:
+            st_input (tuple[torch.Tensor, torch.Tensor]): Spatiotemporal input, combining:
+             * Batched sequence of values, shape e.g. [B, C, Hh, Ww].
+             * Batched sequence of positions, shape e.g. [B, N, Hh, Ww].
+
+        Returns:
+            torch.Tensor: Batched sequences of patch tokens, shape e.g. [B, HW, hwC]
+        """
+        return PatchEmbed.tokenify(self, inputs[0])
 
 
 class BoundedPatchEmbed(STPatchEmbed):
@@ -402,8 +421,16 @@ class BoundedPatchEmbed(STPatchEmbed):
         embed_dims = partition_embed_dim(embed_dim, dim_ratio=self.pos_embed_ratio)
 
         def embedding(bounds_batch: torch.Tensor) -> torch.Tensor:
-            # [[[bottom, top]], [left, right], ...] for 2D patches
+            # [[[bottom, top], [left, right]], ...] for 2D patches
             batch_size = bounds_batch.shape[0]
+            torch._assert(
+                bounds_batch.shape[1] == len(self.position_space),
+                f"{bounds_batch.shape[1]}-D position space doesn't match spec. ({len(self.position_space)})"
+                )
+            torch._assert(
+                bounds_batch.shape[2] == 2,
+                f"Input position bounds (e.g. {bounds_batch[0, 0]}) must be 2-element ranges."
+                )
             pos = torch.cat([
                 torch.cartesian_prod(*[
                     b_min + (b_max - b_min) * torch.arange(0.5, grid_s) / grid_s
