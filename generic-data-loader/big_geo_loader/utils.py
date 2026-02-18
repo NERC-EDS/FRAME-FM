@@ -1,6 +1,6 @@
 import xarray as xr
 from pathlib import Path
-from typing import Type
+from typing import Hashable, Type
 from collections import defaultdict
 import hashlib
 import yaml
@@ -150,7 +150,7 @@ def create_cache_path(data_uri: str, cache_dir: Path | str) -> Path:
     return cache_path   
 
 
-def get_variables(ds: xr.Dataset) -> list[str]: 
+def get_variables(ds: xr.Dataset) -> list[Hashable]: 
     """
     Returns a list of variable IDs from an xarray Dataset, excluding coordinate variables.
     """
