@@ -21,7 +21,7 @@ def convert_to_long_lat(x, y, src_crs, dst_crs="EPSG:4326"):
         raise ValueError("CRS not defined in dataset attributes, cannot convert to lat/lon")
 
 
-class GeotiffDataModule(BaseDataModule):
+class XarrayStaticDataModule(BaseDataModule):
     '''
     A simple DataModule for loading static data from a geotiff file using xarray.
     '''
@@ -71,6 +71,53 @@ class GeotiffDataModule(BaseDataModule):
         ds = rxr.open_rasterio(self.data_root, parse_coordinates=True)
         return ds
 
+    def tile_array(self, array):
+        # sanity check
+        _, nY, nX = array.shape
+        if nY < self.tile_size or nX < self.tile_size:
+            raise ValueError(
+                "DataArray is smaller than minimal tile size required for encoding: "
+                f"{nY}x{nX} < {self.tile_size}x{self.tile_size}"
+                )
+        # tile
+        tiles = array.coarsen(
+            x=self.tile_size, y=self.tile_size, boundary='pad'
+            ).construct(
+            x=("tile_xid", "x"), y=("tile_yid", "y")
+            ).stack(
+            batch_dim=("tile_xid", "tile_yid")
+            ).transpose("batch_dim", "band", "y", "x")
+        # THIS WILL CHANGE
+        # replace nans with zeros (required for PCA for latent space visualization)
+        tiles = tiles.fillna(0)
+        return tiles
+
+    def _create_datasets(self, stage: str | None = None) -> None:
+        """
+        Reads the DataArray from the attributes, tiles it into patches along x
+        and y axis, and outputs stacked tiles. This dataset contains only
+        inputs to b
+
+        AK: the tiling in this way does not preserve relative positions of
+        tiles, so for the exrension to multiple layers the bands need to be
+        stacked first, then tiled.
+        """
+        tiles = self.tile_array(self._raw_data)
+        # to tensor dataset
+        dataset = TensorDataset(torch.tensor(tiles.values, dtype=torch.float32))
+        # split into subsets
+        train_base, val_base, test_base = self._split_dataset(dataset)
+        # transform datasets
+        self.train_dataset = TransformedInputCoordsDataset(train_base, self.train_transforms)
+        self.val_dataset = TransformedInputCoordsDataset(val_base, self.val_transforms)
+        if test_base is None:
+            self.test_dataset = None
+        else:
+            self.test_dataset = TransformedInputCoordsDataset(test_base, self.test_transforms)
+
+
+class GeotiffSpatialDataModule(XarrayStaticDataModule):
+
     def extract_position_tensor(self, array: xarray.DataArray) -> torch.Tensor:
         y, x = xarray.broadcast(array.y, array.x)
         positions = torch.stack([
@@ -90,25 +137,7 @@ class GeotiffDataModule(BaseDataModule):
         tiles, so for the exrension to multiple layers the bands need to be
         stacked first, then tiled.
         """
-        array = self._raw_data
-        # sanity check
-        _, nY, nX = array.shape
-        if nY < self.tile_size or nX < self.tile_size:
-            raise ValueError(
-                "DataArray is smaller than minimal tile size required for encoding: "
-                f"{nY}x{nX} < {self.tile_size}x{self.tile_size}"
-                )
-        # tile
-        tiles = array.coarsen(
-            x=self.tile_size, y=self.tile_size, boundary='pad'
-            ).construct(
-            x=("tile_xid", "x"), y=("tile_yid", "y")
-            ).stack(
-            batch_dim=("tile_xid", "tile_yid")
-            ).transpose("batch_dim", "band", "y", "x")
-        # THIS WILL CHANGE
-        # replace nans with zeros (required for PCA for latent space visualization)
-        tiles = tiles.fillna(0)
+        tiles = self.tile_array(self._raw_data)
         # to tensor dataset
         spatial_dataset = TensorDataset(
             torch.tensor(tiles.values, dtype=torch.float32),
@@ -125,7 +154,7 @@ class GeotiffDataModule(BaseDataModule):
             self.test_dataset = TransformedInputCoordsDataset(test_base, self.test_transforms)
 
 
-class GeotiffBoundedDataModule(GeotiffDataModule):
+class GeotiffBoundedDataModule(GeotiffSpatialDataModule):
     def extract_position_tensor(self, tiles: xarray.DataArray) -> torch.Tensor:
         # get bounds for each tile
         dx = (tiles.x[:, 1] - tiles.x[:, 0]) / 2
@@ -150,7 +179,7 @@ def main():
         )
     # try initializing the dataloader
     tile_size = 128
-    data_module = GeotiffDataModule(data_root=geotiff_path.as_posix(), tile_size=tile_size)
+    data_module = GeotiffSpatialDataModule(data_root=geotiff_path.as_posix(), tile_size=tile_size)
     data_module.setup()
     for tile_id in range(len(data_module.train_dataset)):
         tile_values, tile_positions = data_module.train_dataset[tile_id]
@@ -162,7 +191,7 @@ def main():
     tile_bounds = tile_bounds.tolist()
 
     if DEBUG:
-        print("GeotiffDataModule:")
+        print("GeotiffSpatialDataModule:")
         print("_________________")
         print(f"Train dataset length: {len(data_module.train_dataset)}")
         print(f"Validation dataset length: {len(data_module.val_dataset)}")
@@ -171,6 +200,7 @@ def main():
         print(f"First non-zero tile #{tile_id}")
         print(f"Values shape (should be nBands, {tile_size}, {tile_size}): {tile_values.shape}")
         print(f"Positions shape (should be 2, {tile_size}, {tile_size}): {tile_positions.shape}")
+        print()
         print("GeotiffBoundedDataModule:")
         print("_________________")
         print(f"Bounds: {tile_bounds}")
