@@ -12,6 +12,7 @@
 # timm: https://github.com/rwightman/pytorch-image-models/tree/master/timm
 # --------------------------------------------------------
 
+from abc import ABC, abstractmethod
 from collections.abc import Callable
 from math import prod
 import numpy as np
@@ -64,25 +65,30 @@ def sincos_embed_coords(
     return torch.cat([torch.sin(phases), torch.cos(phases)], dim=1)  # (M, 2D)
 
 
-class BaseEmbedder(torch.nn.Module):
+class BaseEmbedder(torch.nn.Module, ABC):
     n_patches: int
     embed_dim: int
     reconstruct_dim: int
 
+    @abstractmethod
     def initialize_weights(self):
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def tokenify(self, inpt: torch.Tensor) -> torch.Tensor:
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def forward(self, inpt: torch.Tensor) -> torch.Tensor:
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def reconstruct_tokens(self, embedding: torch.Tensor) -> torch.Tensor:
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def untokenify(self, inpt: torch.Tensor) -> torch.Tensor:
-        raise NotImplementedError
+        pass
 
 
 class PatchEmbed(BaseEmbedder):
@@ -260,10 +266,8 @@ class PatchEmbed(BaseEmbedder):
                 * Batched sequences of positions, shape e.g. [B, HW, D]
         """
         for dim, (s_actual, s_expected) in enumerate(zip(x.shape[2:], self.input_shape)):
-            torch._assert(
-                s_actual == s_expected,
+            assert s_actual == s_expected, \
                 f"Input dimension {dim} ({s_actual}) doesn't match specification ({s_expected})"
-                )
         x = self.proj(x)  # Project each patch into embedding, by convolution
         x = x.flatten(start_dim=2).transpose(1, 2)  # (B, D, H, W) -> (B, HW, D) for 2D patches
         x = self.norm(x)
@@ -335,15 +339,11 @@ class STPatchEmbed(PatchEmbed):
         def embedding(pos: torch.Tensor) -> torch.Tensor:
             # pos shape B, 2, Hh, Ww for 2D patches
             batch_size = pos.shape[0]
-            torch._assert(
-                pos.shape[1] == len(self.position_space),
+            assert pos.shape[1] == len(self.position_space), \
                 f"{pos.shape[1]}-D position space doesn't match spec. ({len(self.position_space)})"
-                )
             for dim, (s_pos, s_spec) in enumerate(zip(pos.shape[2:], self.input_shape)):
-                torch._assert(
-                    s_pos == s_spec,
+                assert s_pos == s_spec, \
                     f"Input positions dimension {dim} ({s_pos}) doesn't match spec. ({s_spec})"
-                    )
             pos = conv_fn(
                 pos, conv_kernel, stride=self.patch_shape, groups=st_dim
                 )  # B, 2, H, W for 2D patches
@@ -383,15 +383,11 @@ class STPatchEmbed(PatchEmbed):
              * Batched sequences of position embeddings, shape e.g. [B, HW, D_d]
         """
         x, pos = st_input
-        torch._assert(
-            x.shape[1] == self.n_channels,
+        assert x.shape[1] == self.n_channels, \
             f"# of input channels ({x.shape[1]}) doesn't match spec. ({self.n_channels})"
-            )
         for dim, (s_x, s_spec) in enumerate(zip(x.shape[2:], self.input_shape)):
-            torch._assert(
-                s_x == s_spec,
+            assert s_x == s_spec, \
                 f"Input values dimension {dim} ({s_x}) doesn't match spec. ({s_spec})"
-                )
         x = self.proj(x)  # Project each patch into embedding, by convolution
         x = x.flatten(start_dim=2).transpose(1, 2)  # (B, D, H, W) -> (B, HW, D) for 2D patches
         x = self.norm(x)
@@ -423,14 +419,10 @@ class BoundedPatchEmbed(STPatchEmbed):
         def embedding(bounds_batch: torch.Tensor) -> torch.Tensor:
             # [[[bottom, top], [left, right]], ...] for 2D patches
             batch_size = bounds_batch.shape[0]
-            torch._assert(
-                bounds_batch.shape[1] == len(self.position_space),
+            assert bounds_batch.shape[1] == len(self.position_space), \
                 f"{bounds_batch.shape[1]}-D position space doesn't match spec. ({len(self.position_space)})"
-                )
-            torch._assert(
-                bounds_batch.shape[2] == 2,
+            assert bounds_batch.shape[2] == 2, \
                 f"Input position bounds (e.g. {bounds_batch[0, 0]}) must be 2-element ranges."
-                )
             pos = torch.cat([
                 torch.cartesian_prod(*[
                     b_min + (b_max - b_min) * torch.arange(0.5, grid_s) / grid_s
