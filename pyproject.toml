@@ -47,7 +47,10 @@ requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [tool.uv]
-package = false
+package = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/FRAME_FM"]
 
 [tool.hatch.version]
 source = "vcs"
