@@ -23,7 +23,7 @@ def convert_to_long_lat(x, y, src_crs, dst_crs="EPSG:4326"):
 
 class XarrayStaticDataModule(BaseDataModule):
     '''
-    A simple DataModule for loading static data from a geotiff file using xarray.
+    A simple DataModule for loading tiled static data from a geotiff file using xarray.
     '''
     train_dataset: TransformedInputCoordsDataset
     val_dataset: TransformedInputCoordsDataset
@@ -60,18 +60,15 @@ class XarrayStaticDataModule(BaseDataModule):
         )
         self.tile_size = tile_size
 
-    # def __len__(self):
-    #     return len(self.ar[self.batch_dim])
-
-    # def __getitem__(self, idx):
-    #     return self.ar[{self.batch_dim: idx}].values
-
-    def _load_raw_data(self):
+    def _load_raw_data(self) -> xarray.DataArray:
         # currently reading a single file
-        ds = rxr.open_rasterio(self.data_root, parse_coordinates=True)
-        return ds
+        ds = rxr.open_rasterio(self.data_root)
+        if isinstance(ds, xarray.DataArray):
+            return ds
+        else:
+            raise ValueError("data_root must be a single filename")
 
-    def tile_array(self, array):
+    def tile_array(self, array: xarray.DataArray) -> xarray.DataArray:
         # sanity check
         _, nY, nX = array.shape
         if nY < self.tile_size or nX < self.tile_size:
@@ -110,14 +107,15 @@ class XarrayStaticDataModule(BaseDataModule):
         # transform datasets
         self.train_dataset = TransformedInputCoordsDataset(train_base, self.train_transforms)
         self.val_dataset = TransformedInputCoordsDataset(val_base, self.val_transforms)
-        if test_base is None:
-            self.test_dataset = None
-        else:
-            self.test_dataset = TransformedInputCoordsDataset(test_base, self.test_transforms)
+        self.test_dataset = None if test_base is None else TransformedInputCoordsDataset(
+            test_base, self.test_transforms
+            )
 
 
 class GeotiffSpatialDataModule(XarrayStaticDataModule):
-
+    '''
+    Module for loading tiled values and their positions from a geotiff file, using xarray.
+    '''
     def extract_position_tensor(self, array: xarray.DataArray) -> torch.Tensor:
         y, x = xarray.broadcast(array.y, array.x)
         positions = torch.stack([
@@ -128,15 +126,6 @@ class GeotiffSpatialDataModule(XarrayStaticDataModule):
         return positions
 
     def _create_datasets(self, stage: str | None = None) -> None:
-        """
-        Reads the DataArray from the attributes, tiles it into patches along x
-        and y axis, and outputs stacked tiles. This dataset contains only
-        inputs to b
-
-        AK: the tiling in this way does not preserve relative positions of
-        tiles, so for the exrension to multiple layers the bands need to be
-        stacked first, then tiled.
-        """
         tiles = self.tile_array(self._raw_data)
         # to tensor dataset
         spatial_dataset = TensorDataset(
@@ -148,13 +137,15 @@ class GeotiffSpatialDataModule(XarrayStaticDataModule):
         # transform datasets
         self.train_dataset = TransformedInputCoordsDataset(train_base, self.train_transforms)
         self.val_dataset = TransformedInputCoordsDataset(val_base, self.val_transforms)
-        if test_base is None:
-            self.test_dataset = None
-        else:
-            self.test_dataset = TransformedInputCoordsDataset(test_base, self.test_transforms)
+        self.test_dataset = None if test_base is None else TransformedInputCoordsDataset(
+            test_base, self.test_transforms
+            )
 
 
 class GeotiffBoundedDataModule(GeotiffSpatialDataModule):
+    '''
+    Module for loading tiled values and tile coordinate bounds from a geotiff file, using xarray.
+    '''
     def extract_position_tensor(self, tiles: xarray.DataArray) -> torch.Tensor:
         # get bounds for each tile
         dx = (tiles.x[:, 1] - tiles.x[:, 0]) / 2
