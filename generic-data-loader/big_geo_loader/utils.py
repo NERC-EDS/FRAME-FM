@@ -42,30 +42,31 @@ def load_data_from_selector(selector: dict) -> xr.Dataset:
     # Load dataset from URI
     engine = _map_uri_to_engine(uri)
     ds = xr.open_dataset(uri, engine=engine, chunks="auto")
+    return ds
     
-    # Copy global metadata from the original dataset if needed (optional, depending on use case)
-    dset.attrs.update(ds.attrs)
+    # # Copy global metadata from the original dataset if needed (optional, depending on use case)
+    # dset.attrs.update(ds.attrs)
 
-    # Get common subset selection criteria if provided
-    common_subset = selector.get("common", {}).get("subset", {})
-    variables = selector.get("variables", {})
+    # # Get common subset selection criteria if provided
+    # common_subset = selector.get("common", {}).get("subset", {})
+    # variables = selector.get("variables", {})
 
-    # Load data from the specified URI using the selection criteria
-    # This function should handle the logic for loading data, applying selections, and returning the data
-    print(f"Loading data from URI: {uri} using engine: {engine}")
+    # # Load data from the specified URI using the selection criteria
+    # # This function should handle the logic for loading data, applying selections, and returning the data
+    # print(f"Loading data from URI: {uri} using engine: {engine}")
 
-    for var_id in variables:
-        # Use common subset selectors unless overridden by variable-specific selectors
-        subset_selectors = variables[var_id].get("subset", common_subset).copy()
-        subset_selectors = convert_subset_selectors_to_slices(subset_selectors)
+    # for var_id in variables:
+    #     # Use common subset selectors unless overridden by variable-specific selectors
+    #     subset_selectors = variables[var_id].get("subset", common_subset).copy()
+    #     subset_selectors = convert_subset_selectors_to_slices(subset_selectors)
 
-        if subset_selectors:
-            print(f"Subsetting variable: {var_id} with selectors: {subset_selectors}")
-            dset[var_id] = ds[var_id].sel(**subset_selectors)
-            print(f"Var size difference after subsetting: {dset[var_id].size/(2**20):<.5f}MB / {ds[var_id].size/(2**20):<.5f}MB")
-        else:
-            print(f"No selection criteria provided for variable: {var_id}. Loading full variable.")
-            dset[var_id] = ds[var_id]
+    #     if subset_selectors:
+    #         print(f"Subsetting variable: {var_id} with selectors: {subset_selectors}")
+    #         dset[var_id] = ds[var_id].sel(**subset_selectors)
+    #         print(f"Var size difference after subsetting: {dset[var_id].size/(2**20):<.5f}MB / {ds[var_id].size/(2**20):<.5f}MB")
+    #     else:
+    #         print(f"No selection criteria provided for variable: {var_id}. Loading full variable.")
+    #         dset[var_id] = ds[var_id]
 
     return dset
 
@@ -147,7 +148,7 @@ def create_cache_path(data_uri: str, cache_dir: Path | str) -> Path:
     "Create cache path from URI."
     zarr_name  = create_zarr_name(data_uri)
     cache_path = Path(cache_dir) / zarr_name
-    return cache_path   
+    return cache_path
 
 
 def get_variables(ds: xr.Dataset) -> list[Hashable]: 
@@ -170,8 +171,10 @@ def open_cached_zarrs(uris: list[str], cache_dir: Path | str) -> dict:
 
     return var_zarr_dict
 
-def load_data_from_uri(uri: str, subset_selection: dict) -> xr.Dataset:
+
+def load_data_from_uri(uri: str, subset_selection: dict|None = None) -> xr.Dataset:
     # Load dataset from URI
+    subset_selection = subset_selection or {}
     engine = _map_uri_to_engine(uri)
     ds = xr.open_dataset(uri, engine=engine, chunks="auto")
     ds = ds.sel(**subset_selection)

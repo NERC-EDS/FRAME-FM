@@ -18,15 +18,11 @@ def main():
             {   
                 "uri": "https://gws-access.jasmin.ac.uk/public/eds_ai/era5_repack/aggregations/data/ecmwf-era5X_oper_an_sfc_2000_2020_2d_repack.kr1.0.json",
                 "common": {
-                    "subset": {
-                        "time": ["2000-01-01 00:00:00", "2000-01-10 23:00:00"],
-                        "latitude": [60, -67.8],
-                        "longitude": [10, 137.8]
-                    },
                     "pre_transforms": [
-                        {"type": "rename", "var_id": "d2m", "new_name": "dewpoint_temperature"},
                         {"type": "roll", "dim": "longitude", "shift": None},
-                        {"type": "reverse_axis", "dim": "latitude"}
+                        {"type": "reverse_axis", "dim": "latitude"},
+                        {"type": "subset", "time": ["2000-01-01 00:00:00", "2000-01-10 23:00:00"], "latitude": [-30, 60], "longitude": [-40, 100]},
+                        {"type": "rename", "var_id": "d2m", "new_name": "dewpoint_temperature"},
                     ],
                     "pre_transform_rule": "append",  # or "override" to replace common pre-transforms with variable-specific ones
                     "chunks": {"time": 48}  # Example chunking strategy, can be adjusted as needed
@@ -38,15 +34,11 @@ def main():
             {   
                 "uri": "https://gws-access.jasmin.ac.uk/public/eds_ai/era5_repack/aggregations/data/ecmwf-era5X_oper_an_sfc_2000_2020_2t_repack.kr1.0.json",
                 "common": {
-                    "subset": {
-                        "time": ["2000-01-01 00:00:00", "2000-01-10 23:00:00"],
-                        "latitude": [60, -67.8],
-                        "longitude": [10, 137.8]
-                    },
                     "pre_transforms": [
-                        {"type": "rename", "var_id": "t2m", "new_name": "surface_temperature"},
                         {"type": "roll", "dim": "longitude", "shift": None},
-                        {"type": "reverse_axis", "dim": "latitude"}
+                        {"type": "reverse_axis", "dim": "latitude"},
+                        {"type": "subset", "time": ["2000-01-01 00:00:00", "2000-01-10 23:00:00"], "latitude": [-30, 60], "longitude": [-40, 100]},
+                        {"type": "rename", "var_id": "t2m", "new_name": "dewpoint_temperature"},
                     ],
                     "pre_transform_rule": "append",  # or "override" to replace common pre-transforms with variable-specific ones
                     "chunks": {"time": 48}  # Example chunking strategy, can be adjusted as needed
@@ -113,7 +105,8 @@ def main():
     for counter, batch in enumerate(dataloader): 
         print(f"\nBatch counter: {counter + 1}: Batch shape: {batch.shape}, dtype: {batch.dtype}") 
         # print("Exiting loop after one iteration.")
-        # break  # Just show the first batch for demonstration
+        if counter > 2: 
+            break  # Just show the first batch for demonstration
 
     # Now let's demonstrate loading the dataset into a PyTorch Model with a basic training loop.
     # This is just a placeholder example to show how the dataset can be used in a training loop.
@@ -122,7 +115,7 @@ def main():
     # The batch size, including the batch dimension is: [8, 2, 641, 604], so let's create a simple
     # PyTorch model that uses the 2 channels (dewpoint_temperature and surface_temperature).
     class SimpleModel(torch.nn.Module):
-        input_shape = (2, 512, 512)
+        input_shape = (2, 361, 561)
 
         def __init__(self):
             super(SimpleModel, self).__init__()
@@ -156,11 +149,12 @@ def main():
             outputs = model(batch)
             
             # Because all pretend, need to match shapes (because this isn't done properly)
-            resized_outputs = outputs[:, :2].unsqueeze(-1).unsqueeze(-1).repeat(1,1,512,512)
+            resized_outputs = outputs[:, :2].unsqueeze(-1).unsqueeze(-1).repeat(1,1,361, 561)
             loss = criterion(resized_outputs, batch)
             loss.backward()
             optimizer.step()
             print(f"Epoch {epoch + 1}, Batch: {batch_number + 1}, Loss: {loss.item()}")
+
 
     print("\nFinished training loop demonstration.")
 

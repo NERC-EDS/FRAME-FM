@@ -24,9 +24,6 @@ def cache_data_to_zarr(selectors: list[dict],
     # Ensure pre_transformas are list
     pre_transforms = pre_transforms or []
 
-    # # Set up a dictionary to keep track of the mapping from (uri, var_id) to Zarr file paths
-    # var_zarr_dict = {}
-
     # Create the cache directory if it doesn't exist
     Path(cache_dir).mkdir(parents=True, exist_ok=True)
 
@@ -34,8 +31,10 @@ def cache_data_to_zarr(selectors: list[dict],
     data_uris = []
 
     for selector in selectors:
-        # Load the data from the URI
+        # Load the data from the URI, without applying any subset or transforms
         ds = load_data_from_selector(selector)
+
+        # Set the rules
         variables = selector.get("variables", {})
         common_pre_transforms = selector.get("common", {}).get("pre_transforms", [])
         transform_rule = selector.get("common", {}).get("pre_transform_rule", "append")

@@ -4,13 +4,44 @@ import numpy as np
 DA = xr.DataArray
 DS = xr.Dataset
 
-from .utils import check_object_type
+from .utils import check_object_type, convert_subset_selectors_to_slices
 import torch
 
 
 class BaseTransform:
     def __call__(self, sample, *args, **kwargs):
         raise NotImplementedError("Transform must implement the __call__ method.")
+
+class SubsetTransform(BaseTransform):
+    def __init__(self, **subset_selectors):
+        if "variables" in subset_selectors:
+            self.variables = subset_selectors.pop("variables")
+        else:
+            self.variables = None
+        self.subset_selectors = convert_subset_selectors_to_slices(subset_selectors)
+
+    def __call__(self, sample):
+        # Implement subsetting logic here
+        check_object_type(sample, allowed_types=(DS, DA))
+
+        if self.variables is None:
+            # If no specific variables are provided, apply the subset to all variables in 
+            # the Dataset or the single DataArray
+            return sample.sel(**self.subset_selectors)
+        
+        # If we have variables then we need to create a new Dataset with only those 
+        # variables and apply the subset selectors to each variable
+        ds = xr.Dataset()
+        ds.attrs.update(sample.attrs)
+
+        for var_id in self.variables:
+            # Use common subset selectors unless overridden by variable-specific selectors
+            if self.subset_selectors:
+                ds[var_id] = sample[var_id].sel(**self.subset_selectors)
+            else:
+                ds[var_id] = sample[var_id]
+
+        return ds
 
 class NormalizeTransform(BaseTransform):
     def __call__(self, sample, mean: float, std: float):
@@ -65,7 +96,6 @@ class RollTransform(BaseTransform):
         coord_vals = rolled.coords[self.dim].values
         rolled.coords[self.dim] = np.where(coord_vals >= 180., coord_vals - 360., coord_vals)
 
-        print("NEED TESTING HERE TO CHECK THIS ROLLING LOGIC WORKS AS EXPECTED...")
         return rolled
     
 class ReverseAxisTransform(BaseTransform):
@@ -89,6 +119,7 @@ class ToTensor(BaseTransform):
 
 
 transform_mapping = {
+    "subset": SubsetTransform,
     "normalize": NormalizeTransform,
     "resize": ResizeTransform,
     "rename": RenameTransform,
