@@ -83,10 +83,6 @@ def cache_data_to_zarr(selectors: list[dict],
             # Generate and save statistics for the cached data
             print("\nHandle Stats here... (placeholder)")
 
-        # # Update the response dictionary
-        # processed_var_ids = [v for v in ds.variables if v not in ds.coords]
-        # var_zarr_dict[data_uri] = {"zarr_path": cache_path, "variables": processed_var_ids}
-
     print("\nFinished processing all selectors.")
 
     # Now load the cached Zarr files into memory and add to the response dictionary
