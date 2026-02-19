@@ -170,31 +170,44 @@ def main():
         )
     # try initializing the dataloader
     tile_size = 128
-    data_module = GeotiffSpatialDataModule(data_root=geotiff_path.as_posix(), tile_size=tile_size)
+    data_module = GeotiffSpatialDataModule(
+        data_root=geotiff_path.as_posix(), tile_size=tile_size
+        )
     data_module.setup()
-    for tile_id in range(len(data_module.train_dataset)):
-        tile_values, tile_positions = data_module.train_dataset[tile_id]
-        if (tile_values != 0).any():
+    train_dataloader = data_module.train_dataloader()
+    for batch_id, (batch_values, batch_positions) in enumerate(train_dataloader):
+        non_zero_tile = (batch_values != 0).any(dim=(1, 2, 3))
+        if non_zero_tile.any():
+            tile_id = non_zero_tile.int().argmax()
             break
-    bounded_data_module = GeotiffBoundedDataModule(data_root=geotiff_path.as_posix(), tile_size=tile_size)
+    tile_values, tile_positions = batch_values[tile_id], batch_positions[tile_id]
+    bounded_data_module = GeotiffBoundedDataModule(
+        data_root=geotiff_path.as_posix(), tile_size=tile_size
+        )
     bounded_data_module.setup()
-    _, tile_bounds = bounded_data_module.train_dataset[tile_id]
-    tile_bounds = tile_bounds.tolist()
+    train_dataloader = bounded_data_module.train_dataloader()
+    for bbatch_values, batch_bounds in train_dataloader:
+        tile_matches = (bbatch_values == tile_values.unsqueeze(0)).all(dim=(1, 2, 3))
+        if tile_matches.any():
+            tile_id = tile_matches.int().argmax()
+            break
+    tile_bounds = batch_bounds[tile_id]
 
     if DEBUG:
         print("GeotiffSpatialDataModule:")
         print("_________________")
-        print(f"Train dataset length: {len(data_module.train_dataset)}")
-        print(f"Validation dataset length: {len(data_module.val_dataset)}")
+        print(f"Train dataloader batches: {len(data_module.train_dataset)}")
+        print(f"Validation dataloader batches: {len(data_module.val_dataset)}")
         if data_module.test_dataset is not None:
-            print(f"Test dataset length: {len(data_module.test_dataset)}")
-        print(f"First non-zero tile #{tile_id}")
+            print(f"Test dataloader batches: {len(data_module.test_dataset)}")
+        print(f"First non-zero training batch #{batch_id}")
+        print(f"First non-zero tile #{tile_id} of {batch_values.shape[0]} in batch")
         print(f"Values shape (should be nBands, {tile_size}, {tile_size}): {tile_values.shape}")
         print(f"Positions shape (should be 2, {tile_size}, {tile_size}): {tile_positions.shape}")
         print()
         print("GeotiffBoundedDataModule:")
         print("_________________")
-        print(f"Bounds: {tile_bounds}")
+        print(f"Bounds shape (should be 2, 2): {tile_bounds.shape}")
 
     if PLOTTING:
         fig_path = Path("./experiments/figures/")
@@ -210,7 +223,8 @@ def main():
                 )
             ax.set_title(f"Band {band}")
         fig.colorbar(sm, ax=axs, label="% coverage")
-        fig.suptitle(f"Land cover in OSGB bounds {tile_bounds[1]}, {tile_bounds[0]}")
+        x_bounds, y_bounds = tile_bounds[0].tolist(), tile_bounds[1].tolist()
+        fig.suptitle(f"Land cover in OSGB bounds {x_bounds}, {y_bounds}")
         fig.savefig(fig_path / "geotiff_bands.png")
         # ^ this is meant to be in percentages of 10 aggregate classes
 
