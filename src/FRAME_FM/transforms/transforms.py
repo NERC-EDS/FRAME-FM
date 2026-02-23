@@ -4,7 +4,6 @@ import numpy as np
 DA = xr.DataArray
 DS = xr.Dataset
 
-from .utils import check_object_type, convert_subset_selectors_to_slices
 import torch
 
 
@@ -41,6 +40,7 @@ def convert_subset_selectors_to_slices(selector: dict) -> dict:
     """
     new_selector = {key: slice(low, high) for key, (low, high) in selector.items()}
     return new_selector
+
 
 class BaseTransform:
     def __call__(self, sample, *args, **kwargs):
@@ -142,7 +142,7 @@ class ReverseAxisTransform(BaseTransform):
         ds_rev = sample.isel(**{self.dim: slice(None, None, -1)})
         return ds_rev
 
-class ToTensor(BaseTransform):
+class ToTensorTransform(BaseTransform):
     def __call__(self, sample):
         # Implement conversion to PyTorch tensor here
         check_object_type(sample, allowed_types=(DA, np.ndarray))
@@ -160,7 +160,7 @@ transform_mapping = {
     "roll": RollTransform,
     "scale": ScaleTransform,
     "reverse_axis": ReverseAxisTransform,
-    "to_tensor": ToTensor
+    "to_tensor": ToTensorTransform,
 }
 
 
