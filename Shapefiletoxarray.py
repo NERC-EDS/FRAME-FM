@@ -4,18 +4,21 @@ import xarray as xr
 from rasterio.features import rasterize
 from affine import Affine
 from sklearn.preprocessing import OrdinalEncoder
-
+import yaml
 
 class Shapefiletoxarray:
-    def __init__(self, resolution):
+    def __init__(self, config_path):
         """
         Parameters
         ----------
         resolution : float
             Target grid resolution in coordinate units.
         """
-        self.resolution = resolution
         self.category_mappings = {}   # Stores category→integer mappings for each shapefile/column
+
+        #Initialise from confing.
+        cfg_in = self.load_yaml_ordered(config_path)
+        self.build_inputs_from_config(cfg_in)
 
 
     # ----------------------------------------------------------
@@ -125,43 +128,131 @@ class Shapefiletoxarray:
 
         return ds
 
+    # Code to read in and decode the config yaml file.
+    def load_yaml_ordered(self, path):
+        with open(path, "r") as f:
+            return yaml.safe_load(f) or {}
 
-#Set a file list.
-shp_files = ['/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_parent_material_1km/data/SPMM_1km/SoilParentMateriall_V1_portal1km.shp',
-             '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/model_estimates_of_topsoil_carbon/data/CS_topsoil_carbon.shp',
-             '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/model_estimates_of_topsoil_pH_and_bulk_density/data/CS_topsoil_pH_bulkDensity.shp']
+    # Extract the correct file lists from the config file.
+    def build_inputs_from_config(self, cfg):
+
+        
+        # --- Required fields ---
+        if "resolution" not in cfg:
+            raise ValueError("config must define top-level 'resolution'.")
+        if "sources" not in cfg or not cfg["sources"]:
+            raise ValueError("config must define 'sources' with at least one entry.")
+
+        # Get the sources and resolution from the config.
+        self.resolution = cfg["resolution"]
+        sources = cfg["sources"]
+
+        # Populate the file_list, categorical columns and the variable map.
+        self.file_list    = []
+        self.cat_cols_map = {}
+        self.var_out_map  = {}
+        self.parent_grd   = []
+
+        for src_name, s in sources.items():
+
+            # Get the files.
+            file_path = s.get("file")
+            if not file_path:
+                raise ValueError(f"Source '{src_name}' is missing 'file'.")
+
+            self.file_list.append(file_path)
+
+            # Also extract the parent grid.
+            par_grd = s.get("parent_grid")
+            if not par_grd:
+               raise ValueError(f"Source '{src_name}' is missing 'parent_grid'.")
+            # Also check to see that at least one shapefile is defined as the parent grid.
+            if not any(test):
+                raise ValueError(f"No parent grid defined. Please correct config.")
+            elif  sum(x is True for x in test) > 1:
+                raise ValueError(f"More the one parent grid defined. Please correct config")
+            else:
+                self.parent_grd = self.file_list[par.grd.index(True)]
 
 
-#Set up some test categorical columns to convery to integers.
-all_cat_cols = { '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_parent_material_1km/data/SPMM_1km/SoilParentMateriall_V1_portal1km.shp': ['ESB_DESC','CARB_CNTNT','PMM_GRAIN','SOIL_GROUP','SOIL_TEX','SOIL_DEPTH'],
-                 '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/model_estimates_of_topsoil_carbon/data/CS_topsoil_carbon.shp': None,
-                 '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/model_estimates_of_topsoil_pH_and_bulk_density/data/CS_topsoil_pH_bulkDensity.shp': None
-}
+            # Now do the categorical columns.
+            cat_cols = s.get("categorical_columns", None)
+            # normalize empty list to [] and null to None
+            if cat_cols is None:
+                self.cat_cols_map[file_path] = None
+            elif isinstance(cat_cols, list):
+                self.cat_cols_map[file_path] = cat_cols
+            else:
+                raise ValueError(f"'categorical_columns' for '{src_name}' must be a list or null.")
 
-#Create the variable map to produce the final output.
-var_out_map = { '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_parent_material_1km/data/SPMM_1km/SoilParentMateriall_V1_portal1km.shp': ['ESB_DESC','CARB_CNTNT','PMM_GRAIN','SOIL_GROUP','SOIL_TEX','SOIL_DEPTH'],
-                '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/model_estimates_of_topsoil_carbon/data/CS_topsoil_carbon.shp': ['CCONC_07'],
-                '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/model_estimates_of_topsoil_pH_and_bulk_density/data/CS_topsoil_pH_bulkDensity.shp': ['BULKD_07']
-}
+            # Finally build the variable map.
+            var_cols = s.get("variables", None) 
+            # normalize empty list to [] and null to None
+            if var_cols is None:
+                self.var_out_map[file_path] = None
+            elif isinstance(var_cols, list):
+                self.var_out_map[file_path] = var_cols
+            else:
+                raise ValueError(f"'variables' for '{src_name}' must be a list or null.")
+            
+
+#Set the short names for files for reference.
+# shp_sname = ['Soil_parent','Soil_Carbon','Soil_prop']
+
+# #Set a file list.
+# shp_files = ['/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_parent_material_1km/data/SPMM_1km/SoilParentMateriall_V1_portal1km.shp',
+#              '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/model_estimates_of_topsoil_carbon/data/CS_topsoil_carbon.shp',
+#              '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/model_estimates_of_topsoil_pH_and_bulk_density/data/CS_topsoil_pH_bulkDensity.shp']
 
 
-#Move the following lines into one final wrapper function that will run the whole process.
-#Ideally try and get the above dictionaries to be read in as a yaml/config file?
+# #Set up some test categorical columns to convery to integers.
+# all_cat_cols = { '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_parent_material_1km/data/SPMM_1km/SoilParentMateriall_V1_portal1km.shp': ['ESB_DESC','CARB_CNTNT','PMM_GRAIN','SOIL_GROUP','SOIL_TEX','SOIL_DEPTH'],
+#                  '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/model_estimates_of_topsoil_carbon/data/CS_topsoil_carbon.shp': None,
+#                  '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/model_estimates_of_topsoil_pH_and_bulk_density/data/CS_topsoil_pH_bulkDensity.shp': None
+# }
 
-#Create the class.
-r = Shapefiletoxarray(resolution=1000.0)
+# #Create the variable map to produce the final output.
+# var_out_map = { '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_parent_material_1km/data/SPMM_1km/SoilParentMateriall_V1_portal1km.shp': ['ESB_DESC','CARB_CNTNT','PMM_GRAIN','SOIL_GROUP','SOIL_TEX','SOIL_DEPTH'],
+#                 '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/model_estimates_of_topsoil_carbon/data/CS_topsoil_carbon.shp': ['CCONC_07'],
+#                 '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/model_estimates_of_topsoil_pH_and_bulk_density/data/CS_topsoil_pH_bulkDensity.shp': ['BULKD_07']
+# }
+
+
+# #Move the following lines into one final wrapper function that will run the whole process.
+# #Ideally try and get the above dictionaries to be read in as a yaml/config file?
+
+# #Create the class.
+# r = Shapefiletoxarray(resolution=1000.0)
+
+# #Read the shapefiles.
+# r.proc_shapefiles(shp_files, parent_grd=shp_files[0], categorical_columns=all_cat_cols)
+
+# #Build the parent grid.
+# r.build_parent_grid()
+
+# #Create the xarray dataset.
+# ds = r.to_xarray(var_out_map)
+
+# print(ds)
+
+#print(r.gdfs['/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_parent_material_1km/data/SPMM_1km/SoilParentMateriall_V1_portal1km.shp'].head())
+# for test in var_out_map:
+#     print(var_out_map[test])
+
+r = Shapefiletoxarray('config.yaml')
+
+print(r.resolution)
+print(r.file_list)
+print(r.cat_cols_map)
+print(r.var_out_map)
 
 #Read the shapefiles.
-r.proc_shapefiles(shp_files, parent_grd=shp_files[0], categorical_columns=all_cat_cols)
+r.proc_shapefiles(r.file_list, parent_grd=r.file_list[0], categorical_columns=r.cat_cols_map)
 
 #Build the parent grid.
 r.build_parent_grid()
 
 #Create the xarray dataset.
-ds = r.to_xarray(var_out_map)
+ds = r.to_xarray(r.var_out_map)
 
 print(ds)
-
-#print(r.gdfs['/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_parent_material_1km/data/SPMM_1km/SoilParentMateriall_V1_portal1km.shp'].head())
-# for test in var_out_map:
-#     print(var_out_map[test])
