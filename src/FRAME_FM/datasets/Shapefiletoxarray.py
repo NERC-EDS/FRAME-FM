@@ -26,7 +26,6 @@ class Shapefiletoxarray:
     # ----------------------------------------------------------
     def proc_shapefiles(self, file_list, parent_grd, categorical_columns):
         # """Load a list of shapefiles into GeoDataFrames."""
-        # self.gdfs = [gpd.read_file(f) for f in file_list]
         self.gdfs = {}
   
         # Loop over each file and convert caterogical columns as needed.
@@ -129,7 +128,7 @@ class Shapefiletoxarray:
         ds = xr.Dataset(
             data_vars=data_vars,
             coords={"x": self.x, "y": self.y},
-            attrs={"resolution": self.resolution}
+            attrs={"resolution": self.resolution, "crs": self.target_crs}
         )
 
         self.dataset_out = ds
@@ -148,9 +147,12 @@ class Shapefiletoxarray:
             raise ValueError("config must define top-level 'resolution'.")
         if "sources" not in cfg or not cfg["sources"]:
             raise ValueError("config must define 'sources' with at least one entry.")
+        if "target_crs" not in cfg:
+            raise ValueError("config must define top-level 'target_crs'.")
 
         # Get the sources and resolution from the config.
         self.resolution = cfg["resolution"]
+        self.target_crs = cfg["target_crs"]
         sources = cfg["sources"]
 
         # Populate the file_list, categorical columns and the variable map.
@@ -219,61 +221,21 @@ class Shapefiletoxarray:
         #Create the xarray dataset.
         ds = self.to_xarray(self.var_out_map)
 
+#Main function to run code.
+def main():
 
+    # Specify the path to the config file. 
+    cfg_path = '../../../configs/data/config_FRAME_shpfiles.yaml'
 
-#Set the short names for files for reference.
-# shp_sname = ['Soil_parent','Soil_Carbon','Soil_prop']
+    # Set up the class and build the dataset.
+    r = Shapefiletoxarray(cfg_path)
+    r.build_dataset()
 
-# #Set a file list.
-# shp_files = ['/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_parent_material_1km/data/SPMM_1km/SoilParentMateriall_V1_portal1km.shp',
-#              '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/model_estimates_of_topsoil_carbon/data/CS_topsoil_carbon.shp',
-#              '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/model_estimates_of_topsoil_pH_and_bulk_density/data/CS_topsoil_pH_bulkDensity.shp']
+    # Print the dataset to the screen to show sample output.
+    print(r.dataset_out)
 
+    # Print the catetory mappings for info.
+    print(r.category_mappings)
 
-# #Set up some test categorical columns to convery to integers.
-# all_cat_cols = { '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_parent_material_1km/data/SPMM_1km/SoilParentMateriall_V1_portal1km.shp': ['ESB_DESC','CARB_CNTNT','PMM_GRAIN','SOIL_GROUP','SOIL_TEX','SOIL_DEPTH'],
-#                  '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/model_estimates_of_topsoil_carbon/data/CS_topsoil_carbon.shp': None,
-#                  '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/model_estimates_of_topsoil_pH_and_bulk_density/data/CS_topsoil_pH_bulkDensity.shp': None
-# }
-
-# #Create the variable map to produce the final output.
-# var_out_map = { '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_parent_material_1km/data/SPMM_1km/SoilParentMateriall_V1_portal1km.shp': ['ESB_DESC','CARB_CNTNT','PMM_GRAIN','SOIL_GROUP','SOIL_TEX','SOIL_DEPTH'],
-#                 '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/model_estimates_of_topsoil_carbon/data/CS_topsoil_carbon.shp': ['CCONC_07'],
-#                 '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/model_estimates_of_topsoil_pH_and_bulk_density/data/CS_topsoil_pH_bulkDensity.shp': ['BULKD_07']
-# }
-
-
-# #Move the following lines into one final wrapper function that will run the whole process.
-# #Ideally try and get the above dictionaries to be read in as a yaml/config file?
-
-# #Create the class.
-# r = Shapefiletoxarray(resolution=1000.0)
-
-# #Read the shapefiles.
-# r.proc_shapefiles(shp_files, parent_grd=shp_files[0], categorical_columns=all_cat_cols)
-
-# #Build the parent grid.
-# r.build_parent_grid()
-
-# #Create the xarray dataset.
-# ds = r.to_xarray(var_out_map)
-
-# print(ds)
-
-#print(r.gdfs['/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_parent_material_1km/data/SPMM_1km/SoilParentMateriall_V1_portal1km.shp'].head())
-# for test in var_out_map:
-#     print(var_out_map[test])
-
-r = Shapefiletoxarray('config.yaml')
-
-# print(r.resolution)
-# print(r.file_list)
-# print(r.cat_cols_map)
-# print(r.var_out_map)
-# print(r.parent_grd)
-
-# Build the dataset.
-r.build_dataset()
-
-
-print(r.dataset_out)
+if __name__ == "__main__":
+    main()    

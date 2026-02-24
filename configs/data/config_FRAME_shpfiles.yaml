@@ -2,7 +2,7 @@
 resolution: 1000
 
 # Optional: define a global CRS target if reprojecting later
-# target_crs: "EPSG:27700"
+target_crs: "EPSG:27700"
 
 # Ordered logical names for each input dataset
 # These correspond to your shp_sname entries
