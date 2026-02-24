@@ -1,0 +1,43 @@
+# Grid settings (edit as needed)
+resolution: 1000
+
+# Optional: define a global CRS target if reprojecting later
+# target_crs: "EPSG:27700"
+
+# Ordered logical names for each input dataset
+# These correspond to your shp_sname entries
+sources:
+  Soil_parent:
+    file: "/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_parent_material_1km/data/SPMM_1km/SoilParentMateriall_V1_portal1km.shp"
+    categorical_columns:
+      - ESB_DESC
+      - CARB_CNTNT
+      - PMM_GRAIN
+      - SOIL_GROUP
+      - SOIL_TEX
+      - SOIL_DEPTH
+    variables:
+      - ESB_DESC
+      - CARB_CNTNT
+      - PMM_GRAIN
+      - SOIL_GROUP
+      - SOIL_TEX
+      - SOIL_DEPTH
+    parent_grid: "YES"
+
+  Soil_Carbon:
+    file: "/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/model_estimates_of_topsoil_carbon/data/CS_topsoil_carbon.shp"
+    categorical_columns: null     
+    variables:
+      - CCONC_07
+    parent_grid: "NO"
+
+  Soil_prop:
+    file: "/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/model_estimates_of_topsoil_pH_and_bulk_density/data/CS_topsoil_pH_bulkDensity.shp"
+    categorical_columns: null
+    variables:
+      - BULKD_07
+    parent_grid: "NO"
+
+
+
