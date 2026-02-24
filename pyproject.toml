@@ -43,6 +43,11 @@ docs = [
 data = [
     "torchgeo>=0.8.1",
 ]
+test = [
+    "pytest>=8",
+    "pytest-cov",
+    "pytest-xdist",
+]
 
 [build-system]
 requires = ["hatchling", "hatch-vcs"]
@@ -77,3 +82,6 @@ explicit = true
 name = "pytorch-cu126"
 url = "https://download.pytorch.org/whl/cu126"
 explicit = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/FRAME_FM"]

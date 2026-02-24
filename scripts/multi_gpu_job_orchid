@@ -1,0 +1,15 @@
+#!/bin/bash
+#SBATCH --job-name="ConvAE train"
+#SBATCH --time=2:00:00
+#SBATCH --mem=16G
+#SBATCH --account=orchid
+#SBATCH --partition=orchid
+#SBATCH --qos=orchid
+#SBATCH --gres=gpu:3
+#SBATCH -o %j.out
+#SBATCH -e %j.err
+
+# executable
+source .venv/bin/activate
+sleep 300 
+echo "Simulating multi-GPU job with 3 GPUs allocated."
