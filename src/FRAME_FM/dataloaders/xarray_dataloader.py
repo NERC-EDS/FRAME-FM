@@ -6,13 +6,12 @@ from FRAME_FM.datasets.ImageLabel_Dataset import TransformedDataset
 from torch.utils.data import Dataset, TensorDataset
 import torch
 from pathlib import Path
-import polars as pl
+import xarray as xr
 
 class TabularDataset(TensorDataset):
     """Very simple tabular dataset: X numeric features, y target."""
 
     # Inherit TensorDataset behaviour; you might extend this later if needed.
-    ...
 
 class GriddedDataModule(BaseDataModule):
     """
@@ -41,13 +40,21 @@ class GriddedDataModule(BaseDataModule):
         self.val_fraction = val_fraction
         self.test_fraction = test_fraction
 
-    def _load_raw_data(self) -> pl.DataFrame:
+    def _load_raw_data(self) -> xr.Dataset:
         path = Path(self.data_root) / self.filename
 
         if path.suffix == ".shp":
             ... # TODO
             xarr = 1
-        elif path.suffix in {".parquet", ".pq"}:
+        elif path.suffix in {"nc", "netcdf"}:
+            xarr = xr.open_dataset(path)
+        elif path.suffix in {".cfa"}:
+            ... # TODO
+            xarr = 1
+        elif path.suffix in {".zarr"}:
+            ... # TODO
+            xarr = 1
+        elif path.suffix in {".json"}:
             ... # TODO
             xarr = 1
         else:
@@ -78,7 +85,7 @@ class GriddedDataModule(BaseDataModule):
 
 
 def main():
-    GriddedDataModule
+    temp = GriddedDataModule()
 
     pause = 1
 
