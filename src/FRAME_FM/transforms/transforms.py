@@ -6,40 +6,8 @@ DS = xr.Dataset
 
 import torch
 
-
-# General utility functions
-def check_object_type(obj: object, allowed_types: object | tuple[object, ...]) -> object:
-    """
-    Check if the object is an instance of the allowed types, and raise a TypeError if not.
-
-    Args:
-        - obj (object): The object to check.
-        - allowed_types (object or tuple of objects): The type or types that the object is allowed to be.
-    Returns:
-        - object: The original object if it is of an allowed type.
-    Raises:
-        - TypeError: If the object is not an instance of any of the allowed types."""
-    # Check if allowed_types is a single type, if so convert it to a tuple
-    if isinstance(allowed_types, type):
-        allowed_types = (allowed_types,)
-
-    for t in allowed_types:   # type: ignore
-        if isinstance(obj, t):
-            return obj
-
-    raise TypeError(f"Expected an object of type: {allowed_types}, but received {type(obj)}.")
-
-def convert_subset_selectors_to_slices(selector: dict) -> dict:
-    """
-    Convert a dictionary of subset selectors with (low, high) tuples to a dictionary of slice objects.
-
-    Args:
-        - selector (dict): A dictionary where keys are dimension names and values are tuples of (low, high) bounds.
-    Returns:
-        - dict: A new dictionary where the values are slice objects created from the (low, high) tuples.
-    """
-    new_selector = {key: slice(low, high) for key, (low, high) in selector.items()}
-    return new_selector
+from FRAME_FM.utils.transform_utils import check_object_type
+from FRAME_FM.utils.data_utils import convert_subset_selectors_to_slices
 
 
 class BaseTransform:
@@ -49,14 +17,15 @@ class BaseTransform:
 class SubsetTransform(BaseTransform):
     def __init__(self, **subset_selectors):
         if "variables" in subset_selectors:
-            self.variables = subset_selectors.pop("variables")
+            variables = subset_selectors.pop("variables")
+            self.variables = variables if isinstance(variables, (list, tuple)) else [variables]
         else:
             self.variables = None
         self.subset_selectors = convert_subset_selectors_to_slices(subset_selectors)
 
     def __call__(self, sample):
         # Implement subsetting logic here
-        check_object_type(sample, allowed_types=(DS, DA))
+        check_object_type(sample, allowed_types=(DS, DA), caller=self.__class__.__name__)
 
         if self.variables is None:
             # If no specific variables are provided, apply the subset to all variables in 
@@ -80,7 +49,7 @@ class SubsetTransform(BaseTransform):
 class NormalizeTransform(BaseTransform):
     def __call__(self, sample, mean: float, std: float):
         # Implement normalization logic here
-        check_object_type(sample, allowed_types=DA)
+        check_object_type(sample, allowed_types=DA, caller=self.__class__.__name__)
         return (sample - mean) / std
 
 class ScaleTransform(NormalizeTransform): 
@@ -92,7 +61,7 @@ class ResizeTransform(BaseTransform):
 
     def __call__(self, sample):
         # Implement resizing logic here
-        check_object_type(sample, allowed_types=DA)
+        check_object_type(sample, allowed_types=DA, caller=self.__class__.__name__)
         return sample.to_numpy().reshape(self.size)
 
 class RenameTransform(BaseTransform):
@@ -102,7 +71,7 @@ class RenameTransform(BaseTransform):
 
     def __call__(self, sample):
         # Implement renaming logic here
-        check_object_type(sample, allowed_types=DS)
+        check_object_type(sample, allowed_types=DS, caller=self.__class__.__name__)
         sample = sample.rename_vars({self.var_id: self.new_name})
         return sample
     
@@ -113,7 +82,7 @@ class RollTransform(BaseTransform):
 
     def __call__(self, sample):
         # Implement rolling logic here
-        check_object_type(sample, allowed_types=DS)
+        check_object_type(sample, allowed_types=DS, caller=self.__class__.__name__)
         shift = self.shift
         
         if shift is None:
@@ -138,18 +107,30 @@ class ReverseAxisTransform(BaseTransform):
 
     def __call__(self, sample):
         # Implement axis reversal logic here
-        check_object_type(sample, allowed_types=DS)
+        check_object_type(sample, allowed_types=DS, caller=self.__class__.__name__)
         ds_rev = sample.isel(**{self.dim: slice(None, None, -1)})
         return ds_rev
 
 class ToTensorTransform(BaseTransform):
     def __call__(self, sample):
         # Implement conversion to PyTorch tensor here
-        check_object_type(sample, allowed_types=(DA, np.ndarray))
+        check_object_type(sample, allowed_types=(DA, np.ndarray), caller=self.__class__.__name__)
         if isinstance(sample, DA):
             sample = sample.values
         return torch.from_numpy(sample)
 
+class VarsToDimensionTransform(BaseTransform):
+    def __init__(self, variables: list, new_dim: str):
+        self.variables = variables
+        self.new_dim = new_dim
+
+    def __call__(self, sample):
+        # Implement logic to convert variables to a new dimension here
+        check_object_type(sample, allowed_types=DS, caller=self.__class__.__name__)
+
+        arrays = [sample[var_id] for var_id in self.variables]
+        stacked = xr.concat(arrays, dim=self.new_dim)
+        return stacked
 
 
 transform_mapping = {
@@ -161,6 +142,7 @@ transform_mapping = {
     "scale": ScaleTransform,
     "reverse_axis": ReverseAxisTransform,
     "to_tensor": ToTensorTransform,
+    "vars_to_dimension": VarsToDimensionTransform
 }
 
 
