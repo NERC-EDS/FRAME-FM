@@ -29,7 +29,9 @@ outputs/
 .mlruns/*
 
 docs/_build/
-
 src/frame_fm.egg-info/
 /src/FRAME_FM/training/mlruns
 src/FRAME_FM/training/data/eurosat/
+
+# Local items
+setup-env.sh

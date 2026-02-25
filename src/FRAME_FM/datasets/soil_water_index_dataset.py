@@ -2,14 +2,16 @@ from pathlib import Path
 
 from FRAME_FM.datasets.base_gridded_dataset import BaseGriddedTimeSeriesDataset
 
-SAMPLE_DATA_PATH = "tests/transforms/fixtures/ecmwf-era5X_oper_an_sfc_2000_2020_2d_repack.kr1.0.json.zip"
+SAMPLE_DATA_PATH = "/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_water_index_europe_1km_daily_v1/aggregations/soil_water_index_europe_1km_daily_v1_2015-2025.nca"
+SAMPLE_DATA_PATH = "/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_water_index_europe_1km_daily_v1/aggregations/yearly/soil_water_index_europe_1km_daily_v1_2024.nca"
+SAMPLE_DATA_PATH = "/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_water_index_europe_1km_daily_v1/data/2024/01/0[0-5]/*/*.nc"
 
 
-class ERA5GriddedTimeSeriesDataset(BaseGriddedTimeSeriesDataset):
+class SoilWaterIndexGriddedTimeSeriesDataset(BaseGriddedTimeSeriesDataset):
     """
-    A dataset class for loading ERA5 reanalysis data for gridded time series forecasting tasks. 
+    A dataset class for loading Soil Water Index data for gridded time series forecasting tasks. 
     This class inherits from the BaseGriddedTimeSeriesDataset and can be extended with 
-    ERA5-specific loading or preprocessing logic if needed.
+    Soil Water Index-specific loading or preprocessing logic if needed.
     """
 
     def __init__(self, 
@@ -32,15 +34,15 @@ class ERA5GriddedTimeSeriesDataset(BaseGriddedTimeSeriesDataset):
 
 if __name__ == "__main__":
 
-    dataset = ERA5GriddedTimeSeriesDataset(
+    dataset = SoilWaterIndexGriddedTimeSeriesDataset(
         data_uri=SAMPLE_DATA_PATH,
-        time_range=("2010-05-01", "2010-10-01"),
+        time_range=("2024-01-01", "2024-01-05"),
         time_stride=1
     )
 
     # Parent class will avoid applying the same transforms twice, so we can apply some additional ones here if we want to test them out.
     transforms = [
-        {"type": "subset", "variables": ["d2m"], "latitude": (60, -30), "longitude": (-40, 100)},
+        {"type": "subset", "variables": ["SWI_002", "SWI_005", "SWI_010"], "latitude": (60, 40), "longitude": (-5, 5), "time": ("2024-01-02", "2024-01-04")},
         {"type": "vars_to_dimension", "variables": "__all__", "new_dim": "variable"},
         {"type": "to_tensor"},
     ]
@@ -48,3 +50,12 @@ if __name__ == "__main__":
     print(f"Dataset length: {len(dataset)}")
     sample = dataset[0]
     print(sample.shape)
+
+    print("""
+          NOTE: Data error:
+>>> for a, b in zip(ds.time.values[:-1], ds.time.values[1:]):
+...  if a >= b:
+...   print(a, b)
+... 
+2025-07-12T12:00:00.000000000 2021-01-01T12:00:00.000000000
+          """)

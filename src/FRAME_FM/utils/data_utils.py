@@ -1,24 +1,35 @@
 from io import BytesIO
 import json
 import zipfile
-import xarray as xr
 from pathlib import Path
-from typing import Hashable
+from typing import Union
+from collections.abc import Callable
+
+import xarray as xr
 
 
-def _map_uri_to_engine(uri: Path | str):
+def _infer_extension(uri: Union[str, Path, list, tuple]) -> str:
+    # Infer the file extension from the URI
+    if isinstance(uri, (list, tuple)):
+        uri = uri[0]  # Take the first URI if it's a list/tuple
+    return str(uri).split(".", 1)[-1]
+
+
+def _map_uri_to_engine(uri: Union[str, Path, list, tuple]) -> str:
     # Map the URI to the appropriate engine for loading data
     # This function should determine the correct engine based on the URI format or file extension
-    uri = str(uri)
+    uri = _infer_extension(uri)
 
-    if uri.endswith(".zarr"):
+    if uri.endswith("zarr"):
         return "zarr"
-    elif uri.endswith(".nc"):
+    elif uri.endswith("nc"):
         return "netcdf4"
-    elif uri.endswith(".json") or uri.endswith(".json.zip"):
+    elif uri.endswith("json") or uri.endswith("json.zip"):
         return "kerchunk"
-    elif uri.endswith(".nca"):
+    elif uri.endswith("nca"):
         return "CFA"
+    elif uri.endswith("tif") or uri.endswith("tiff") or uri.endswith("geotiff"):
+        return "rasterio"
     else:
         raise ValueError(f"Unsupported data URI format: {uri}")
 
@@ -36,7 +47,7 @@ def convert_subset_selectors_to_slices(selector: dict) -> dict:
     return new_selector
 
 
-def handle_special_uri_case(uri: str, engine: str) -> str | BytesIO:
+def handle_special_uri_case(uri: Union[str, Path, list, tuple], engine: str) -> Union[str, Path, list, tuple, BytesIO]:
     """
     Handle special cases for certain URI formats and engines, such as loading refs for kerchunk.
     Args:
@@ -45,7 +56,7 @@ def handle_special_uri_case(uri: str, engine: str) -> str | BytesIO:
     Returns:
         str: The modified URI if special handling was applied, otherwise the original URI.
     """
-    if uri.endswith(".json.zip"):
+    if isinstance(uri, str) and uri.endswith(".json.zip"):
         bytestream = BytesIO()
         # For zipped kerchunk files, we need to extract the JSON file from the zip and 
         # pass it to xarray as an in-memory BytesIO object.
@@ -63,11 +74,22 @@ def handle_special_uri_case(uri: str, engine: str) -> str | BytesIO:
     return resource
 
 
-def load_data_from_uri(uri: str, chunks: dict | None = None, subset_selection: dict | None = None) -> xr.Dataset:
+def _get_xr_loader(uri: Union[str, Path, list, tuple]) -> Callable:
+    # Simple heuristic to detect if the URI is a glob pattern (e.g., contains wildcards like '*' or '?')
+    if isinstance(uri, list) or isinstance(uri, tuple) or any(char in str(uri) for char in ["*", "?", "[", "]"]):
+        return xr.open_mfdataset
+    else:
+        return xr.open_dataset
+
+
+def load_data_from_uri(uri: Union[str, Path, list, tuple], 
+                       chunks: dict | None = None, 
+                       subset_selection: dict | None = None
+                       ) -> xr.Dataset | xr.DataArray:
     """
     Load data from a URI with optional subset selection.
     Args:
-        uri (str): The URI of the data source.
+        uri (str): The URI of the data source, or a glob pattern, or a list of URIs.
         chunks (dict | None): Optional dictionary specifying chunking strategy for Dask.
         subset_selection (dict | None): A dictionary specifying the subset selection criteria.
     Returns:
@@ -80,11 +102,36 @@ def load_data_from_uri(uri: str, chunks: dict | None = None, subset_selection: d
     subset_selection = convert_subset_selectors_to_slices(subset_selection) if subset_selection else {}
     engine = _map_uri_to_engine(uri)
 
+    # Get Xarray loader function depending on the URI type (single file vs glob pattern/list)
+    xr_loader = _get_xr_loader(uri)
+    print(f"Using xarray loader: {xr_loader.__name__} for URI: {uri}")
+
     # Apply special handling if necessary based on the engine type (e.g., for zipped kerchunk we 
     # might need to load the refs first)
     resource = handle_special_uri_case(uri, engine)
 
-    ds = xr.open_dataset(resource, engine=engine, chunks=chunks)
-    ds = ds.sel(**subset_selection)
-    return ds
+    # Can return either a Dataset or a DataArray depending on the engine and URI.
+    data = xr_loader(resource, engine=engine, chunks=chunks)  # type: ignore
 
+    # Apply subset selection if specified
+    data = data.sel(**subset_selection)
+    return data
+
+
+def unify_transforms(transforms: list | None, class_transforms: list, override_transforms: bool) -> list:
+    """
+    Unify the list of transforms by combining user-specified transforms with the default (class) transforms.
+    If override_transforms is True, only the user-specified transforms will be used. 
+    If False, the user-specified transforms will be combined with the default transforms, ensuring that 
+    there are no duplicates based on the "type" key of each transform.
+    """
+    transforms = transforms or []
+
+    if override_transforms:
+        return transforms
+    else:
+        consolidated_transforms = []
+        for transform in transforms + class_transforms:
+            if transform["type"] not in [tr["type"] for tr in consolidated_transforms]:
+                consolidated_transforms.append(transform)
+        return consolidated_transforms
