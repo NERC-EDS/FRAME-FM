@@ -4,7 +4,7 @@ from FRAME_FM.datasets.base_gridded_dataset import BaseGriddedTimeSeriesDataset
 
 SAMPLE_DATA_PATH = "/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_water_index_europe_1km_daily_v1/aggregations/soil_water_index_europe_1km_daily_v1_2015-2025.nca"
 SAMPLE_DATA_PATH = "/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_water_index_europe_1km_daily_v1/aggregations/yearly/soil_water_index_europe_1km_daily_v1_2024.nca"
-SAMPLE_DATA_PATH = "/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_water_index_europe_1km_daily_v1/data/2024/01/0[0-5]/*/*.nc"
+#SAMPLE_DATA_PATH = "/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_water_index_europe_1km_daily_v1/data/2024/01/0*/*/*.nc"
 
 
 class SoilWaterIndexGriddedTimeSeriesDataset(BaseGriddedTimeSeriesDataset):
@@ -36,13 +36,14 @@ if __name__ == "__main__":
 
     dataset = SoilWaterIndexGriddedTimeSeriesDataset(
         data_uri=SAMPLE_DATA_PATH,
-        time_range=("2024-01-01", "2024-01-05"),
-        time_stride=1
+        time_range=("2024-02-01", "2024-02-05"),
+        time_stride=1,
+        chunks={"time": 1}
     )
 
     # Parent class will avoid applying the same transforms twice, so we can apply some additional ones here if we want to test them out.
     transforms = [
-        {"type": "subset", "variables": ["SWI_002", "SWI_005", "SWI_010"], "latitude": (60, 40), "longitude": (-5, 5), "time": ("2024-01-02", "2024-01-04")},
+        {"type": "subset", "lat": (60, 40), "lon": (-5, 5), "time": ("2024-02-02", "2024-02-04")},
         {"type": "vars_to_dimension", "variables": "__all__", "new_dim": "variable"},
         {"type": "to_tensor"},
     ]
