@@ -67,7 +67,7 @@ def test_RenameTransform():
 
 
 def test_NormalizeTransform():
-    da: xr.DataArray = _load_data(response_type="DataArray")
+    da: xr.DataArray = _load_data(response_type="DataArray")  # type: ignore
 
     # Run the normalize transform
     normalize_transform = NormalizeTransform()
@@ -85,6 +85,17 @@ def test_ResizeTransform():
     resized_arr = resize_transform(da)
     # Check that the resized array has the expected shape
     assert resized_arr.shape == new_size, f"Resize transform did not work as expected (shape is {resized_arr.shape} instead of {new_size})"
+
+
+def test_ReverseAxisTransform():
+    ds = _load_data()
+
+    # Run the reverse axis transform
+    reverse_axis_transform = ReverseAxisTransform(dim="latitude")
+    reversed_ds = reverse_axis_transform(ds)
+    # Check that the latitude axis has been reversed correctly
+    assert reversed_ds.latitude[0] == ds.latitude[-1], "Reverse axis transform did not work as expected (first latitude value is not the same as the last latitude value of the original dataset)."
+    assert reversed_ds.latitude[-1] == ds.latitude[0], "Reverse axis transform did not work as expected (last latitude value is not the same as the first latitude value of the original dataset)."
 
 
 def test_RollTransform():
@@ -123,17 +134,6 @@ def test_ToTensorTransform():
     assert tensor_da.shape == da.shape, "ToTensor transform did not preserve the shape of the data."
 
 
-def test_ReverseAxisTransform():
-    ds = _load_data()
-
-    # Run the reverse axis transform
-    reverse_axis_transform = ReverseAxisTransform(dim="latitude")
-    reversed_ds = reverse_axis_transform(ds)
-    # Check that the latitude axis has been reversed correctly
-    assert reversed_ds.latitude[0] == ds.latitude[-1], "Reverse axis transform did not work as expected (first latitude value is not the same as the last latitude value of the original dataset)."
-    assert reversed_ds.latitude[-1] == ds.latitude[0], "Reverse axis transform did not work as expected (last latitude value is not the same as the first latitude value of the original dataset)."
-
-
 def test_VarsToDimensionTransform():
     ds = _load_data()
 
@@ -144,6 +144,11 @@ def test_VarsToDimensionTransform():
     # Check that the new dimension has been added correctly
     assert "variables" in da.dims, "VarsToDimension transform did not work as expected."
     assert da.shape == (2, 184104, 721, 1440), "VarsToDimension transform did not produce the expected output shape."
+
+    # Now test the special case of variables="__all__"
+    vars_to_dimension_transform_all = VarsToDimensionTransform(variables="__all__", new_dim="variables")
+    da_all = vars_to_dimension_transform_all(ds)
+    assert da_all.shape == (len(ds.data_vars), 184104, 721, 1440), "VarsToDimension transform with variables='__all__' did not produce the expected output shape."
 
 
 def test_multiple_transforms_1():
