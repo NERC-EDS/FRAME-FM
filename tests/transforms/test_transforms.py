@@ -18,7 +18,7 @@ from FRAME_FM.transforms.transforms import transform_mapping
 from FRAME_FM.utils.data_utils import load_data_from_uri
 
 
-kerchunk_zip = "tests/fixtures/ecmwf-era5X_oper_an_sfc_2000_2020_2d_repack.kr1.0.json.zip"
+kerchunk_zip = "tests/transforms/fixtures/ecmwf-era5X_oper_an_sfc_2000_2020_2d_repack.kr1.0.json.zip"
 pdt = pd.to_datetime
 ds = None
 
