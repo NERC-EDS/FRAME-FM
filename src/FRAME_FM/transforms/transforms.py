@@ -127,6 +127,9 @@ class VarsToDimensionTransform(BaseTransform):
     def __call__(self, sample):
         # Implement logic to convert variables to a new dimension here
         check_object_type(sample, allowed_types=DS, caller=self.__class__.__name__)
+        # Check special case of variables = "__all__"
+        if self.variables == "__all__":
+            self.variables = list(sample.data_vars)
 
         arrays = [sample[var_id] for var_id in self.variables]
         stacked = xr.concat(arrays, dim=self.new_dim)
