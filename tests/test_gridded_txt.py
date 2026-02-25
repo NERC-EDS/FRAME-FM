@@ -4,7 +4,7 @@ import pytest
 def dataset_matcher():
     from xarray_dataloaders import xarray_end_to_end
 
-    
+    xarray_end_to_end()
 
 
     ...
