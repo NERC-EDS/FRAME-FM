@@ -1,0 +1,184 @@
+# Define transforms
+import xarray as xr
+import numpy as np
+DA = xr.DataArray
+DS = xr.Dataset
+
+import torch
+
+
+# General utility functions
+def check_object_type(obj: object, allowed_types: object | tuple[object, ...]) -> object:
+    """
+    Check if the object is an instance of the allowed types, and raise a TypeError if not.
+
+    Args:
+        - obj (object): The object to check.
+        - allowed_types (object or tuple of objects): The type or types that the object is allowed to be.
+    Returns:
+        - object: The original object if it is of an allowed type.
+    Raises:
+        - TypeError: If the object is not an instance of any of the allowed types."""
+    # Check if allowed_types is a single type, if so convert it to a tuple
+    if isinstance(allowed_types, type):
+        allowed_types = (allowed_types,)
+
+    for t in allowed_types:   # type: ignore
+        if isinstance(obj, t):
+            return obj
+
+    raise TypeError(f"Expected an object of type: {allowed_types}, but received {type(obj)}.")
+
+def convert_subset_selectors_to_slices(selector: dict) -> dict:
+    """
+    Convert a dictionary of subset selectors with (low, high) tuples to a dictionary of slice objects.
+
+    Args:
+        - selector (dict): A dictionary where keys are dimension names and values are tuples of (low, high) bounds.
+    Returns:
+        - dict: A new dictionary where the values are slice objects created from the (low, high) tuples.
+    """
+    new_selector = {key: slice(low, high) for key, (low, high) in selector.items()}
+    return new_selector
+
+
+class BaseTransform:
+    def __call__(self, sample, *args, **kwargs):
+        raise NotImplementedError("Transform must implement the __call__ method.")
+
+class SubsetTransform(BaseTransform):
+    def __init__(self, **subset_selectors):
+        if "variables" in subset_selectors:
+            self.variables = subset_selectors.pop("variables")
+        else:
+            self.variables = None
+        self.subset_selectors = convert_subset_selectors_to_slices(subset_selectors)
+
+    def __call__(self, sample):
+        # Implement subsetting logic here
+        check_object_type(sample, allowed_types=(DS, DA))
+
+        if self.variables is None:
+            # If no specific variables are provided, apply the subset to all variables in 
+            # the Dataset or the single DataArray
+            return sample.sel(**self.subset_selectors)
+        
+        # If we have variables then we need to create a new Dataset with only those 
+        # variables and apply the subset selectors to each variable
+        ds = xr.Dataset()
+        ds.attrs.update(sample.attrs)
+
+        for var_id in self.variables:
+            # Use common subset selectors unless overridden by variable-specific selectors
+            if self.subset_selectors:
+                ds[var_id] = sample[var_id].sel(**self.subset_selectors)
+            else:
+                ds[var_id] = sample[var_id]
+
+        return ds
+
+class NormalizeTransform(BaseTransform):
+    def __call__(self, sample, mean: float, std: float):
+        # Implement normalization logic here
+        check_object_type(sample, allowed_types=DA)
+        return (sample - mean) / std
+
+class ScaleTransform(NormalizeTransform): 
+    pass
+
+class ResizeTransform(BaseTransform):
+    def __init__(self, size: tuple):
+        self.size = size
+
+    def __call__(self, sample):
+        # Implement resizing logic here
+        check_object_type(sample, allowed_types=DA)
+        return sample.to_numpy().reshape(self.size)
+
+class RenameTransform(BaseTransform):
+    def __init__(self, var_id: str, new_name: str):
+        self.var_id = var_id
+        self.new_name = new_name
+
+    def __call__(self, sample):
+        # Implement renaming logic here
+        check_object_type(sample, allowed_types=DS)
+        sample = sample.rename_vars({self.var_id: self.new_name})
+        return sample
+    
+class RollTransform(BaseTransform):
+    def __init__(self, dim: str, shift: None|int):
+        self.dim = dim
+        self.shift = shift
+
+    def __call__(self, sample):
+        # Implement rolling logic here
+        check_object_type(sample, allowed_types=DS)
+        shift = self.shift
+        
+        if shift is None:
+            # Check if we need to roll
+            if float(sample[self.dim].max()) > 350 and float(sample[self.dim].min()) < 10:
+                shift = sample.sizes[self.dim] // 2
+            else:
+                shift = 0
+
+        print(f"Rolling {self.dim} by {shift} positions.")
+        rolled = sample.roll({self.dim: shift}, roll_coords=True)
+
+        # Adjust the coordinate values after rolling
+        coord_vals = rolled.coords[self.dim].values
+        rolled.coords[self.dim] = np.where(coord_vals >= 180., coord_vals - 360., coord_vals)
+
+        return rolled
+    
+class ReverseAxisTransform(BaseTransform):
+    def __init__(self, dim: str):
+        self.dim = dim
+
+    def __call__(self, sample):
+        # Implement axis reversal logic here
+        check_object_type(sample, allowed_types=DS)
+        ds_rev = sample.isel(**{self.dim: slice(None, None, -1)})
+        return ds_rev
+
+class ToTensorTransform(BaseTransform):
+    def __call__(self, sample):
+        # Implement conversion to PyTorch tensor here
+        check_object_type(sample, allowed_types=(DA, np.ndarray))
+        if isinstance(sample, DA):
+            sample = sample.values
+        return torch.from_numpy(sample)
+
+
+
+transform_mapping = {
+    "subset": SubsetTransform,
+    "normalize": NormalizeTransform,
+    "resize": ResizeTransform,
+    "rename": RenameTransform,
+    "roll": RollTransform,
+    "scale": ScaleTransform,
+    "reverse_axis": ReverseAxisTransform,
+    "to_tensor": ToTensorTransform,
+}
+
+
+def resolve_transform(transform_config: dict) -> BaseTransform:
+    """
+    If a transform is a dictionary with a "type" key, resolve it to the corresponding transform class instance.
+    If it is already an instance of a transform class, return it as is.
+    Args:
+    - transform_config (dict or BaseTransform): The transform configuration to resolve.
+    Returns:
+    - BaseTransform: An instance of a transform class.
+    """
+    if isinstance(transform_config, BaseTransform):
+        return transform_config
+    
+    transform_type = transform_config.get("type")
+    if transform_type not in transform_mapping:
+        raise ValueError(f"Unsupported transform type: {transform_type}")
+    
+    transform_class = transform_mapping[transform_type]
+    return transform_class(**{k: v for k, v in transform_config.items() if k != "type"})
