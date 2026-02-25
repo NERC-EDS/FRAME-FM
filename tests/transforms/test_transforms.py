@@ -20,7 +20,7 @@ import pandas as pd
 from FRAME_FM.transforms import *
 
 
-KERCHUNK_ZIP = Path("tests/fixtures/ecmwf-era5X_oper_an_sfc_2000_2020_2d_repack.kr1.0.json.zip")
+KERCHUNK_ZIP = Path("./fixtures/ecmwf-era5X_oper_an_sfc_2000_2020_2d_repack.kr1.0.json.zip")
 KERCHUNK_FILE = BytesIO()
 pdt = pd.to_datetime
 
