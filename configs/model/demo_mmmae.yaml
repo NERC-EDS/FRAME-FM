@@ -1,0 +1,23 @@
+# configs/model/demo_mmmae.yaml
+_target_: FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder
+
+# Inputs
+input_shapes: [[64, 64]]            # Single 128x128 tile
+n_channels: [10]                      # 10 bands
+patch_shapes: [[8, 8]]              # Tokenise 16x16 patches
+inputs_positioned: ["pixels"]         # Input positions are of pixels
+position_space: [[0, 2e6], [0, 4e6]]  # Positions are all-numeric OSGB grid references
+
+# Architecture
+pos_embed_ratio: [1, 1]               # Use equi-dimensional coordinate embeddings
+encoder_embed_dim: 32                 # Embed inputs in 32D space
+encoder_depth: 8                      # Encode with 8 attention layers
+encoder_num_heads: 4                  # Encode with 4 attention heads per layer
+decoder_embed_dim: 32                 # Embed predictions in 32D space
+decoder_depth: 4                      # Decode with 4 attention layers
+decoder_num_heads: 4                  # Decode with 4 attention heads per layer
+mlp_ratio: 4.                         # Use MLP layers 4x larger than embeddings
+
+# Optimisation hyperparameters
+learning_rate: 1e-3                   # Learning rate
+default_mask_ratio: 0.75              # Train to reconstruct from 25% of token embeddings

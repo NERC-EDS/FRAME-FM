@@ -1,0 +1,11 @@
+# configs/logging/mlflow_mmmae_demo.yaml
+_target_: FRAME_FM.training.logger.create_mlflow_logger
+
+experiment_name: "frame-fm-mmmae-demo"
+tracking_uri: ${oc.env:MLFLOW_TRACKING_URI, "file:./mlruns"}
+run_name: "initial-demo"
+
+tags:
+  project: "FRAME-FM"
+  dataset: "Spatial Land Cover"
+  model: "Multimodal Masked Autoencoder"
