@@ -1,8 +1,12 @@
 {
   "api/FRAME_FM/cli/index": [],
+  "api/FRAME_FM/dataloaders/combined_dataloader/index": [],
   "api/FRAME_FM/dataloaders/demo_eurosat/index": [],
   "api/FRAME_FM/dataloaders/demo_geotiff_dataloader/index": [],
   "api/FRAME_FM/dataloaders/index": [],
+  "api/FRAME_FM/datasets/ImageLabel_Dataset/index": [],
+  "api/FRAME_FM/datasets/InputOnly_Dataset/index": [],
+  "api/FRAME_FM/datasets/index": [],
   "api/FRAME_FM/index": [],
   "api/FRAME_FM/models/demo_autoencoder/index": [
     {
@@ -73,7 +77,7 @@
           "Module Contents"
         ]
       },
-      "doc_lineno": 332
+      "doc_lineno": 331
     },
     {
       "source": "# The ReduceLROnPlateau scheduler requires a monitor\ndef configure_optimizers(self):\n    optimizer = Adam(...)\n    return {\n        \"optimizer\": optimizer,\n        \"lr_scheduler\": {\n            \"scheduler\": ReduceLROnPlateau(optimizer, ...),\n            \"monitor\": \"metric_to_track\",\n            \"frequency\": \"indicates how often the metric is updated\",\n            # If \"monitor\" references validation metrics, then \"frequency\" should be set to a\n            # multiple of \"trainer.check_val_every_n_epoch\".\n        },\n    }\n\n# In the case of two optimizers, only one using the ReduceLROnPlateau scheduler\ndef configure_optimizers(self):\n    optimizer1 = Adam(...)\n    optimizer2 = SGD(...)\n    scheduler1 = ReduceLROnPlateau(optimizer1, ...)\n    scheduler2 = LambdaLR(optimizer2, ...)\n    return (\n        {\n            \"optimizer\": optimizer1,\n            \"lr_scheduler\": {\n                \"scheduler\": scheduler1,\n                \"monitor\": \"metric_to_track\",\n            },\n        },\n        {\"optimizer\": optimizer2, \"lr_scheduler\": scheduler2},\n    )",
@@ -86,7 +90,7 @@
           "Module Contents"
         ]
       },
-      "doc_lineno": 362
+      "doc_lineno": 361
     }
   ],
   "api/FRAME_FM/training/index": [],
@@ -119,12 +123,10 @@
           "Module Contents"
         ]
       },
-      "doc_lineno": 105
+      "doc_lineno": 144
     }
   ],
   "api/FRAME_FM/utils/index": [],
-  "api/ImageLabel_Dataset/index": [],
-  "api/InputOnly_Dataset/index": [],
   "api/index": [],
   "index": []
 }

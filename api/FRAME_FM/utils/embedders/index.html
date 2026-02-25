@@ -33,7 +33,6 @@
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
-    <link rel="next" title="InputOnly_Dataset" href="../../../InputOnly_Dataset/index.html" />
     <link rel="prev" title="FRAME_FM.utils.LightningModuleWrapper" href="../LightningModuleWrapper/index.html" /> 
 </head>
 
@@ -63,6 +62,7 @@
 <li class="toctree-l3 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="../../cli/index.html">FRAME_FM.cli</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../dataloaders/index.html">FRAME_FM.dataloaders</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../datasets/index.html">FRAME_FM.datasets</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../models/index.html">FRAME_FM.models</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../training/index.html">FRAME_FM.training</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../transforms/index.html">FRAME_FM.transforms</a></li>
@@ -71,8 +71,6 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../../InputOnly_Dataset/index.html">InputOnly_Dataset</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../ImageLabel_Dataset/index.html">ImageLabel_Dataset</a></li>
 </ul>
 </li>
 </ul>
@@ -115,6 +113,12 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#FRAME_FM.utils.embedders.PatchEmbed" title="FRAME_FM.utils.embedders.PatchEmbed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PatchEmbed</span></code></a></p></td>
 <td><p>1-3D Image to Patch Embedding</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#FRAME_FM.utils.embedders.STPatchEmbed" title="FRAME_FM.utils.embedders.STPatchEmbed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">STPatchEmbed</span></code></a></p></td>
+<td><p>1-3D spatiotemporally located input to Patch Embedding</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#FRAME_FM.utils.embedders.BoundedPatchEmbed" title="FRAME_FM.utils.embedders.BoundedPatchEmbed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BoundedPatchEmbed</span></code></a></p></td>
+<td><p>1-3D spatiotemporally located input to Patch Embedding</p></td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -122,11 +126,14 @@
 <h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#FRAME_FM.utils.embedders.get_nd_sincos_pos_embed" title="FRAME_FM.utils.embedders.get_nd_sincos_pos_embed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_nd_sincos_pos_embed</span></code></a>(→ numpy.ndarray)</p></td>
-<td><p>Create a sin-cos embedding of positions on an n-dimensional grid.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#FRAME_FM.utils.embedders.partition_embed_dim" title="FRAME_FM.utils.embedders.partition_embed_dim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">partition_embed_dim</span></code></a>(→ numpy.ndarray)</p></td>
+<td><p>Partitions integer embedding dimension into integer components.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#FRAME_FM.utils.embedders.sincos_embed_coords" title="FRAME_FM.utils.embedders.sincos_embed_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sincos_embed_coords</span></code></a>(→ numpy.ndarray)</p></td>
-<td><p>Create a sin-cos embedding of an array of 1D coordinates.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#FRAME_FM.utils.embedders.calc_embed_omega" title="FRAME_FM.utils.embedders.calc_embed_omega"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_embed_omega</span></code></a>(→ torch.Tensor)</p></td>
+<td><p>Calculates appropriate angular frequencies for sincos embedding</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#FRAME_FM.utils.embedders.sincos_embed_coords" title="FRAME_FM.utils.embedders.sincos_embed_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sincos_embed_coords</span></code></a>(→ torch.Tensor)</p></td>
+<td><p>Create a periodic sin-cos embedding of an array of 1D coordinates.</p></td>
 </tr>
 </tbody>
 </table>
@@ -134,43 +141,68 @@
 <section id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="FRAME_FM.utils.embedders.get_nd_sincos_pos_embed">
-<span class="sig-prename descclassname"><span class="pre">FRAME_FM.utils.embedders.</span></span><span class="sig-name descname"><span class="pre">get_nd_sincos_pos_embed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embed_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Ellipsis</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cls_token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">numpy.ndarray</span></a></span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#get_nd_sincos_pos_embed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.get_nd_sincos_pos_embed" title="Link to this definition"></a></dt>
-<dd><p>Create a sin-cos embedding of positions on an n-dimensional grid.</p>
+<dt class="sig sig-object py" id="FRAME_FM.utils.embedders.partition_embed_dim">
+<span class="sig-prename descclassname"><span class="pre">FRAME_FM.utils.embedders.</span></span><span class="sig-name descname"><span class="pre">partition_embed_dim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embed_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Ellipsis</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">numpy.ndarray</span></a></span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#partition_embed_dim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.partition_embed_dim" title="Link to this definition"></a></dt>
+<dd><p>Partitions integer embedding dimension into integer components.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>embed_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of dimensions into which to embed grid positions.</p></li>
-<li><p><strong>grid_shape</strong> (<em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>...</em><em>]</em>) – Shape of grid for which to create an embedding.</p></li>
-<li><p><strong>cls_token</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to add a whole-input class token. Defaults to False.</p></li>
+<li><p><strong>embed_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Total number of dimensions.</p></li>
+<li><p><strong>dim_ratio</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>...</em><em>]</em>) – Target ratio of component sizes.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Array with each row the sin-cos embedding of a grid position.</p>
+<dd class="field-even"><p>Array of integer components.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="FRAME_FM.utils.embedders.calc_embed_omega">
+<span class="sig-prename descclassname"><span class="pre">FRAME_FM.utils.embedders.</span></span><span class="sig-name descname"><span class="pre">calc_embed_omega</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embed_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">period</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">40000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#calc_embed_omega"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.calc_embed_omega" title="Link to this definition"></a></dt>
+<dd><p>Calculates appropriate angular frequencies for sincos embedding</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>embed_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of dimensions in which to embed coordinates.</p></li>
+<li><p><strong>period</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Coordinate distance over which the embedding is periodic.
+Defaults to 40,000.</p></li>
+<li><p><strong>res_ratio</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Ratio between maximum and minimum resolutions of embedding.
+Defaults to 10,000.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of angular frequencies</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="FRAME_FM.utils.embedders.sincos_embed_coords">
-<span class="sig-prename descclassname"><span class="pre">FRAME_FM.utils.embedders.</span></span><span class="sig-name descname"><span class="pre">sincos_embed_coords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embed_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">numpy.ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_period</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">numpy.ndarray</span></a></span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#sincos_embed_coords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.sincos_embed_coords" title="Link to this definition"></a></dt>
-<dd><p>Create a sin-cos embedding of an array of 1D coordinates.</p>
+<span class="sig-prename descclassname"><span class="pre">FRAME_FM.utils.embedders.</span></span><span class="sig-name descname"><span class="pre">sincos_embed_coords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">omega</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#sincos_embed_coords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.sincos_embed_coords" title="Link to this definition"></a></dt>
+<dd><p>Create a periodic sin-cos embedding of an array of 1D coordinates.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>coordinates</strong> (<em>torch.Tensor</em>) – Coordinates to embed.</p></li>
 <li><p><strong>embed_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of dimensions in which to embed coordinates.</p></li>
-<li><p><strong>coordinates</strong> (<em>np.ndarray</em>) – Coordinates to embed.</p></li>
-<li><p><strong>max_period</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Maximum sin-cos period. Defaults to 10000.</p></li>
+<li><p><strong>period</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Coordinate distance over which the embedding is periodic.
+Defaults to 40,000.</p></li>
+<li><p><strong>res_ratio</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Ratio between maximum and minimum resolutions of embedding.
+Defaults to 10,000.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Array with each row the sin-cos embedding of a coordinate.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
+<dd class="field-odd"><p>torch.Tensor</p>
 </dd>
 </dl>
 </dd></dl>
@@ -178,7 +210,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="FRAME_FM.utils.embedders.BaseEmbedder">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">FRAME_FM.utils.embedders.</span></span><span class="sig-name descname"><span class="pre">BaseEmbedder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#BaseEmbedder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.BaseEmbedder" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></p>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">torch.nn.Module</span></code>, <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">abc.ABC</span></code></a></p>
 <p>Base class for all neural network modules.</p>
 <p>Your models should also subclass this class.</p>
 <p>Modules can also contain other Modules, allowing them to be nested in
@@ -241,11 +273,6 @@ evaluation mode.</p>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="FRAME_FM.utils.embedders.BaseEmbedder.embed_pos">
-<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">embed_pos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#BaseEmbedder.embed_pos"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.BaseEmbedder.embed_pos" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="FRAME_FM.utils.embedders.BaseEmbedder.reconstruct_tokens">
 <span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">reconstruct_tokens</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embedding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#BaseEmbedder.reconstruct_tokens"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.BaseEmbedder.reconstruct_tokens" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -278,18 +305,8 @@ evaluation mode.</p>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="FRAME_FM.utils.embedders.PatchEmbed.pos_embed">
-<span class="sig-name descname"><span class="pre">pos_embed</span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#PatchEmbed.pos_embed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.PatchEmbed.pos_embed" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
 <dt class="sig sig-object py" id="FRAME_FM.utils.embedders.PatchEmbed.reconstruct_dim">
 <span class="sig-name descname"><span class="pre">reconstruct_dim</span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#PatchEmbed.reconstruct_dim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.PatchEmbed.reconstruct_dim" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="FRAME_FM.utils.embedders.PatchEmbed.decoder_pos_embed">
-<span class="sig-name descname"><span class="pre">decoder_pos_embed</span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#PatchEmbed.decoder_pos_embed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.PatchEmbed.decoder_pos_embed" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -347,7 +364,7 @@ from input_shape in class instantiation. Defaults to None: use input_shape.</p><
 
 <dl class="py method">
 <dt class="sig sig-object py" id="FRAME_FM.utils.embedders.PatchEmbed.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#PatchEmbed.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.PatchEmbed.forward" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#PatchEmbed.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.PatchEmbed.forward" title="Link to this definition"></a></dt>
 <dd><p>Convert batched input n-D images into sequences of patch embeddings.</p>
 <p>Shapes are given for the example of a batch of B, C-channel 2D images,
 with image size (Hh, Ww) and patch size (h, w), with a D-D embedding.</p>
@@ -356,7 +373,94 @@ with image size (Hh, Ww) and patch size (h, w), with a D-D embedding.</p>
 <dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Batched sequence of images, shape e.g. [B, C, Hh, Ww].</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Batched sequences of embeddings, shape e.g. [B, HW, D]</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Batched sequences of embeddings, shape e.g. [B, HW, D]</p></li>
+<li><p>Batched sequences of positions, shape e.g. [B, HW, D]</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[torch.Tensor, torch.Tensor]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FRAME_FM.utils.embedders.PatchEmbed.reconstruct_tokens">
+<span class="sig-name descname"><span class="pre">reconstruct_tokens</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#PatchEmbed.reconstruct_tokens"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.PatchEmbed.reconstruct_tokens" title="Link to this definition"></a></dt>
+<dd><p>Reconstruct patch tokens from an embedding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Batched sequence of images, shape e.g. [B, C, Hh, Ww].</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[torch.Tensor, torch.Tensor]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="FRAME_FM.utils.embedders.STPatchEmbed">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">FRAME_FM.utils.embedders.</span></span><span class="sig-name descname"><span class="pre">STPatchEmbed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Ellipsis</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patch_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Ellipsis</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Ellipsis</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embed_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">reconstruct_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos_embed_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Ellipsis</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_layer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">conv_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#STPatchEmbed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.STPatchEmbed" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#FRAME_FM.utils.embedders.PatchEmbed" title="FRAME_FM.utils.embedders.PatchEmbed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PatchEmbed</span></code></a></p>
+<p>1-3D spatiotemporally located input to Patch Embedding</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FRAME_FM.utils.embedders.STPatchEmbed.position_space">
+<span class="sig-name descname"><span class="pre">position_space</span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#STPatchEmbed.position_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.STPatchEmbed.position_space" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="FRAME_FM.utils.embedders.STPatchEmbed.pos_embed_ratio">
+<span class="sig-name descname"><span class="pre">pos_embed_ratio</span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#STPatchEmbed.pos_embed_ratio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.STPatchEmbed.pos_embed_ratio" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FRAME_FM.utils.embedders.STPatchEmbed.initialize_weights">
+<span class="sig-name descname"><span class="pre">initialize_weights</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#STPatchEmbed.initialize_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.STPatchEmbed.initialize_weights" title="Link to this definition"></a></dt>
+<dd><p>Set up embedder weights and parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FRAME_FM.utils.embedders.STPatchEmbed.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">st_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#STPatchEmbed.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.STPatchEmbed.forward" title="Link to this definition"></a></dt>
+<dd><p>Convert batched spatiotemporal inputs into sequences of patch embeddings.</p>
+<p>Shapes are given for the example of a batch of B, C-channel 2D inputs in N-D space,
+with image size (Hh, Ww) and patch size (h, w), with a D-D embedding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>st_input</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><em>torch.Tensor</em><em>, </em><em>torch.Tensor</em><em>]</em>) – Spatiotemporal input, combining:
+* Batched sequence of values, shape e.g. [B, C, Hh, Ww].
+* Batched sequence of positions, shape e.g. [B, N, Hh, Ww].</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Batched sequences of embeddings, shape e.g. [B, HW, D]</p></li>
+<li><p>Batched sequences of position embeddings, shape e.g. [B, HW, D_d]</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a>[torch.Tensor, torch.Tensor]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="FRAME_FM.utils.embedders.STPatchEmbed.tokenify">
+<span class="sig-name descname"><span class="pre">tokenify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#STPatchEmbed.tokenify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.STPatchEmbed.tokenify" title="Link to this definition"></a></dt>
+<dd><p>Reshape batched n-D input values into sequences of patch tokens.</p>
+<p>Shapes are given for the example of a batch of B, C-channel 2D images,
+with image size (Hh, Ww) and patch size (h, w).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>st_input</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em>[</em><em>torch.Tensor</em><em>, </em><em>torch.Tensor</em><em>]</em>) – Spatiotemporal input, combining:
+* Batched sequence of values, shape e.g. [B, C, Hh, Ww].
+* Batched sequence of positions, shape e.g. [B, N, Hh, Ww].</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Batched sequences of patch tokens, shape e.g. [B, HW, hwC]</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.Tensor</p>
@@ -364,18 +468,13 @@ with image size (Hh, Ww) and patch size (h, w), with a D-D embedding.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="FRAME_FM.utils.embedders.PatchEmbed.embed_pos">
-<span class="sig-name descname"><span class="pre">embed_pos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#PatchEmbed.embed_pos"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.PatchEmbed.embed_pos" title="Link to this definition"></a></dt>
-<dd><p>Return fixed embedding of patch positions into reconstruction space.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="FRAME_FM.utils.embedders.PatchEmbed.reconstruct_tokens">
-<span class="sig-name descname"><span class="pre">reconstruct_tokens</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#PatchEmbed.reconstruct_tokens"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.PatchEmbed.reconstruct_tokens" title="Link to this definition"></a></dt>
-<dd><p>Reconstruct patch tokens from an embedding.</p>
-</dd></dl>
-
+<dl class="py class">
+<dt class="sig sig-object py" id="FRAME_FM.utils.embedders.BoundedPatchEmbed">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">FRAME_FM.utils.embedders.</span></span><span class="sig-name descname"><span class="pre">BoundedPatchEmbed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Ellipsis</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patch_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Ellipsis</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Ellipsis</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embed_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">reconstruct_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos_embed_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Ellipsis</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_layer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">conv_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/FRAME_FM/utils/embedders.html#BoundedPatchEmbed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.utils.embedders.BoundedPatchEmbed" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#FRAME_FM.utils.embedders.STPatchEmbed" title="FRAME_FM.utils.embedders.STPatchEmbed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">STPatchEmbed</span></code></a></p>
+<p>1-3D spatiotemporally located input to Patch Embedding</p>
 </dd></dl>
 
 </section>
@@ -386,7 +485,6 @@ with image size (Hh, Ww) and patch size (h, w), with a D-D embedding.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../LightningModuleWrapper/index.html" class="btn btn-neutral float-left" title="FRAME_FM.utils.LightningModuleWrapper" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../../../InputOnly_Dataset/index.html" class="btn btn-neutral float-right" title="InputOnly_Dataset" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
