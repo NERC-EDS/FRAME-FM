@@ -12,8 +12,139 @@ from FRAME_FM.utils.data_utils import convert_subset_selectors_to_slices
 
 
 class BaseTransform:
-    def __call__(self, sample, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, sample):
         raise NotImplementedError("Transform must implement the __call__ method.")
+
+
+class FillMissingValueTransform(BaseTransform):
+    def __init__(self, strategy: str = "constant", fill_value: None | float = None, 
+                 method: None |str = "constant"):
+        self.strategy = strategy
+        self.fill_value = fill_value
+        self.method = method
+
+    def __call__(self, sample: DS | DA) -> DS | DA:
+        # Implement missing value filling logic here
+        check_object_type(sample, allowed_types=(DS, DA), caller=self.__class__.__name__)
+
+        # Depending on the method, implement infilling strategy
+        if self.strategy == "constant":
+            if self.fill_value is None:
+                raise ValueError("fill_value must be provided for 'constant' method.")
+            filled = sample.fillna(self.fill_value)
+
+        elif self.strategy == "interpolate":
+            filled = sample.interpolate_na(dim=None, method=self.method)  # type: ignore
+
+        else:
+            raise ValueError(f"Unsupported fill strategy: {self.strategy}")
+
+        return filled
+
+
+class FillNaNTransform(FillMissingValueTransform):
+    pass
+
+
+class NormalizeTransform(BaseTransform):
+    def __init__(self, mean: float, std: float):
+        self.mean = mean
+        self.std = std
+
+    def __call__(self, sample: DA) -> DA:
+        # Implement normalization logic here
+        check_object_type(sample, allowed_types=DA, caller=self.__class__.__name__)
+        return (sample - self.mean) / self.std
+
+
+class ScaleTransform(NormalizeTransform): 
+    pass
+
+
+class RenameTransform(BaseTransform):
+    def __init__(self, var_id: str, new_name: str):
+        self.var_id = var_id
+        self.new_name = new_name
+
+    def __call__(self, sample: DS) -> DS:
+        # Implement renaming logic here
+        check_object_type(sample, allowed_types=DS, caller=self.__class__.__name__)
+        sample = sample.rename_vars({self.var_id: self.new_name})
+        return sample
+
+
+class ResampleTransform(BaseTransform):
+    def __init__(self, dim: str, freq: str, method: str = "mean"):
+        self.dim = dim
+        self.freq = freq
+        self.method = method
+
+    def __call__(self, sample):
+        # Implement resampling logic here
+        check_object_type(sample, allowed_types=(DS, DA), caller=self.__class__.__name__)
+        if self.method not in ["mean", "sum", "max", "min", "median"]:
+            raise ValueError(f"Unsupported resampling method: {self.method}")
+        
+        # Select the appropriate resampling method from xarray's ResampleGroupBy based on the provided method string
+        resampled = sample.resample({self.dim: self.freq})
+        
+        if not hasattr(resampled, self.method):
+            raise ValueError(f"Invalid resample method: {self.method}")
+
+        result = getattr(resampled, self.method)()
+        return result
+
+
+class ResizeTransform(BaseTransform):
+    def __init__(self, size: tuple):
+        self.size = size
+
+    def __call__(self, sample):
+        # Implement resizing logic here
+        check_object_type(sample, allowed_types=DA, caller=self.__class__.__name__)
+        return sample.to_numpy().reshape(self.size)
+
+
+class RollTransform(BaseTransform):
+    def __init__(self, dim: str, shift: None|int):
+        self.dim = dim
+        self.shift = shift
+
+    def __call__(self, sample):
+        # Implement rolling logic here
+        check_object_type(sample, allowed_types=DS, caller=self.__class__.__name__)
+        shift = self.shift
+        
+        if shift is None:
+            # Check if we need to roll
+            if float(sample[self.dim].max()) > 350 and float(sample[self.dim].min()) < 10:
+                shift = sample.sizes[self.dim] // 2
+            else:
+                shift = 0
+
+        print(f"Rolling {self.dim} by {shift} positions.")
+        rolled = sample.roll({self.dim: shift}, roll_coords=True)
+
+        # Adjust the coordinate values after rolling
+        coord_vals = rolled.coords[self.dim].values
+        rolled.coords[self.dim] = np.where(coord_vals >= 180., coord_vals - 360., coord_vals)
+
+        return rolled
+
+
+class ReverseAxisTransform(BaseTransform):
+    def __init__(self, dim: str):
+        self.dim = dim
+
+    def __call__(self, sample):
+        # Implement axis reversal logic here
+        check_object_type(sample, allowed_types=DS, caller=self.__class__.__name__)
+        ds_rev = sample.isel(**{self.dim: slice(None, None, -1)})
+        return ds_rev
+
 
 class SubsetTransform(BaseTransform):
     def __init__(self, **subset_selectors):
@@ -47,70 +178,6 @@ class SubsetTransform(BaseTransform):
 
         return ds
 
-class NormalizeTransform(BaseTransform):
-    def __call__(self, sample, mean: float, std: float):
-        # Implement normalization logic here
-        check_object_type(sample, allowed_types=DA, caller=self.__class__.__name__)
-        return (sample - mean) / std
-
-class ScaleTransform(NormalizeTransform): 
-    pass
-
-class ResizeTransform(BaseTransform):
-    def __init__(self, size: tuple):
-        self.size = size
-
-    def __call__(self, sample):
-        # Implement resizing logic here
-        check_object_type(sample, allowed_types=DA, caller=self.__class__.__name__)
-        return sample.to_numpy().reshape(self.size)
-
-class RenameTransform(BaseTransform):
-    def __init__(self, var_id: str, new_name: str):
-        self.var_id = var_id
-        self.new_name = new_name
-
-    def __call__(self, sample):
-        # Implement renaming logic here
-        check_object_type(sample, allowed_types=DS, caller=self.__class__.__name__)
-        sample = sample.rename_vars({self.var_id: self.new_name})
-        return sample
-    
-class RollTransform(BaseTransform):
-    def __init__(self, dim: str, shift: None|int):
-        self.dim = dim
-        self.shift = shift
-
-    def __call__(self, sample):
-        # Implement rolling logic here
-        check_object_type(sample, allowed_types=DS, caller=self.__class__.__name__)
-        shift = self.shift
-        
-        if shift is None:
-            # Check if we need to roll
-            if float(sample[self.dim].max()) > 350 and float(sample[self.dim].min()) < 10:
-                shift = sample.sizes[self.dim] // 2
-            else:
-                shift = 0
-
-        print(f"Rolling {self.dim} by {shift} positions.")
-        rolled = sample.roll({self.dim: shift}, roll_coords=True)
-
-        # Adjust the coordinate values after rolling
-        coord_vals = rolled.coords[self.dim].values
-        rolled.coords[self.dim] = np.where(coord_vals >= 180., coord_vals - 360., coord_vals)
-
-        return rolled
-    
-class ReverseAxisTransform(BaseTransform):
-    def __init__(self, dim: str):
-        self.dim = dim
-
-    def __call__(self, sample):
-        # Implement axis reversal logic here
-        check_object_type(sample, allowed_types=DS, caller=self.__class__.__name__)
-        ds_rev = sample.isel(**{self.dim: slice(None, None, -1)})
-        return ds_rev
 
 class ToTensorTransform(BaseTransform):
     def __call__(self, sample):
@@ -119,6 +186,7 @@ class ToTensorTransform(BaseTransform):
         if isinstance(sample, DA):
             sample = sample.values
         return torch.from_numpy(sample)
+
 
 class VarsToDimensionTransform(BaseTransform):
     """
@@ -170,13 +238,16 @@ class VarsToDimensionTransform(BaseTransform):
 
 
 transform_mapping = {
-    "subset": SubsetTransform,
+    "fill_missing": FillMissingValueTransform,
+    "fill_nan": FillNaNTransform,
     "normalize": NormalizeTransform,
-    "resize": ResizeTransform,
     "rename": RenameTransform,
+    "resize": ResizeTransform,
+    "resample": ResampleTransform,
+    "reverse_axis": ReverseAxisTransform,
     "roll": RollTransform,
     "scale": ScaleTransform,
-    "reverse_axis": ReverseAxisTransform,
+    "subset": SubsetTransform,
     "to_tensor": ToTensorTransform,
     "vars_to_dimension": VarsToDimensionTransform
 }

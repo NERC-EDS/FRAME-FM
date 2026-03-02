@@ -19,6 +19,7 @@ from FRAME_FM.utils.data_utils import load_data_from_uri
 
 
 kerchunk_zip = "tests/transforms/fixtures/ecmwf-era5X_oper_an_sfc_2000_2020_2d_repack.kr1.0.json.zip"
+var_id = "d2m"
 pdt = pd.to_datetime
 ds = None
 
@@ -29,51 +30,74 @@ def _load_data(response_type: str = "Dataset") -> xr.Dataset | xr.DataArray:
         ds = load_data_from_uri(kerchunk_zip)   # type: ignore
 
     if response_type == "DataArray":
-        return ds["d2m"].isel(time=slice(0, 3))
+        return ds[var_id].isel(time=slice(0, 3))
     
     return ds
 
 
-def test_SubsetTransform():
+def test_FillMissingValueTransform():
     ds = _load_data()
 
-    # Run the subset transform on a Dataset
-    subset_transform = SubsetTransform(variables=["d2m"], time=("2000-01-01", "2000-01-10"), latitude=(-30, 60), longitude=(-40, 100))
-    subset_ds = subset_transform(ds)
-    assert "d2m" in subset_ds.data_vars, "Variable subsetting did not work as expected."
-    assert subset_ds.time.min().values >= pdt("2000-01-01"), "Time subsetting did not work as expected."
+    # Introduce some missing values into the dataset for testing
+    ds_with_nans = ds.copy().isel(time=slice(0, 3))  # Take a small subset for testing
+    ds_with_nans[var_id] = ds_with_nans[var_id].where(ds_with_nans[var_id] > 270)  # Set values <= 270 to NaN
 
-    # Run the subset transform on a DataArray
-    da = ds["d2m"]
-    subset_transform = SubsetTransform(time=("2000-01-01", "2000-01-10"), latitude=(60, -30), longitude=(-40, 100))
-    subset_da = subset_transform(da)
-    assert subset_da.time.min().values >= pdt("2000-01-01"), "Time subsetting did not work as expected."
-    assert subset_da.time.max().values <= pdt("2000-01-11"), "Time subsetting did not work as expected."
-    assert subset_da.latitude.min().values >= -30, "Latitude subsetting did not work as expected."
-    assert subset_da.latitude.max().values <= 60, "Latitude subsetting did not work as expected."
-    assert subset_da.longitude.min().values >= -40, "Longitude subsetting did not work as expected."
-    assert subset_da.longitude.max().values <= 100, "Longitude subsetting did not work as expected."
-    print("Subsetted DataArray:")
-    print(subset_da)
+    # Run the fill missing value transform with constant strategy
+    fill_transform_constant = FillMissingValueTransform(strategy="constant", fill_value=273.15)
+    filled_ds_constant = fill_transform_constant(ds_with_nans)
+    assert not filled_ds_constant[var_id].isnull().any(), "FillMissingValueTransform with constant strategy did not work as expected (there are still NaN values)."
+
+    # Run the fill missing value transform with interpolate strategy
+    fill_transform_interpolate = FillMissingValueTransform(strategy="interpolate", method="linear")
+    filled_ds_interpolate = fill_transform_interpolate(ds_with_nans)
+    assert not filled_ds_interpolate[var_id].isnull().any(), "FillMissingValueTransform with interpolate strategy did not work as expected (there are still NaN values)."
+
+    # Run the fill missing value transform with an unsupported strategy to check that it raises an error
+    try:
+        fill_transform_invalid = FillMissingValueTransform(strategy="unsupported_strategy", fill_value=273.15)
+        fill_transform_invalid(ds_with_nans)
+        assert False, "FillMissingValueTransform did not raise an error for an unsupported strategy."
+    except ValueError as e:
+        assert str(e) == "Unsupported fill strategy: unsupported_strategy", f"FillMissingValueTransform raised an unexpected error message: {str(e)}"
 
 
-def test_RenameTransform():
-    ds = _load_data()
-
-    # Run the rename transform
-    rename_transform = RenameTransform(var_id="d2m", new_name="dewpoint_temperature")
-    transformed_ds = rename_transform(ds)
-    assert "dewpoint_temperature" in transformed_ds.data_vars, "Rename transform did not work as expected."
+def test_FillNaNTransform():
+    # Identical to the FillMissingValueTransform test but with the FillNaNTransform instead 
+    return test_FillMissingValueTransform()
 
 
 def test_NormalizeTransform():
     da: xr.DataArray = _load_data(response_type="DataArray")  # type: ignore
 
     # Run the normalize transform
-    normalize_transform = NormalizeTransform()
-    normalized_da = normalize_transform(da, mean=float(da.mean()), std=float(da.std()))
+    normalize_transform = NormalizeTransform(mean=float(da.mean()), std=float(da.std()))
+    normalized_da = normalize_transform(da)
     assert np.isclose(float(normalized_da.mean()), 0, atol=1e-5), "Normalize transform did not work as expected (mean is not close to 0)."
     assert np.isclose(float(normalized_da.std()), 1, atol=1e-5), "Normalize transform did not work as expected (std is not close to 1)."
+
+
+def test_RenameTransform():
+    ds = _load_data()
+
+    # Run the rename transform
+    rename_transform = RenameTransform(var_id=var_id, new_name="dewpoint_temperature")
+    transformed_ds = rename_transform(ds)  # type: ignore
+    assert "dewpoint_temperature" in transformed_ds.data_vars, "Rename transform did not work as expected."
+
+
+def test_ResampleTransform():
+    ds = _load_data()
+    start, end = "2000-01-01T00:00:00", "2000-01-01T23:00:00"
+    ds = ds.sel(time=slice(start, end))
+    freq = "1D" # daily frequency
+
+    # Run the resample transform to resample from hourly to daily data
+    resample_transform = ResampleTransform(dim="time", freq=freq)
+    resampled_ds = resample_transform(ds)
+    # Check that the time coordinate has been resampled correctly (should now have daily frequency)
+
+    expected_time_range = pd.date_range(start=start, end=end, freq=freq)
+    assert np.array_equal(resampled_ds.time.values, expected_time_range.values), "Resample transform did not work as expected (time coordinate does not match expected daily frequency)."   
 
 
 def test_ResizeTransform():
@@ -115,13 +139,31 @@ def test_RollTransform():
 
 
 def test_ScaleTransform():
-    da = _load_data(response_type="DataArray")
+    # Same as the NormalizeTransform test but with the ScaleTransform instead
+    return test_NormalizeTransform()
 
-    # Run the scale transform (which is the same as normalize in this case)
-    scale_transform = ScaleTransform()
-    scaled_da = scale_transform(da, mean=float(da.mean()), std=float(da.std()))   # type: ignore
-    assert np.isclose(float(scaled_da.mean()), 0, atol=1e-5), "Scale transform did not work as expected (mean is not close to 0)."  # type: ignore
-    assert np.isclose(float(scaled_da.std()), 1, atol=1e-5), "Scale transform did not work as expected (std is not close to 1)."    # type: ignore
+
+def test_SubsetTransform():
+    ds = _load_data()
+
+    # Run the subset transform on a Dataset
+    subset_transform = SubsetTransform(variables=[var_id], time=("2000-01-01", "2000-01-10"), latitude=(-30, 60), longitude=(-40, 100))
+    subset_ds = subset_transform(ds)
+    assert var_id in subset_ds.data_vars, "Variable subsetting did not work as expected."
+    assert subset_ds.time.min().values >= pdt("2000-01-01"), "Time subsetting did not work as expected."
+
+    # Run the subset transform on a DataArray
+    da = ds[var_id]
+    subset_transform = SubsetTransform(time=("2000-01-01", "2000-01-10"), latitude=(60, -30), longitude=(-40, 100))
+    subset_da = subset_transform(da)
+    assert subset_da.time.min().values >= pdt("2000-01-01"), "Time subsetting did not work as expected."
+    assert subset_da.time.max().values <= pdt("2000-01-11"), "Time subsetting did not work as expected."
+    assert subset_da.latitude.min().values >= -30, "Latitude subsetting did not work as expected."
+    assert subset_da.latitude.max().values <= 60, "Latitude subsetting did not work as expected."
+    assert subset_da.longitude.min().values >= -40, "Longitude subsetting did not work as expected."
+    assert subset_da.longitude.max().values <= 100, "Longitude subsetting did not work as expected."
+    print("Subsetted DataArray:")
+    print(subset_da)
 
 
 def test_ToTensorTransform():
@@ -138,7 +180,7 @@ def test_VarsToDimensionTransform():
     ds = _load_data()
 
     # Run the vars_to_dimension transform
-    vars_to_dimension_transform = VarsToDimensionTransform(variables=["d2m", "d2m"], new_dim="variables")
+    vars_to_dimension_transform = VarsToDimensionTransform(variables=[var_id, var_id], new_dim="variables")
     da = vars_to_dimension_transform(ds)
 
     # Check that the new dimension has been added correctly
@@ -156,7 +198,7 @@ def test_multiple_transforms_1():
 
     # Example of using multiple transforms as a list using transform mapping codes
     transforms_to_apply = [
-        {"type": "rename", "var_id": "d2m", "new_name": "dewpoint_temperature"},
+        {"type": "rename", "var_id": var_id, "new_name": "dewpoint_temperature"},
         {"type": "roll", "dim": "longitude", "shift": None},
     ]
 
@@ -184,7 +226,7 @@ def test_multiple_transforms_2():
     chained_transforms = [
         {"type": "roll", "dim": "longitude", "shift": None},
         {"type": "reverse_axis", "dim": "latitude"},
-        {"type": "subset", "variables": ["d2m"], "time": ["2000-01-01 00:00:00", "2000-01-10 23:00:00"], "latitude": [-89, 89], "longitude": [-179, 179]},
+        {"type": "subset", "variables": [var_id], "time": ["2000-01-01 00:00:00", "2000-01-10 23:00:00"], "latitude": [-89, 89], "longitude": [-179, 179]},
     ]
 
     ds = _load_data()
@@ -196,7 +238,7 @@ def test_multiple_transforms_2():
         ds = transform(ds)
 
     # Check the final shape of the dataset
-    assert ds.d2m.shape == (240, 713, 1433), "Chained transforms did not produce the expected output shape."
+    assert ds[var_id].shape == (240, 713, 1433), "Chained transforms did not produce the expected output shape."
 
 
 def test_multiple_transforms_3():
@@ -204,7 +246,7 @@ def test_multiple_transforms_3():
     ds = _load_data()
     chained_transforms = [
         {"type": "reverse_axis", "dim": "latitude"},
-        {"type": "subset", "variables": ["d2m"], "time": ["2000-01-01 00:00:00", "2000-01-10 23:00:00"], "latitude": [89, -89], "longitude": [-179, 179]},
+        {"type": "subset", "variables": [var_id], "time": ["2000-01-01 00:00:00", "2000-01-10 23:00:00"], "latitude": [89, -89], "longitude": [-179, 179]},
         {"type": "roll", "dim": "longitude", "shift": None},
     ]
 
@@ -215,7 +257,7 @@ def test_multiple_transforms_3():
         transform = transform_class(**{k: v for k, v in transform.items() if k != "type"})
         ds = transform(ds)
 
-    assert ds.d2m.shape == (240, 713, 1433), "Chained transforms did not produce the expected output shape."
+    assert ds[var_id].shape == (240, 713, 1433), "Chained transforms did not produce the expected output shape."
 
     print("\nWhat we actually learnt here: _rolling_ the dataset before or after subset STILL WORKS!")
     print("But reversing the axis before/after DOES have an impact!")

@@ -5,7 +5,7 @@ from FRAME_FM.datasets.base_gridded_dataset import BaseGeoTIFFDataset
 SAMPLE_DATA_URI = "/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/land_cover_map_2015/data/LCM2015_GB_1km_percent_cover_aggregate_class.tif"
 
 
-class LandCoverMapGriddedsDataset(BaseGeoTIFFDataset):
+class LandCoverMapGriddedDataset(BaseGeoTIFFDataset):
     """
     A dataset class for loading the Land Cover Map data for gridded time series forecasting tasks. 
     This class inherits from the BaseGeoTIFFDataset and can be extended with 
@@ -28,7 +28,7 @@ class LandCoverMapGriddedsDataset(BaseGeoTIFFDataset):
 
 if __name__ == "__main__":
 
-    dataset = LandCoverMapGriddedsDataset(
+    dataset = LandCoverMapGriddedDataset(
         data_uri=SAMPLE_DATA_URI
     )
 

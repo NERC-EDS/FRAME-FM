@@ -30,7 +30,7 @@ class BaseGriddedDataset(Dataset):
         self.data = load_data_from_uri(self.data_uri, chunks=self.chunks)
 
     def __len__(self) -> int:
-        return len(self.data.band)
+        return len(self.data["band"])
 
     def __getitem__(self, idx: int) -> torch.Tensor:
         # Return the data sample at the specified index
