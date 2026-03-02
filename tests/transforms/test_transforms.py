@@ -146,7 +146,7 @@ def test_VarsToDimensionTransform():
     assert da.shape == (2, 184104, 721, 1440), "VarsToDimension transform did not produce the expected output shape."
 
     # Now test the special case of variables="__all__"
-    vars_to_dimension_transform_all = VarsToDimensionTransform(variables="__all__", new_dim="variables")
+    vars_to_dimension_transform_all = VarsToDimensionTransform(variables="__all__", new_dim="variables")   # type: ignore
     da_all = vars_to_dimension_transform_all(ds)
     assert da_all.shape == (len(ds.data_vars), 184104, 721, 1440), "VarsToDimension transform with variables='__all__' did not produce the expected output shape."
 

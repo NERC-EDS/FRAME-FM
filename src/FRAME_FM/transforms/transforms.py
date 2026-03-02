@@ -1,5 +1,6 @@
 # Define transforms
 import xarray as xr
+import cf_xarray  # noqa: F401 - We just need to register the accessor for CF-compliant operations on xarray objects
 import numpy as np
 DA = xr.DataArray
 DS = xr.Dataset
@@ -120,6 +121,19 @@ class ToTensorTransform(BaseTransform):
         return torch.from_numpy(sample)
 
 class VarsToDimensionTransform(BaseTransform):
+    """
+    A transform that takes a list of variables from a Dataset and stacks them into a 
+    new dimension, effectively converting the variable dimension into a coordinate 
+    dimension. This is useful for models that expect a single multi-channel input 
+    rather than separate variables.
+
+    Since the purpose is to prepare the data for conversion to a Tensor, we assume 
+    that ancillary variables that are not genuine coordinates can be dropped.
+    """
+    exclusion_vars = ["time_bounds", "lat_bounds", "lon_bounds", 
+                       "time_bnds", "lat_bnds", "lon_bnds",
+                       "crs", "spatial_ref", "bounds", "bnds"]
+    
     def __init__(self, variables: list, new_dim: str):
         self.variables = variables
         self.new_dim = new_dim
@@ -127,11 +141,30 @@ class VarsToDimensionTransform(BaseTransform):
     def __call__(self, sample):
         # Implement logic to convert variables to a new dimension here
         check_object_type(sample, allowed_types=DS, caller=self.__class__.__name__)
-        # Check special case of variables = "__all__"
+        
+        # Check special case of variables = "__all__", take all variables and filter out those not needed/suitable
         if self.variables == "__all__":
-            self.variables = list(sample.data_vars)
 
-        arrays = [sample[var_id] for var_id in self.variables]
+            # Exclude variables relate to bounds and coordinates
+            bounds_vars = set([b_list[0] for b_list in sample.cf.bounds.values()])
+            vars_without_time = set([var_id for var_id in sample.data_vars 
+                                     if not hasattr(sample[var_id], "time")])
+            exclusion_vars = set([var_id for var_id in self.exclusion_vars if var_id in sample.data_vars])
+
+            # Combine all exclusion criteria into a single set of variables to drop
+            all_exclusion_vars = bounds_vars | vars_without_time | exclusion_vars
+
+            # Drop the variables from the sample.
+            sample.drop_vars(all_exclusion_vars)
+            # Remove those variables from the wish list
+            variables = set(sample.data_vars) - all_exclusion_vars
+
+        else:
+            variables = self.variables
+
+        # Create a set of arrays to concatenate together
+        arrays = [sample[var_id] for var_id in variables]
+
         stacked = xr.concat(arrays, dim=self.new_dim)
         return stacked
 
