@@ -3,7 +3,7 @@ from pathlib import Path
 from FRAME_FM.datasets.base_gridded_dataset import BaseGriddedTimeSeriesDataset
 
 SAMPLE_DATA_PATH = "/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_water_index_europe_1km_daily_v1/aggregations/soil_water_index_europe_1km_daily_v1_2015-2025.nca"
-SAMPLE_DATA_PATH = "/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_water_index_europe_1km_daily_v1/aggregations/yearly/soil_water_index_europe_1km_daily_v1_2024.nca"
+SAMPLE_DATA_PATH = "/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_water_index_europe_1km_daily_v1/aggregations/yearly/soil_water_index_europe_1km_daily_v1_*.nca"
 #SAMPLE_DATA_PATH = "/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_water_index_europe_1km_daily_v1/data/2024/01/0*/*/*.nc"
 
 
@@ -34,8 +34,11 @@ class SoilWaterIndexGriddedTimeSeriesDataset(BaseGriddedTimeSeriesDataset):
 
 if __name__ == "__main__":
 
+    filepaths = glob.glob(SAMPLE_DATA_PATH) if isinstance(SAMPLE_DATA_PATH, str) else SAMPLE_DATA_PATH
+    print(f"Testing with filepaths: {filepaths}")
+
     dataset = SoilWaterIndexGriddedTimeSeriesDataset(
-        data_uri=SAMPLE_DATA_PATH,
+        data_uri=filepaths,
         time_range=("2024-02-01", "2024-02-05"),
         time_stride=1,
         chunks={"time": 1}

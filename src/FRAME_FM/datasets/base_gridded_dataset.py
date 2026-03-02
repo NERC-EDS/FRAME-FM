@@ -63,7 +63,7 @@ class BaseGeoTIFFDataset(Dataset):
         self.data = load_data_from_uri(self.data_uri, chunks=self.chunks)
 
     def __len__(self) -> int:
-        return len(self.data.band_data)
+        return len(self.data["band_data"])
 
     def __getitem__(self, idx: int) -> torch.Tensor:
         # Return the data sample at the specified index
@@ -74,6 +74,40 @@ class BaseGeoTIFFDataset(Dataset):
             sample = resolve_transform(transform)(sample)
 
         return sample  # type: ignore
+
+
+# class BaseASCIIGridDataset(Dataset):
+#     _transforms = [
+#         {"type": "vars_to_dimension", "variables": ["band_data"], "new_dim": "variable"},
+#         {"type": "to_tensor"}
+#     ]
+
+#     def __init__(self, 
+#                  data_uri: str | Path | list | tuple,
+#                  transforms: list | None = None,
+#                  chunks: dict | None = None,
+#                  override_transforms: bool = False
+#                  ):
+#         self.data_uri = data_uri
+#         self.transforms = unify_transforms(transforms, self._transforms, override_transforms)
+#         self.chunks = chunks
+
+#         # Load the dataset ready for training: xarray.DataAraray
+#         self.data = load_data_from_uri(self.data_uri, chunks=self.chunks)
+
+#     def __len__(self) -> int:
+#         return len(self.data.band_data)
+
+#     def __getitem__(self, idx: int) -> torch.Tensor:
+#         # Return the data sample at the specified index
+#         sample = self.data.isel(band=idx)
+
+#         # Apply runtime transforms if any
+#         for transform in self.transforms:
+#             sample = resolve_transform(transform)(sample)
+
+#         return sample  # type: ignore
+
 
 
 class BaseGriddedTimeSeriesDataset(Dataset):
@@ -104,7 +138,7 @@ class BaseGriddedTimeSeriesDataset(Dataset):
         self.data = load_data_from_uri(self.data_uri, chunks=self.chunks, subset_selection=subset_selection)
 
     def __len__(self) -> int:
-        return len(self.data.time) // self.time_stride
+        return len(self.data["time"]) // self.time_stride
 
     def __getitem__(self, idx: int) -> torch.Tensor:
         # Return the data sample at the specified index

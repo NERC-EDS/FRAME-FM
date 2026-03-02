@@ -2,8 +2,6 @@ from pathlib import Path
 
 from FRAME_FM.datasets.base_gridded_dataset import BaseGriddedTimeSeriesDataset
 
-SAMPLE_DATA_PATH = "tests/transforms/fixtures/ecmwf-era5X_oper_an_sfc_2000_2020_2d_repack.kr1.0.json.zip"
-
 
 class ERA5GriddedTimeSeriesDataset(BaseGriddedTimeSeriesDataset):
     """
@@ -32,16 +30,23 @@ class ERA5GriddedTimeSeriesDataset(BaseGriddedTimeSeriesDataset):
 
 if __name__ == "__main__":
 
+    SAMPLE_DATA_PATH = "/gws/ssde/j25b/eds_ai/public/era5_repack/aggregations/data/ecmwf-era5X_oper_an_sfc_2000_2020_*_repack.kr1.0.json"
+
     dataset = ERA5GriddedTimeSeriesDataset(
         data_uri=SAMPLE_DATA_PATH,
-        time_range=("2010-05-01", "2010-10-01"),
-        time_stride=1
+        time_range=("2010-05-01", "2012-10-05"),
+        time_stride=4
     )
+
+    ds = dataset.data
+    print(ds)
+    assert "time" in ds.coords, "Dataset must have a time coordinate"
+    assert set(["u10", "v10", "t2m", "d2m"]).issubset(set(ds.data_vars)), "Dataset must contain the required variables" 
 
     # Parent class will avoid applying the same transforms twice, so we can apply some additional ones here if we want to test them out.
     transforms = [
-        {"type": "subset", "variables": ["d2m"], "latitude": (60, -30), "longitude": (-40, 100)},
-        {"type": "vars_to_dimension", "variables": "__all__", "new_dim": "variable"},
+        {"type": "subset", "latitude": (60, -30), "longitude": (-40, 100)},
+        {"type": "vars_to_dimension", "variables": ["u10", "v10", "t2m", "d2m"], "new_dim": "variable"},
         {"type": "to_tensor"},
     ]
 

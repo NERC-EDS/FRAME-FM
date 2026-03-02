@@ -95,6 +95,10 @@ def load_data_from_uri(uri: Union[str, Path, list, tuple],
     Returns:
         xr.Dataset: The loaded dataset with applied subset selection.
     """
+    # Cast the URI to a string if it's a Path object for easier processing
+    if isinstance(uri, Path):
+        uri = str(uri)
+
     # Set a default chunking strategy if not provided to ensure Dask is used for larger datasets
     chunks = chunks or {"time": 64}
 

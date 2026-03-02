@@ -10,10 +10,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+# import torch.multiprocessing as mp
+# mp.set_start_method("spawn", force=True)
 
 
 class SpatialCollapse(nn.Module):
@@ -73,49 +71,34 @@ class SpatialCollapse(nn.Module):
 
 
 from pathlib import Path
-from io import BytesIO
-import zipfile
 import xarray as xr
-import json
 import pandas as pd
 
 
-KERCHUNK_ZIP = Path("tests/fixtures/ecmwf-era5X_oper_an_sfc_2000_2020_2d_repack.kr1.0.json.zip")
-KERCHUNK_FILE = BytesIO()
-pdt = pd.to_datetime
-
-# Unzip the file into an in-memory BytesIO object
-with KERCHUNK_ZIP.open("rb") as f:
-    with zipfile.ZipFile(f) as z:
-        with z.open(z.namelist()[0]) as kerchunk_file:
-            KERCHUNK_FILE.write(kerchunk_file.read())
+KERCHUNK_ZIP = "tests/transforms/fixtures/ecmwf-era5X_oper_an_sfc_2000_2020_2d_repack.kr1.0.json.zip"
 
 
-def _load_kerchunk_dataset(kerchunk_file: str | Path | BytesIO = KERCHUNK_FILE,
-                           response_type: str = "Dataset") -> xr.Dataset | xr.DataArray:
-    # Reset the file pointer to the beginning
-    kerchunk_file.seek(0)             # type: ignore
-    refs = json.load(kerchunk_file)   # type: ignore
-    ds = xr.open_dataset(refs, engine="kerchunk")
-    if response_type == "DataArray":
-        return ds["d2m"].isel(time=slice(0, 2))
-    return ds
-
+from FRAME_FM.utils.data_utils import load_data_from_uri
 from FRAME_FM.transforms import transform_mapping, ToTensorTransform
 
+
+
+
 if __name__ == "__main__":
-    model = SpatialCollapse(in_variables=5)
-    x = torch.randn(16, 5, 128, 128)
+
+    n_variables = 5
+    model = SpatialCollapse(in_variables=n_variables)
+    x = torch.randn(16, n_variables, 128, 128)
     y = model(x)
     print(y.shape)
 
 
     # Read in this zipped Kerchunk file and modify it and then do a basic Pytorch
     # training loop with it.
-    ds = _load_kerchunk_dataset()
+    ds = load_data_from_uri(KERCHUNK_ZIP)
     transforms = [
         {"type": "reverse_axis", "dim": "latitude"},
-        {"type": "subset", "variables": "d2m", "time": ("2000-01-01", "2000-01-02"), "latitude": (60, -30), "longitude": (40, 160)},
+        {"type": "subset", "variables": "d2m", "time": ("2001-01-01", "2001-01-01T00:05:00"), "latitude": (60, -30), "longitude": (40, 160)},
     ]
 
     for transform in reversed(transforms):
@@ -125,6 +108,15 @@ if __name__ == "__main__":
 
         transform = transform_class(**{k: v for k, v in transform.items() if k != "type"})
         ds = transform(ds)
+
+    # Calculate the mean and std for each time step
+    mean = ds["d2m"].mean(dim=("latitude", "longitude"))
+    std = ds["d2m"].std(dim=("latitude", "longitude"))
+
+    # Write them to a csv file via pandas
+    csv_file = "d2m_mean_std.csv"
+    pd.DataFrame({"time": ds.time.values, "mean": mean.values, "std": std.values}).to_csv(csv_file, index=False)
+    print(f"Saved mean and std to {csv_file}")
 
     # Duplicate the variable dimension 5 times to create a fake "variable" dimension for the model
     n_variables = 5
