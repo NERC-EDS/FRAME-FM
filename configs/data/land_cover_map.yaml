@@ -26,8 +26,6 @@ tile_size: 32
 train_transforms:
   _target_: torchvision.transforms.Compose
   transforms:
-    - _target_: torchvision.transforms.RandomHorizontalFlip
-      p: 0.5
       # have to do custom transform to scale from [0,100] to [0,1] since ToTensor assumes max value of 255
     - _target_: torchvision.transforms.Normalize
       mean: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]

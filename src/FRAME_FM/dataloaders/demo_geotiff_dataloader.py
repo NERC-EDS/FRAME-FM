@@ -192,8 +192,8 @@ class XarrayStaticWCoordsData(BaseDataModule):
     def _get_tile_coords(self, tile_stack, target_crs="EPSG:4326"):
         # is this correct level of abstraction?
         # get centroid coordinates for each tile
-        x_centroids = tile_stack.x_coarse + self.tile_size // 2
-        y_centroids = tile_stack.y_coarse + self.tile_size // 2
+        x_centroids = tile_stack.x_coarse.values * self.tile_size_x + tile_stack.x_fine.values[0] + self.tile_size_x // 2
+        y_centroids = tile_stack.y_coarse.values * self.tile_size_y + tile_stack.y_fine.values[0] + self.tile_size_y // 2
         # convert to lat/lon if the dataset has a CRS (Coordinate Reference System) defined
         if tile_stack.rio.crs is not None:
             crs = tile_stack.rio.crs
