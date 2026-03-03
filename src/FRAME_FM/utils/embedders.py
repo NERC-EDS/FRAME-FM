@@ -342,8 +342,11 @@ class STPatchEmbed(PatchEmbed):
             )
         self.position_space = position_space
         self.pos_embed_ratio = pos_embed_ratio
+        self.encoder_omegas = torch.nn.ParameterList()
+        self.decoder_omegas = torch.nn.ParameterList()
 
-    def _define_position_embedding(self, embed_dim: int) -> Callable[[torch.Tensor], torch.Tensor]:
+    def _define_position_embedding(self, embed_dim: int, omegas: torch.nn.ParameterList
+                                   ) -> Callable[[torch.Tensor], torch.Tensor]:
         # Divide sin and cos embeddings according to size of grid in each dimension
         embed_dims = partition_embed_dim(embed_dim, dim_ratio=self.pos_embed_ratio)
         st_dim = len(self.position_space)
@@ -352,8 +355,8 @@ class STPatchEmbed(PatchEmbed):
             torch.ones((st_dim, 1) + self.patch_shape) / prod(self.patch_shape),
             requires_grad=False,
             )
-        self.pos_embed_omegas = torch.nn.ParameterList([
-            torch.nn.Parameter(calc_embed_omega(dim, period=x_max - x_min))
+        omegas.extend([
+            torch.nn.Parameter(calc_embed_omega(dim, period=x_max - x_min), requires_grad=False)
             for dim, (x_min, x_max) in zip(embed_dims, self.position_space)
             ])
 
@@ -370,8 +373,7 @@ class STPatchEmbed(PatchEmbed):
                 )  # B, 2, H, W for 2D patches
             pos = pos.transpose(0, 1).flatten(start_dim=1)  # 2, BHW for 2D patches
             embeddings = torch.cat([
-                sincos_embed_coords(coords, omega)
-                for coords, omega in zip(pos, self.pos_embed_omegas)
+                sincos_embed_coords(coords, omega) for coords, omega in zip(pos, omegas)
                 ], dim=1)  # BHW, D for 2D patches
             return embeddings.reshape([batch_size, -1, embed_dim])  # B, HW, D for 2D patches
         return embedding
@@ -380,8 +382,8 @@ class STPatchEmbed(PatchEmbed):
         """Set up embedder weights and parameters.
         """
         # define fixed sin-cos embedding functions for patch positions
-        self.pos_embed = self._define_position_embedding(self.embed_dim)
-        self.decoder_pos_embed = self._define_position_embedding(self.reconstruct_dim)
+        self.pos_embed = self._define_position_embedding(self.embed_dim, self.encoder_omegas)
+        self.decoder_pos_embed = self._define_position_embedding(self.reconstruct_dim, self.decoder_omegas)
         # initialize projection like nn.Linear (instead of nn.Conv2d)
         w = self.proj.weight.data
         torch.nn.init.xavier_uniform_(w.view([w.shape[0], -1]))
@@ -433,11 +435,16 @@ class STPatchEmbed(PatchEmbed):
 
 
 class BoundedPatchEmbed(STPatchEmbed):
-    def _define_position_embedding(self, embed_dim: int) -> Callable[[torch.Tensor], torch.Tensor]:
+    def _define_position_embedding(self, embed_dim: int, omegas: torch.nn.ParameterList
+                                   ) -> Callable[[torch.Tensor], torch.Tensor]:
         # Divide sin and cos embeddings according to size of grid in each dimension
         embed_dims = partition_embed_dim(embed_dim, dim_ratio=self.pos_embed_ratio)
-        self.pos_embed_omegas = torch.nn.ParameterList([
-            torch.nn.Parameter(calc_embed_omega(dim, period=x_max - x_min))
+        self.patch_grid_coords = torch.nn.ParameterList([
+            torch.nn.Parameter(torch.arange(0.5, grid_s) / grid_s, requires_grad=False)
+            for grid_s in self.grid_shape
+            ])
+        omegas.extend([
+            torch.nn.Parameter(calc_embed_omega(dim, period=x_max - x_min), requires_grad=False)
             for dim, (x_min, x_max) in zip(embed_dims, self.position_space)
             ])
 
@@ -450,14 +457,13 @@ class BoundedPatchEmbed(STPatchEmbed):
                 f"Input position bounds (e.g. {bounds_batch[0, 0]}) must be 2-element ranges."
             pos = torch.cat([
                 torch.cartesian_prod(*[
-                    b_min + (b_max - b_min) * torch.arange(0.5, grid_s) / grid_s
-                    for (b_min, b_max), grid_s in zip(bounds, self.grid_shape)
+                    b_min + (b_max - b_min) * patch_coords
+                    for (b_min, b_max), patch_coords in zip(bounds, self.patch_grid_coords)
                     ])
                 for bounds in bounds_batch
                 ], dim=0).transpose(0, 1)  # 2, BHW for 2D patches
             embeddings = torch.cat([
-                sincos_embed_coords(coords, omega)
-                for coords, omega in zip(pos, self.pos_embed_omegas)
+                sincos_embed_coords(coords, omega) for coords, omega in zip(pos, omegas)
                 ], dim=1)  # BHW, D for 2D patches
             return embeddings.reshape([batch_size, -1, embed_dim])  # B, HW, D for 2D patches
         return embedding
