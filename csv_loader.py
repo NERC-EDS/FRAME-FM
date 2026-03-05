@@ -18,8 +18,8 @@ def process_bitmask(df, qc_df, qc_bitmask: int):
     Returns a pandas dataframe with all remaining data. Any dropped data is turned into a NaN.
     '''
     # handle the bitmask flags
-    #first build a boolean mask
-    #skip first two columns (data and site name) as they are non integer/float and not subject to QC flags
+    # first build a boolean mask
+    # skip first two columns (data and site name) as they are non integer/float and not subject to QC flags
     for column in qc_df.columns[2:]:
         #ensure any NaNs are zero or they'll fail the integer conversion
         qc_df[column] = qc_df[column].fillna(0)
@@ -69,8 +69,10 @@ def process_flags(df, flags_df, drop_qc_flags: list):
 
 def csv_to_xarray(data_path: str, qc_bitmask: int, drop_qc_flags: list):
     '''
-    
-    data_path is the directory inside base path where the data is store. Do not specify file names, the code automatically picks up files with the correct names (cosmos-uk_*_hydrosoil_sh_????-????.csv).
+    Loads the CSV 
+
+    data_path is the directory inside base path where the data is stored. Do not specify file names, the code automatically picks up files with the correct names (cosmos-uk_*_hydrosoil_sh_????-????.csv). It is assumed that a metadata file called cosmos-uk_sitemetadata_2013-2024.csv exists in the parent directory 
+    of this. This will contain the station locations. 
     
     qc_bitmask is the 11-bit mask of which QC bit files we *WANT* to allow through, set to zero to mask nothing (e.g. accept all data)
     set to 0b111111111111 to drop all data with a QC flag
@@ -87,13 +89,15 @@ def csv_to_xarray(data_path: str, qc_bitmask: int, drop_qc_flags: list):
     daily = xr.Dataset()
     files = glob.glob(data_path + "/cosmos-uk_*_hydrosoil_sh_????-????.csv")
 
-    dfs = []
-    
-    #load each CSV into the dfs array
+    metadata_df = pd.read_csv(data_path + "../cosmos-uk_sitemetadata_2013-2024.csv", index_col="SITE_ID")
+
+    all_data = []
+
+    # load each CSV into the dfs array
     for file in files:
         print(file)
-        
-        #check QC files exist
+
+        # check QC files exist
         qc_file=file[:-4] + "_qc_flags.csv"
         flags_file=file[:-4] + "_flags.csv"
         
@@ -103,31 +107,40 @@ def csv_to_xarray(data_path: str, qc_bitmask: int, drop_qc_flags: list):
         if not os.path.isfile(flags_file):
             raise FileNotFoundError("QC Flags file " + flags_file + " not found")
         
-        #missing values should be -9999 anyway and we turn them to NaNs at load time
-        df = pd.read_csv(file, delimiter=",",parse_dates=["DATE_TIME"],na_values=[-9999])
+        # missing values should be -9999 anyway and we turn them to NaNs at load time
+        data_df = pd.read_csv(file, delimiter=",",parse_dates=["DATE_TIME"],na_values=[-9999])
         qc_df = pd.read_csv(qc_file, delimiter=",",parse_dates=["DATE_TIME"])
-        flags_df = pd.read_csv(flags_file, delimiter=",",parse_dates=["DATE_TIME"])
+        flags_df = pd.read_csv(flags_file, delimiter=",",parse_dates=["DATE_TIME"], low_memory=False)
         
-        #check the data and QC files match in shape
-        assert df.shape == qc_df.shape == flags_df.shape, "Shapes of Data, QC and Flags files are not same"
+        # check the data and QC files match in shape
+        assert data_df.shape == qc_df.shape == flags_df.shape, "Shapes of Data, QC and Flags files are not same."
         
         # check column names are the same and are in the same order
         qc_columns = [c.replace('_QCFLAG', '') for c in qc_df.columns]
         flags_columns = [c.replace('_FLAG', '') for c in flags_df.columns]
-        assert df.columns.tolist() == qc_columns == flags_columns, "Column names are not same"
-    
-        #drop the data failing QC
-        df = process_bitmask(df, qc_df, qc_bitmask)
-        df = process_flags(df, flags_df, drop_qc_flags)
-    
+        assert data_df.columns.tolist() == qc_columns == flags_columns, "Data, QC and Flags column names are not same."
+
+        # drop the data failing QC
+        data_df = process_bitmask(data_df, qc_df, qc_bitmask)
+        data_df = process_flags(data_df, flags_df, drop_qc_flags)
+
+        # add lat/long
+        station_id = data_df.SITE_ID[0]
+        # ensure there's only one station ID used in the whole file
+        assert data_df.SITE_ID.nunique() == 1
+        latitude = metadata_df.LATITUDE[station_id]
+        longitude = metadata_df.LONGITUDE[station_id]
+        data_df['LATITUDE'] = latitude
+        data_df['LONGITUDE'] = longitude
+        
         #remove timezone from the datetime as xarray's to_netcdf doesn't like it
-        df["DATE_TIME"] = pd.to_datetime(df.DATE_TIME).dt.tz_localize(None)
+        data_df["DATE_TIME"] = pd.to_datetime(data_df.DATE_TIME).dt.tz_localize(None)
         #make DATE_TIME the index instead of using a index number
-        dfs.append(df.set_index("DATE_TIME"))
+        all_data.append(data_df.set_index(["DATE_TIME"]))
         #should site ID form part of the index?
         #sorts all the entries by date_time as not doing can break selecting on dates
     #note that there can be multiple entries with the same timestamp so the index_col entries are not unique
     #should we make station ID part of the index?
-    ds = pd.concat(dfs).sort_index().to_xarray() 
+    ds = pd.concat(all_data).sort_index().to_xarray() 
 
     return ds
