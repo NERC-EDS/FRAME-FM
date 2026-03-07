@@ -21,3 +21,5 @@ def check_object_type(obj: object, allowed_types: object | tuple[object, ...], c
             return obj
 
     raise TypeError(f"Expected an object of type: {allowed_types} when calling `{caller}`, but received: {type(obj)}.")
+
+

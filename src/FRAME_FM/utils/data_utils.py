@@ -1,5 +1,6 @@
 from io import BytesIO
 import json
+import os
 import zipfile
 from pathlib import Path
 from typing import Union
@@ -8,30 +9,79 @@ from collections.abc import Callable
 import xarray as xr
 
 
+def get_main_vars(dset: xr.Dataset) -> list:
+    """
+    Get the main variable names from an xarray Dataset, excluding coordinate variables.
+    Match only variables that have the maximum size (i.e., the main data variables) to 
+    avoid including ancillary variables that may be present in the dataset.
+    
+    Args:
+        - dset (xr.Dataset): The xarray Dataset from which to extract variable names.
+    
+    Returns:
+        - list: A list of variable names that are not coordinates.
+    """
+    max_var_size = max([variable.size for variable in dset.data_vars.values()])
+    return [var_id for var_id, variable in dset.data_vars.items() 
+            if var_id not in dset.coords and variable.size == max_var_size]
+
+
 def _infer_extension(uri: Union[str, Path, list, tuple]) -> str:
-    # Infer the file extension from the URI
+    """
+    Infer the file extension from the URI, handling cases where the URI might be a list 
+    or tuple of paths.
+    
+    Args:
+        - uri (str, Path, list, or tuple): The URI of the data source, which can be a string, a Path object, or a list/tuple of URIs.
+    
+    Returns:
+        - str: The inferred file extension from the URI.
+    """
     if isinstance(uri, (list, tuple)):
         uri = uri[0]  # Take the first URI if it's a list/tuple
-    return str(uri).split(".", 1)[-1]
+
+    # Cast to string for ease of processing
+    uri = str(uri)
+
+    # Apply a special rule for files that might end in ".gz", ".zip" or ".Z"
+    if uri.endswith((".gz", ".zip", ".Z")):
+        uri, compressed_ext = os.path.splitext(uri)
+    else:
+        compressed_ext = ""
+    return "." + os.path.basename(uri).split(".")[-1].lower() + compressed_ext.lower()
 
 
-def _map_uri_to_engine(uri: Union[str, Path, list, tuple]) -> str:
+def get_xr_kwargs(uri: Union[str, Path, list, tuple]) -> dict:
+    """
+    Determine the appropriate xarray loading engine and any additional kwargs 
+    based on the URI format or file extension.
+    
+    Args:
+        - uri (str, Path, list, or tuple): The URI of the data source, which can be a string, a Path object, or a list/tuple of URIs.
+        
+    Returns:
+        - dict: A dictionary of kwargs to pass to xarray loading functions, including the 'engine' key.
+    """
     # Map the URI to the appropriate engine for loading data
     # This function should determine the correct engine based on the URI format or file extension
-    uri = _infer_extension(uri)
+    ext = _infer_extension(uri)
+    kwargs = {}
 
-    if uri.endswith("zarr"):
-        return "zarr"
-    elif uri.endswith("nc"):
-        return "netcdf4"
-    elif uri.endswith("json") or uri.endswith("json.zip"):
-        return "kerchunk"
-    elif uri.endswith("nca"):
-        return "CFA"
-    elif uri.endswith("tif") or uri.endswith("tiff") or uri.endswith("geotiff"):
-        return "rasterio"
+    if ext == ".zarr":
+        kwargs["engine"] = "zarr"
+    elif ext == ".nc":
+        kwargs["engine"] = "netcdf4"
+    elif ext == ".json" or ext == ".json.zip":
+        kwargs["engine"] = "kerchunk"
+    elif ext == ".nca":
+        kwargs["engine"] = "CFA"
+    elif ext in [".tif", ".tiff", ".geotiff", ".asc", ".txt", ".asciigrid"]:
+        kwargs["engine"] = "rasterio"
+        kwargs["masked"] = True  # Ensure that rasterio engine returns masked arrays for nodata values
     else:
         raise ValueError(f"Unsupported data URI format: {uri}")
+    
+    return kwargs
 
 
 def convert_subset_selectors_to_slices(selector: dict) -> dict:
@@ -104,7 +154,7 @@ def load_data_from_uri(uri: Union[str, Path, list, tuple],
 
     # Load dataset from URI
     subset_selection = convert_subset_selectors_to_slices(subset_selection) if subset_selection else {}
-    engine = _map_uri_to_engine(uri)
+    kwargs = get_xr_kwargs(uri)
 
     # Get Xarray loader function depending on the URI type (single file vs glob pattern/list)
     xr_loader = _get_xr_loader(uri)
@@ -112,10 +162,10 @@ def load_data_from_uri(uri: Union[str, Path, list, tuple],
 
     # Apply special handling if necessary based on the engine type (e.g., for zipped kerchunk we 
     # might need to load the refs first)
-    resource = handle_special_uri_case(uri, engine)
+    resource = handle_special_uri_case(uri, kwargs.get("engine"))
 
     # Can return either a Dataset or a DataArray depending on the engine and URI.
-    data = xr_loader(resource, engine=engine, chunks=chunks)  # type: ignore
+    data = xr_loader(resource, chunks=chunks, **kwargs)  # type: ignore
 
     # Apply subset selection if specified
     data = data.sel(**subset_selection)

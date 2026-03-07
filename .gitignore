@@ -35,3 +35,11 @@ src/FRAME_FM/training/data/eurosat/
 
 # Local items
 setup-env.sh
+
+# Slurm outputs
+*.err
+*.out
+era5_stats
+generic-data-loader/MNIST
+notebooks/logs
+DATASET_CACHE*

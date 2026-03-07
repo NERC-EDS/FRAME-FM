@@ -2,10 +2,12 @@
 import xarray as xr
 import cf_xarray  # noqa: F401 - We just need to register the accessor for CF-compliant operations on xarray objects
 import numpy as np
+import torch
+
 DA = xr.DataArray
 DS = xr.Dataset
+TT = torch.Tensor
 
-import torch
 
 from FRAME_FM.utils.transform_utils import check_object_type
 from FRAME_FM.utils.data_utils import convert_subset_selectors_to_slices
@@ -21,7 +23,7 @@ class BaseTransform:
 
 class FillMissingValueTransform(BaseTransform):
     def __init__(self, strategy: str = "constant", fill_value: None | float = None, 
-                 method: None |str = "constant"):
+                 method: None | str = "linear"):
         self.strategy = strategy
         self.fill_value = fill_value
         self.method = method
@@ -77,7 +79,7 @@ class RenameTransform(BaseTransform):
 
 
 class ResampleTransform(BaseTransform):
-    def __init__(self, dim: str, freq: str, method: str = "mean"):
+    def __init__(self, dim: str, freq: str | int , method: str = "mean"):
         self.dim = dim
         self.freq = freq
         self.method = method
@@ -88,9 +90,12 @@ class ResampleTransform(BaseTransform):
         if self.method not in ["mean", "sum", "max", "min", "median"]:
             raise ValueError(f"Unsupported resampling method: {self.method}")
         
-        # Select the appropriate resampling method from xarray's ResampleGroupBy based on the provided method string
-        resampled = sample.resample({self.dim: self.freq})
-        
+        # Choose resample if we have a time dimension, otherwise use coarsen for spatial dimensions
+        if self.dim == "time":
+            resampled = sample.resample({self.dim: self.freq})
+        else:
+            resampled = sample.coarsen({self.dim: self.freq}, boundary="trim")
+
         if not hasattr(resampled, self.method):
             raise ValueError(f"Invalid resample method: {self.method}")
 
@@ -98,14 +103,14 @@ class ResampleTransform(BaseTransform):
         return result
 
 
-class ResizeTransform(BaseTransform):
-    def __init__(self, size: tuple):
-        self.size = size
+class ReshapeTransform(BaseTransform):
+    def __init__(self, shape: tuple):
+        self.shape = shape
 
     def __call__(self, sample):
-        # Implement resizing logic here
+        # Implement reshaping logic here
         check_object_type(sample, allowed_types=DA, caller=self.__class__.__name__)
-        return sample.to_numpy().reshape(self.size)
+        return sample.to_numpy().reshape(self.shape)
 
 
 class RollTransform(BaseTransform):
@@ -146,6 +151,18 @@ class ReverseAxisTransform(BaseTransform):
         return ds_rev
 
 
+class SortAxisTransform(BaseTransform):
+    def __init__(self, dim: str, ascending: bool = True):
+        self.dim = dim
+        self.ascending = ascending
+
+    def __call__(self, sample):
+        # Implement axis sorting logic here
+        check_object_type(sample, allowed_types=DS, caller=self.__class__.__name__)
+        sorted_sample = sample.sortby(self.dim, ascending=self.ascending)
+        return sorted_sample
+
+
 class SubsetTransform(BaseTransform):
     def __init__(self, **subset_selectors):
         if "variables" in subset_selectors:
@@ -179,13 +196,87 @@ class SubsetTransform(BaseTransform):
         return ds
 
 
-class ToTensorTransform(BaseTransform):
+class SqueezeTransform(BaseTransform):
     def __call__(self, sample):
+        # Implement squeezing logic here
+        check_object_type(sample, allowed_types=(DS, DA, TT), caller=self.__class__.__name__)
+        return sample.squeeze()
+
+
+class TilerTransform(BaseTransform):
+    """
+    A transform that takes a Dataset or DataArray and breaks it into smaller tiles along specified dimensions.
+    This uses the xarray `coarsen` + `construct` pattern to create non-overlapping tiles of the data, which can 
+    be useful for training models on large spatial datasets by reducing memory usage and allowing for batch 
+    processing of smaller chunks of data.
+    """
+    def __init__(self, boundary: str = "pad", **dim_tile_sizes):
+        self.boundary = boundary
+        self.tile_sizes = dim_tile_sizes
+
+    def __call__(self, sample: DA) -> DA:
+        check_object_type(sample, allowed_types=DA, caller=self.__class__.__name__)
+
+        # Create the dictionary to send to the ".construct()" method, using a naming convention of
+        # ("{dim}_coarse", "{dim}_fine") for the new dimensions created by the tiling process.
+        tile_dims = {dim: (f"{dim}_coarse", f"{dim}_fine") for dim in self.tile_sizes}
+        coarsened = sample.coarsen(**self.tile_sizes, boundary=self.boundary).construct(**tile_dims)  # type: ignore
+
+        # Prepare a stacking regrouping of the original dimensions and the new dimensions
+        batch_dims = []
+        target_dims = []
+        for dim in sample.dims:
+            if dim in self.tile_sizes:
+                batch_dims.append(f"{dim}_coarse")
+                target_dims.append(f"{dim}_fine")
+            else:
+                target_dims.append(dim) 
+
+        stacked = coarsened.stack(batch_dim=batch_dims)
+        # Reorder to have batch_dim first, followed by the original dimensions and then the fine tile dimensions
+        tiled = stacked.transpose("batch_dim", *target_dims)
+
+        # Store reverse-lookup metadata in attrs
+        tiled.attrs.update({
+            "tiler_tile_sizes": self.tile_sizes,
+            "tiler_boundary": self.boundary,
+            "tiler_original_sizes": {dim: sample.sizes[dim] for dim in self.tile_sizes},
+            "tiler_original_coords": {dim: sample.coords[dim].values.tolist() 
+                                    for dim in self.tile_sizes if dim in sample.coords},
+        })
+        return tiled
+
+
+class ToDataArray(BaseTransform):
+    def __init__(self, var_id: str):
+        self.var_id = var_id
+
+    def __call__(self, sample: DS | DA) -> DA:
+        # Implement conversion to xarray DataArray here
+        check_object_type(sample, allowed_types=(DS, DA), caller=self.__class__.__name__)
+
+        if isinstance(sample, DS):
+            if len(sample.data_vars) != 1:
+                raise ValueError("ToDataArrayTransform can only be applied to Datasets with a single variable.")
+            return sample[self.var_id]
+        return sample
+    
+
+class ToTensorTransform(BaseTransform):
+    def __call__(self, sample: DA | np.ndarray) -> torch.Tensor:
         # Implement conversion to PyTorch tensor here
         check_object_type(sample, allowed_types=(DA, np.ndarray), caller=self.__class__.__name__)
         if isinstance(sample, DA):
             sample = sample.values
+
         return torch.from_numpy(sample)
+    
+
+class TransposeTransform(BaseTransform):
+    def __call__(self, sample):
+        # Implement transposing logic here
+        check_object_type(sample, allowed_types=(DA, TT), caller=self.__class__.__name__)
+        return sample.transpose() 
 
 
 class VarsToDimensionTransform(BaseTransform):
@@ -242,13 +333,18 @@ transform_mapping = {
     "fill_nan": FillNaNTransform,
     "normalize": NormalizeTransform,
     "rename": RenameTransform,
-    "resize": ResizeTransform,
     "resample": ResampleTransform,
+    "reshape": ReshapeTransform,
     "reverse_axis": ReverseAxisTransform,
     "roll": RollTransform,
     "scale": ScaleTransform,
+    "sort_axis": SortAxisTransform,
+    "squeeze": SqueezeTransform,
     "subset": SubsetTransform,
+    "tiler": TilerTransform,
+    "to_dataarray": ToDataArray,
     "to_tensor": ToTensorTransform,
+    "transpose": TransposeTransform,
     "vars_to_dimension": VarsToDimensionTransform
 }
 
@@ -271,3 +367,25 @@ def resolve_transform(transform_config: dict) -> BaseTransform:
     
     transform_class = transform_mapping[transform_type]
     return transform_class(**{k: v for k, v in transform_config.items() if k != "type"})
+
+
+def apply_transforms(data: xr.Dataset | xr.DataArray, preprocessors: list) -> xr.Dataset | xr.DataArray:
+    """
+    Apply a list of preprocessing transforms to a data sample.
+    Args:
+        sample (xr.Dataset | xr.DataArray): The input data sample to be transformed.
+        preprocessors (list): A list of transform configurations to apply to the sample.
+    Returns:
+        xr.Dataset | xr.DataArray: The transformed data sample after applying all preprocessors.
+    """
+    for preprocessor in preprocessors:
+        if not isinstance(preprocessor, dict) or "type" not in preprocessor:
+            raise ValueError(f"Each preprocessor must be a dictionary with a 'type' key. Invalid preprocessor: {preprocessor}")
+        data = resolve_transform(preprocessor)(data)
+
+    return data
+
+
+# Create `apply_preprocessors` as an alias for `apply_transforms` to allow for more intuitive naming when used 
+# in the context of preprocessing steps.
+apply_preprocessors = apply_transforms
