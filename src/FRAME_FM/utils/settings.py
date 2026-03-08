@@ -6,9 +6,7 @@ class DatasetSettings:
     chunks: dict[str, int] = {"time": 24}
     precache: bool = True
     cache_dir: Path | str = Path("./.cache")
-    pre_transforms: list | None = None
-    runtime_transforms: list | None = None
-    generate_stats: bool = True
+    preprocessor_hash_key: str = "_preprocessor_cache_hash"
 
 
 class DefaultSettings:
