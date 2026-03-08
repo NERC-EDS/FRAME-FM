@@ -69,13 +69,16 @@ class BaseGriddedTimeSeriesDataset(BaseDataset):
                  data_uri: str | Path | list | tuple,
                  preprocessors: list | None = None,
                  transforms: list | None = None,
-                 time_range: tuple | None = None,
+                #  time_range: tuple | None = None,
                  time_stride: int = 16,
                  chunks: dict | None = None,
-                 override_transforms: bool = False
+                 override_transforms: bool = False,
+                 cache_dir: None | Path | str = None,
+                 generate_stats: bool = True,
+                 force_recache: bool = False
                  ):
         # Set instance variables specific to time series datasets
-        self.time_range = time_range
+        # self.time_range = time_range
         self.time_stride = time_stride
         self.chunks = chunks or self.DEFAULT_CHUNKS
 
@@ -85,15 +88,18 @@ class BaseGriddedTimeSeriesDataset(BaseDataset):
             preprocessors=preprocessors,
             transforms=transforms,
             chunks=chunks,
-            override_transforms=override_transforms
+            override_transforms=override_transforms,
+            cache_dir=cache_dir,
+            generate_stats=generate_stats,
+            force_recache=force_recache
         )
 
-    def _setup_dataset(self):
-        # Apply the time selection at the start, to allow any subsequent processing to focus within
-        # the selected time range (if specified).
-        # Load the dataset ready for training
-        subset_selection = {"time": self.time_range} if self.time_range else {}
-        self.data = load_data_from_uri(self.data_uri, chunks=self.chunks, subset_selection=subset_selection)
+    # def _setup_dataset(self):
+    #     # Apply the time selection at the start, to allow any subsequent processing to focus within
+    #     # the selected time range (if specified).
+    #     # Load the dataset ready for training
+    #     subset_selection = {"time": self.time_range} if self.time_range else {}
+    #     self.data = load_data_from_uri(self.data_uri, chunks=self.chunks, subset_selection=subset_selection)
 
     def __len__(self) -> int:
         return len(self.data["time"]) // self.time_stride

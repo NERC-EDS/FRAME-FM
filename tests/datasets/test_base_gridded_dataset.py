@@ -8,6 +8,9 @@ from .common import (
     NC_URI
 )
 
+from FRAME_FM.utils.settings import DatasetSettings
+from FRAME_FM.utils.data_utils import load_data_from_uri, hash_preprocessors, create_cache_path
+
 from FRAME_FM.datasets.base_gridded_dataset import (
     BaseGriddedDataset,
     BaseGeoTIFFDataset,
@@ -128,3 +131,49 @@ def test_base_timeseries_dataset_nc_file():
 
     assert isinstance(sample, torch.Tensor), f"Expected sample to be a torch.Tensor after transforms, but got {type(sample)}"
     assert sample.ndim >= 2, f"Expected sample to have at least 2 dimensions after transforms, but got {sample.ndim}"
+
+
+def test_base_timeseries_dataset_with_cache():
+
+    cache_dir = "./test_cache"
+
+    preprocessors = [
+        {"type": "subset", "time": ("2000-01-01", "2000-01-10"), "latitude": (60, -30), "longitude": (40, 100)},
+    ]
+    dataset = BaseGriddedTimeSeriesDataset(
+        data_uri=TIMESERIES_URI,
+        preprocessors=preprocessors,
+        time_stride=8,
+        cache_dir=cache_dir,
+        chunks="auto"
+    )
+
+    assert len(dataset) > 0, f"Expected dataset length to be greater than 0 with cache enabled, but got {len(dataset)}"
+    sample = dataset[0]
+    assert isinstance(sample, torch.Tensor), f"Expected sample to be a torch.Tensor after transforms, but got {type(sample)}"
+    assert sample.ndim >= 2, f"Expected sample to have at least 2 dimensions after transforms, but got {sample.ndim}"
+
+    # Create a version without cache and compare the results - initially the dataset after construction
+    dataset_no_cache = BaseGriddedTimeSeriesDataset(
+        data_uri=TIMESERIES_URI,
+        preprocessors=preprocessors,
+        time_stride=8,
+        cache_dir=None,
+        chunks="auto"
+    )
+
+    # Compare the datasets 
+    assert dataset.data.equals(dataset_no_cache.data), "Expected cached dataset to have the same data as non-cached dataset after preprocessing, but they differ"
+    assert (dataset.data["d2m"].values == dataset_no_cache.data["d2m"].values).all(), "Expected cached dataset variable values to match non-cached dataset variable values after preprocessing, but they differ"
+
+    # Assert that the hash of the preprocessors is stored in the cached dataset attributes and matches the hash of the preprocessors used
+    cached_hash = dataset.data.attrs.get(DatasetSettings.preprocessor_hash_key, None)
+    expected_hash = hash_preprocessors(preprocessors)
+    assert cached_hash is not None, f"Expected cached dataset to have the hash attribute {DatasetSettings.preprocessor_hash_key}, but it was not found"
+    assert cached_hash == expected_hash, f"Expected cached dataset hash {cached_hash} to match expected hash {expected_hash} based on the preprocessors, but they differ"
+
+    # Assert that the non-cached file does not include the hash attribute in its attributes, since it should not have been modified by the caching process
+    non_cached_hash = dataset_no_cache.data.attrs.get(DatasetSettings.preprocessor_hash_key, None)
+    assert non_cached_hash is None, f"Expected non-cached dataset to not have the hash attribute {DatasetSettings.preprocessor_hash_key}, but it was found with value {non_cached_hash}"
+
+

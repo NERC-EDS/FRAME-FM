@@ -282,7 +282,7 @@ def cache_data_to_zarr(dataset: xr.Dataset,
     print(f"Computed hash for preprocessors: {preprocessor_hash}")
     ds.attrs[DatasetSettings.preprocessor_hash_key] = preprocessor_hash  # Store the hash in the dataset attributes for reference
 
-    USE_CHUNKED_METHOD = True  # Set to True to use chunked writing method, False for direct writing
+    USE_CHUNKED_METHOD = False  # Set to True to use chunked writing method, False for direct writing
     if USE_CHUNKED_METHOD:
         # Use output_utils to write in chunks
         print("Using chunked writing method...")
