@@ -293,21 +293,27 @@ class VarsToDimensionTransform(BaseTransform):
                        "time_bnds", "lat_bnds", "lon_bnds",
                        "crs", "spatial_ref", "bounds", "bnds"]
     
-    def __init__(self, variables: list, new_dim: str):
+    def __init__(self, variables: list, new_dim: str, only_vars_with_time: bool = True):
         self.variables = variables
         self.new_dim = new_dim
+        self.only_vars_with_time = only_vars_with_time
 
     def __call__(self, sample):
         # Implement logic to convert variables to a new dimension here
         check_object_type(sample, allowed_types=DS, caller=self.__class__.__name__)
-        
+
         # Check special case of variables = "__all__", take all variables and filter out those not needed/suitable
         if self.variables == "__all__":
 
             # Exclude variables relate to bounds and coordinates
             bounds_vars = set([b_list[0] for b_list in sample.cf.bounds.values()])
-            vars_without_time = set([var_id for var_id in sample.data_vars 
-                                     if not hasattr(sample[var_id], "time")])
+
+            if self.only_vars_with_time:
+                vars_without_time = set([var_id for var_id in sample.data_vars 
+                                        if not hasattr(sample[var_id], "time")])
+            else:
+                vars_without_time = set()
+
             exclusion_vars = set([var_id for var_id in self.exclusion_vars if var_id in sample.data_vars])
 
             # Combine all exclusion criteria into a single set of variables to drop

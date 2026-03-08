@@ -1,3 +1,9 @@
+import glob
+
+# NOTE: potential fix for unit tests: single threading dask???
+# import dask
+# dask.config.set(scheduler='single-threaded')
+
 import torch
 import pytest
 
@@ -5,6 +11,7 @@ from .common import (
     CHESS_URI,
     ERA5_URI,
     LAND_COVER_URI,
+    SOIL_WATER_INDEX_URI as SOIL_WATER_INDEX_GLOB_URI
 )
 
 from FRAME_FM.utils.data_utils import get_main_vars
@@ -12,7 +19,11 @@ from FRAME_FM.utils.data_utils import get_main_vars
 from FRAME_FM.datasets.chessmet_dataset import CHESSMetGriddedTimeSeriesDataset
 from FRAME_FM.datasets.era5_dataset import ERA5GriddedTimeSeriesDataset
 from FRAME_FM.datasets.land_cover_map_dataset import LandCoverMapGriddedDataset
+from FRAME_FM.datasets.soil_water_index_dataset import SoilWaterIndexGriddedTimeSeriesDataset
 
+
+# Override Glob Pattern for Soil Water Index dataset to use a smaller subset of files for testing
+SOIL_WATER_INDEX_FILE_URI = [fpath for fpath in glob.glob(SOIL_WATER_INDEX_GLOB_URI) if "2020" in fpath][0]
 
 # ------------------------------------------------
 # Dataset wrappers
@@ -23,6 +34,7 @@ from FRAME_FM.datasets.land_cover_map_dataset import LandCoverMapGriddedDataset
         (CHESSMetGriddedTimeSeriesDataset, CHESS_URI),
         (ERA5GriddedTimeSeriesDataset, ERA5_URI),
         (LandCoverMapGriddedDataset, LAND_COVER_URI),
+#        (SoilWaterIndexGriddedTimeSeriesDataset, SOIL_WATER_INDEX_FILE_URI),
     ],
 )
 def test_dataset_wrappers_basic(dataset_cls, uri):
@@ -160,3 +172,40 @@ def test_land_cover_map_with_transforms():
     assert isinstance(sample, torch.Tensor), f"Expected sample to be a torch.Tensor after applying transforms, but got {type(sample)}"
     assert sample.ndim >= 2, f"Expected sample to have at least 2 dimensions after applying transforms, but got {sample.ndim}"
     assert sample.shape == (1, 10, 10), f"Expected sample shape to be (1, 1500, 4500) after applying subset transform, but got {sample.shape}"
+
+
+#-------------------------------------------------
+# Soil Water Index specific checks
+#-------------------------------------------------
+@pytest.mark.xfail(reason="Problem with NCA file parsing/loading - need to investigate further")
+def test_soil_water_index_dataset_structure():
+    
+    dataset = SoilWaterIndexGriddedTimeSeriesDataset(
+        data_uri=SOIL_WATER_INDEX_FILE_URI,
+        time_range=("2020-02-01", "2020-02-05"),
+        time_stride=1,
+        chunks={"time": 1}
+    )
+
+    ds = dataset.data
+    assert "time" in ds.coords
+    assert "lat" in ds.coords
+    assert "lon" in ds.coords
+    required_vars = {"swvl1", "swvl2", "swvl3", "swvl4"}
+    assert required_vars.issubset(set(ds.data_vars)), "Dataset must contain the required variables"
+
+# @pytest.mark.xfail(reason="Problem with NCA file parsing/loading - need to investigate further")
+# def test_soil_water_index_dataset_sampling():
+#     dataset = SoilWaterIndexGriddedTimeSeriesDataset(
+#         data_uri=SOIL_WATER_INDEX_FILE_URI,
+#         time_range=("2020-02-01", "2020-02-05"),
+#         time_stride=1,
+#         chunks={"time": 1}
+#     )
+
+#     assert len(dataset) > 0
+#     sample = dataset[0]
+#     assert isinstance(sample, torch.Tensor)
+#     assert sample.ndim >= 2
+
+
