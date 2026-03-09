@@ -9,8 +9,7 @@ DS = xr.Dataset
 TT = torch.Tensor
 
 
-from FRAME_FM.utils.transform_utils import check_object_type
-from FRAME_FM.utils.data_utils import convert_subset_selectors_to_slices
+from FRAME_FM.utils.common_utils import convert_subset_selectors_to_slices, check_object_type
 
 
 class BaseTransform:

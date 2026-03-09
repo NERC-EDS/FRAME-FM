@@ -14,12 +14,13 @@ from .common import (
     SOIL_WATER_INDEX_URI as SOIL_WATER_INDEX_GLOB_URI
 )
 
-from FRAME_FM.utils.data_utils import get_main_vars
+from FRAME_FM.utils.common_utils import get_main_vars
 
 from FRAME_FM.datasets.chessmet_dataset import CHESSMetGriddedTimeSeriesDataset
 from FRAME_FM.datasets.era5_dataset import ERA5GriddedTimeSeriesDataset
 from FRAME_FM.datasets.land_cover_map_dataset import LandCoverMapGriddedDataset
 from FRAME_FM.datasets.soil_water_index_dataset import SoilWaterIndexGriddedTimeSeriesDataset
+from FRAME_FM.datasets.cosmos_uk_dataset import COSMOSUKSiteTimeSeriesDataset
 
 
 # Override Glob Pattern for Soil Water Index dataset to use a smaller subset of files for testing

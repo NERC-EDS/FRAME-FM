@@ -10,7 +10,9 @@ from collections.abc import Callable
 import dask
 import xarray as xr
 
+from FRAME_FM.utils.common_utils import convert_subset_selectors_to_slices
 from FRAME_FM.utils.settings import DEBUG, DefaultSettings, DatasetSettings
+from FRAME_FM.transforms import apply_preprocessors
 
 
 def safely_remove_dir(path: Path | str):
@@ -29,23 +31,6 @@ def safely_remove_dir(path: Path | str):
         path.rmdir()
 
     if DEBUG: print(f"Removed directory at: {path}")
-
-
-def get_main_vars(dset: xr.Dataset) -> list:
-    """
-    Get the main variable names from an xarray Dataset, excluding coordinate variables.
-    Match only variables that have the maximum size (i.e., the main data variables) to 
-    avoid including ancillary variables that may be present in the dataset.
-    
-    Args:
-        - dset (xr.Dataset): The xarray Dataset from which to extract variable names.
-    
-    Returns:
-        - list: A list of variable names that are not coordinates.
-    """
-    max_var_size = max([variable.size for variable in dset.data_vars.values()])
-    return [var_id for var_id, variable in dset.data_vars.items() 
-            if var_id not in dset.coords and variable.size == max_var_size]
 
 
 def _infer_extension(uri: Union[str, Path, list, tuple]) -> str:
@@ -104,19 +89,6 @@ def get_xr_kwargs(uri: Union[str, Path, list, tuple]) -> dict:
         raise ValueError(f"Unsupported data URI format: {uri}")
     
     return kwargs
-
-
-def convert_subset_selectors_to_slices(selector: dict) -> dict:
-    """
-    Convert a dictionary of subset selectors with (low, high) tuples to a dictionary of slice objects.
-
-    Args:
-        - selector (dict): A dictionary where keys are dimension names and values are tuples of (low, high) bounds.
-    Returns:
-        - dict: A new dictionary where the values are slice objects created from the (low, high) tuples.
-    """
-    new_selector = {key: slice(low, high) for key, (low, high) in selector.items()}
-    return new_selector
 
 
 def handle_special_uri_case(uri: Union[str, Path, list, tuple], engine: str) -> Union[str, Path, list, tuple, BytesIO]:
@@ -245,13 +217,7 @@ def hash_preprocessors(preprocessors: list | None) -> str:
     return hashlib.md5(preprocessor_str).hexdigest()
 
 
-# def open_cached_zarrs(cache_path: str | Path) -> xr.Dataset:
-#     print(f"Opening Zarr file at path: {cache_path}")
-#     ds = xr.open_zarr(cache_path, zarr_format=DefaultSettings.zarr_format)
-#     return ds
-
-
-def cache_data_to_zarr(dataset: xr.Dataset, 
+def cache_data_to_zarr(data_uri: str | Path, 
                        preprocessors: list | None,
                        chunks: dict | None,
                        cache_path: str | Path,
@@ -260,7 +226,7 @@ def cache_data_to_zarr(dataset: xr.Dataset,
     Cache data to Zarr format based on the provided preprocessors and cache directory.
 
     Args:
-    - dataset (xr.Dataset): The xarray Dataset to be cached.
+    - data_uri (str | Path): The URI of the data source to be cached.
     - preprocessors (list | None): A list of preprocessors (used for generating a hash only).
     - chunks (dict | None): A dictionary specifying chunking strategy for Dask.
     - cache_dir (str | Path): The directory where cached Zarr files will be stored.
@@ -272,7 +238,10 @@ def cache_data_to_zarr(dataset: xr.Dataset,
     # Create the cache directory if it doesn't exist
     cache_dir = Path(cache_path).parent
     Path(cache_dir).mkdir(parents=True, exist_ok=True)
-    ds = dataset
+
+    # Load the dataset from the URI and apply preprocessors before caching.
+    ds = load_data_from_uri(data_uri, chunks=chunks)
+    ds = apply_preprocessors(ds, preprocessors)
 
     # Clear any existing cache files before caching new data (note that it is a directory)
     safely_remove_dir(cache_path)
