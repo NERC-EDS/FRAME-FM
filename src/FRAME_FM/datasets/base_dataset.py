@@ -93,6 +93,7 @@ class BaseDataset(Dataset):
                 chunks=self.chunks,
                 cache_path=self.cache_path,
                 generate_stats=self.generate_stats
+                variables=None#? Is the selection of a DataArray counted as a transform?
             )
 
         self.is_cached = True

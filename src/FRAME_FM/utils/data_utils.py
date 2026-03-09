@@ -14,6 +14,7 @@ from FRAME_FM.utils.common_utils import convert_subset_selectors_to_slices
 from FRAME_FM.utils.settings import DEBUG, DefaultSettings, DatasetSettings
 from FRAME_FM.transforms import apply_preprocessors
 
+from zarr_parallel import ZarrParallelAssembler
 
 def safely_remove_dir(path: Path | str):
     """
@@ -221,7 +222,8 @@ def cache_data_to_zarr(data_uri: str | Path,
                        preprocessors: list | None,
                        chunks: dict | None,
                        cache_path: str | Path,
-                       generate_stats: bool = True) -> xr.Dataset:
+                       generate_stats: bool = True,
+                       variables: list | None = None) -> xr.Dataset:
     """
     Cache data to Zarr format based on the provided preprocessors and cache directory.
 
@@ -239,33 +241,27 @@ def cache_data_to_zarr(data_uri: str | Path,
     cache_dir = Path(cache_path).parent
     Path(cache_dir).mkdir(parents=True, exist_ok=True)
 
-    # Load the dataset from the URI and apply preprocessors before caching.
-    ds = load_data_from_uri(data_uri, chunks=chunks)
-    ds = apply_preprocessors(ds, preprocessors)
-
-    # Clear any existing cache files before caching new data (note that it is a directory)
-    safely_remove_dir(cache_path)
-
     # Compute a hash of the preprocessors for caching purposes
     preprocessor_hash = hash_preprocessors(preprocessors)
-    print(f"Computed hash for preprocessors: {preprocessor_hash}")
-    ds.attrs[DatasetSettings.preprocessor_hash_key] = preprocessor_hash  # Store the hash in the dataset attributes for reference
 
-    USE_CHUNKED_METHOD = False  # Set to True to use chunked writing method, False for direct writing
-    if USE_CHUNKED_METHOD:
-        # Use output_utils to write in chunks
-        print("Using chunked writing method...")
-        write_zarr(ds, cache_path, chunks=(chunks or DatasetSettings.chunks))
-    else:
-        ds.compute()  # Ensure the dataset is computed before writing to Zarr
-        _ = ds.to_zarr(cache_path, mode="w", zarr_format=2)
-        print(f"Finished caching data to {cache_path}")
-
-    if generate_stats:
-        # Generate and save statistics for the cached data
-        print("\nHandle Stats here... (placeholder)")
-
-    print("\nFinished processing all selectors.")
+    zp = ZarrParallelAssembler(
+        data_uri=data_uri,
+        preprocessors=preprocessors,
+        add_attrs={DatasetSettings.preprocessor_hash : preprocessor_hash},
+        chunks=chunks,
+        engine=get_xr_kwargs(data_uri)['engine']
+    )
+    
+    # Assume the cache path includes the actual zarr store name
+    zp.cache(
+        cache_path,
+        generate_stats=generate_stats, 
+        await_completion=True,
+        simultaneous_worker_limit=4, # Number of workers
+        # Memory limit if less than 2GB per worker?
+        # Worker timeout if not 30 minutes
+        # Deploy mode if specifying between dask/slurm
+        )
 
     # Now load the cached Zarr files into memory and add to the response dictionary
     return load_data_from_uri(
