@@ -1,0 +1,477 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src.FRAME_FM.utils.data_utils &mdash; FRAME-FM 0.0.0a documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=d75fae25" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-codeautolink.css?v=b2176991" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=24f8de0c" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/dark_mode_css/general.css?v=c0a7eb24" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/dark_mode_css/dark.css?v=70edf1c7" />
+
+  
+    <link rel="canonical" href="https://NERC-EDS.github.io/FRAME-FM/_modules/src/FRAME_FM/utils/data_utils.html" />
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=e8454e50"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../../_static/copybutton.js?v=df1a032d"></script>
+      <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script src="../../../../_static/dark_mode_js/default_dark.js?v=fd565c74"></script>
+      <script src="../../../../_static/dark_mode_js/theme_switcher.js?v=358d3910"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            FRAME-FM
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">FRAME-FM</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">src.FRAME_FM.utils.data_utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for src.FRAME_FM.utils.data_utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">zipfile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">dask</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">FRAME_FM.utils.settings</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEBUG</span><span class="p">,</span> <span class="n">DefaultSettings</span><span class="p">,</span> <span class="n">DatasetSettings</span>
+
+
+<div class="viewcode-block" id="safely_remove_dir">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/utils/data_utils/index.html#src.FRAME_FM.utils.data_utils.safely_remove_dir">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">safely_remove_dir</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Safely remove a directory and its contents if it exists.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        path (Path | str): The path to the directory to be removed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="n">path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+                <span class="n">item</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">item</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+                <span class="n">safely_remove_dir</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+        <span class="n">path</span><span class="o">.</span><span class="n">rmdir</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">DEBUG</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Removed directory at: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_main_vars">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/utils/data_utils/index.html#src.FRAME_FM.utils.data_utils.get_main_vars">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_main_vars</span><span class="p">(</span><span class="n">dset</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the main variable names from an xarray Dataset, excluding coordinate variables.</span>
+<span class="sd">    Match only variables that have the maximum size (i.e., the main data variables) to </span>
+<span class="sd">    avoid including ancillary variables that may be present in the dataset.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        - dset (xr.Dataset): The xarray Dataset from which to extract variable names.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        - list: A list of variable names that are not coordinates.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">max_var_size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">variable</span><span class="o">.</span><span class="n">size</span> <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">dset</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">values</span><span class="p">()])</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">var_id</span> <span class="k">for</span> <span class="n">var_id</span><span class="p">,</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">dset</span><span class="o">.</span><span class="n">data_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> 
+            <span class="k">if</span> <span class="n">var_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dset</span><span class="o">.</span><span class="n">coords</span> <span class="ow">and</span> <span class="n">variable</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="n">max_var_size</span><span class="p">]</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_infer_extension</span><span class="p">(</span><span class="n">uri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Infer the file extension from the URI, handling cases where the URI might be a list </span>
+<span class="sd">    or tuple of paths.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        - uri (str, Path, list, or tuple): The URI of the data source, which can be a string, a Path object, or a list/tuple of URIs.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        - str: The inferred file extension from the URI.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="n">uri</span> <span class="o">=</span> <span class="n">uri</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Take the first URI if it&#39;s a list/tuple</span>
+
+    <span class="c1"># Cast to string for ease of processing</span>
+    <span class="n">uri</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span>
+
+    <span class="c1"># Apply a special rule for files that might end in &quot;.gz&quot;, &quot;.zip&quot; or &quot;.Z&quot;</span>
+    <span class="k">if</span> <span class="n">uri</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s2">&quot;.gz&quot;</span><span class="p">,</span> <span class="s2">&quot;.zip&quot;</span><span class="p">,</span> <span class="s2">&quot;.Z&quot;</span><span class="p">)):</span>
+        <span class="n">uri</span><span class="p">,</span> <span class="n">compressed_ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">compressed_ext</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">+</span> <span class="n">compressed_ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="get_xr_kwargs">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/utils/data_utils/index.html#src.FRAME_FM.utils.data_utils.get_xr_kwargs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_xr_kwargs</span><span class="p">(</span><span class="n">uri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determine the appropriate xarray loading engine and any additional kwargs </span>
+<span class="sd">    based on the URI format or file extension.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        - uri (str, Path, list, or tuple): The URI of the data source, which can be a string, a Path object, or a list/tuple of URIs.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        - dict: A dictionary of kwargs to pass to xarray loading functions, including the &#39;engine&#39; key.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Map the URI to the appropriate engine for loading data</span>
+    <span class="c1"># This function should determine the correct engine based on the URI format or file extension</span>
+    <span class="n">ext</span> <span class="o">=</span> <span class="n">_infer_extension</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;.zarr&quot;</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;engine&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;zarr&quot;</span>
+    <span class="k">elif</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;.nc&quot;</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;engine&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;netcdf4&quot;</span>
+    <span class="k">elif</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;.json&quot;</span> <span class="ow">or</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;.json.zip&quot;</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;engine&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;kerchunk&quot;</span>
+    <span class="k">elif</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;.nca&quot;</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;engine&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;CFA&quot;</span>
+    <span class="k">elif</span> <span class="n">ext</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;.tif&quot;</span><span class="p">,</span> <span class="s2">&quot;.tiff&quot;</span><span class="p">,</span> <span class="s2">&quot;.geotiff&quot;</span><span class="p">,</span> <span class="s2">&quot;.asc&quot;</span><span class="p">,</span> <span class="s2">&quot;.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;.asciigrid&quot;</span><span class="p">]:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;engine&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;rasterio&quot;</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;masked&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Ensure that rasterio engine returns masked arrays for nodata values</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported data URI format: </span><span class="si">{</span><span class="n">uri</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">kwargs</span></div>
+
+
+
+<div class="viewcode-block" id="convert_subset_selectors_to_slices">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/utils/data_utils/index.html#src.FRAME_FM.utils.data_utils.convert_subset_selectors_to_slices">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_subset_selectors_to_slices</span><span class="p">(</span><span class="n">selector</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a dictionary of subset selectors with (low, high) tuples to a dictionary of slice objects.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        - selector (dict): A dictionary where keys are dimension names and values are tuples of (low, high) bounds.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        - dict: A new dictionary where the values are slice objects created from the (low, high) tuples.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">new_selector</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="nb">slice</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span> <span class="ow">in</span> <span class="n">selector</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="k">return</span> <span class="n">new_selector</span></div>
+
+
+
+<div class="viewcode-block" id="handle_special_uri_case">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/utils/data_utils/index.html#src.FRAME_FM.utils.data_utils.handle_special_uri_case">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">handle_special_uri_case</span><span class="p">(</span><span class="n">uri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">],</span> <span class="n">engine</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">BytesIO</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Handle special cases for certain URI formats and engines, such as loading refs for kerchunk.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        uri (str): The original URI of the data source.</span>
+<span class="sd">        engine (str): The engine determined for loading the data.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The modified URI if special handling was applied, otherwise the original URI.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">uri</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.json.zip&quot;</span><span class="p">):</span>
+        <span class="n">bytestream</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">()</span>
+        <span class="c1"># For zipped kerchunk files, we need to extract the JSON file from the zip and </span>
+        <span class="c1"># pass it to xarray as an in-memory BytesIO object.</span>
+        <span class="k">with</span> <span class="n">Path</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">as</span> <span class="n">z</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">z</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">namelist</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span> <span class="k">as</span> <span class="n">kerchunk_file</span><span class="p">:</span>
+                    <span class="n">bytestream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">kerchunk_file</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+
+        <span class="c1"># Rewind pointer to start of in-memory file</span>
+        <span class="n">bytestream</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">bytestream</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="n">uri</span>                
+    
+    <span class="k">return</span> <span class="n">resource</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_xr_loader</span><span class="p">(</span><span class="n">uri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+    <span class="c1"># Simple heuristic to detect if the URI is a glob pattern (e.g., contains wildcards like &#39;*&#39; or &#39;?&#39;)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span><span class="n">char</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span> <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="s2">&quot;?&quot;</span><span class="p">,</span> <span class="s2">&quot;[&quot;</span><span class="p">,</span> <span class="s2">&quot;]&quot;</span><span class="p">]):</span>
+        <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_mfdataset</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span>
+
+
+<div class="viewcode-block" id="load_data_from_uri">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/utils/data_utils/index.html#src.FRAME_FM.utils.data_utils.load_data_from_uri">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_data_from_uri</span><span class="p">(</span><span class="n">uri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">],</span> 
+                       <span class="n">chunks</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+                       <span class="n">subset_selection</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                       <span class="o">**</span><span class="n">kwargs</span>
+                       <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">|</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load data from a URI with optional subset selection.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        uri (str): The URI of the data source, or a glob pattern, or a list of URIs.</span>
+<span class="sd">        chunks (dict | None): Optional dictionary specifying chunking strategy for Dask.</span>
+<span class="sd">        subset_selection (dict | None): A dictionary specifying the subset selection criteria.</span>
+<span class="sd">        **kwargs: Additional keyword arguments to pass to the xarray loading function.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        xr.Dataset: The loaded dataset with applied subset selection.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Cast the URI to a string if it&#39;s a Path object for easier processing</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
+        <span class="n">uri</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span>
+
+    <span class="c1"># Set a default chunking strategy if not provided to ensure Dask is used for larger datasets</span>
+    <span class="n">chunks</span> <span class="o">=</span> <span class="n">chunks</span> <span class="ow">or</span> <span class="p">{</span><span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="mi">64</span><span class="p">}</span>
+
+    <span class="c1"># Load dataset from URI</span>
+    <span class="n">subset_selection</span> <span class="o">=</span> <span class="n">convert_subset_selectors_to_slices</span><span class="p">(</span><span class="n">subset_selection</span><span class="p">)</span> <span class="k">if</span> <span class="n">subset_selection</span> <span class="k">else</span> <span class="p">{}</span>
+    <span class="n">extra_args</span> <span class="o">=</span> <span class="n">get_xr_kwargs</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span>
+
+    <span class="c1"># Get Xarray loader function depending on the URI type (single file vs glob pattern/list)</span>
+    <span class="n">xr_loader</span> <span class="o">=</span> <span class="n">_get_xr_loader</span><span class="p">(</span><span class="n">uri</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using xarray loader: </span><span class="si">{</span><span class="n">xr_loader</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> for URI: </span><span class="si">{</span><span class="n">uri</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Apply special handling if necessary based on the engine type (e.g., for zipped kerchunk we </span>
+    <span class="c1"># might need to load the refs first)</span>
+    <span class="n">resource</span> <span class="o">=</span> <span class="n">handle_special_uri_case</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span> <span class="n">extra_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;engine&quot;</span><span class="p">))</span>
+
+    <span class="c1"># Merge kwargs and extra_args, giving precedence to kwargs for any overlapping keys</span>
+    <span class="c1"># Make sure kwargs take precedence over extra_args, so that users can override any automatically determined settings if needed</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">extra_args</span><span class="p">}</span>
+
+    <span class="c1"># Can return either a Dataset or a DataArray depending on the engine and URI.</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">xr_loader</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+    <span class="c1"># Apply subset selection if specified</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="o">**</span><span class="n">subset_selection</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+
+<div class="viewcode-block" id="unify_transforms">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/utils/data_utils/index.html#src.FRAME_FM.utils.data_utils.unify_transforms">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">unify_transforms</span><span class="p">(</span><span class="n">transforms</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">class_transforms</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">override_transforms</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Unify the list of transforms by combining user-specified transforms with the default (class) transforms.</span>
+<span class="sd">    If override_transforms is True, only the user-specified transforms will be used. </span>
+<span class="sd">    If False, the user-specified transforms will be combined with the default transforms, ensuring that </span>
+<span class="sd">    there are no duplicates based on the &quot;type&quot; key of each transform.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">transforms</span> <span class="o">=</span> <span class="n">transforms</span> <span class="ow">or</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">override_transforms</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">transforms</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">consolidated_transforms</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">transform</span> <span class="ow">in</span> <span class="n">transforms</span> <span class="o">+</span> <span class="n">class_transforms</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">transform</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">tr</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">consolidated_transforms</span><span class="p">]:</span>
+                <span class="n">consolidated_transforms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transform</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">consolidated_transforms</span></div>
+
+
+
+<div class="viewcode-block" id="create_zarr_name">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/utils/data_utils/index.html#src.FRAME_FM.utils.data_utils.create_zarr_name">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_zarr_name</span><span class="p">(</span><span class="n">data_uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a Zarr file name based on the data URI.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        data_uri (str): The URI of the data source.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        str: A string representing the Zarr file name.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Extract the base name from the data URI to create a unique Zarr file name</span>
+    <span class="n">base_name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">data_uri</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span>
+    <span class="n">zarr_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_name</span><span class="si">}</span><span class="s2">.zarr&quot;</span>
+    <span class="k">return</span> <span class="n">zarr_name</span></div>
+
+
+<div class="viewcode-block" id="create_cache_path">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/utils/data_utils/index.html#src.FRAME_FM.utils.data_utils.create_cache_path">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_cache_path</span><span class="p">(</span><span class="n">data_uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+    <span class="s2">&quot;Create cache path from URI.&quot;</span>
+    <span class="n">zarr_name</span>  <span class="o">=</span> <span class="n">create_zarr_name</span><span class="p">(</span><span class="n">data_uri</span><span class="p">)</span>
+    <span class="n">cache_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">)</span> <span class="o">/</span> <span class="n">zarr_name</span>
+    <span class="k">return</span> <span class="n">cache_path</span></div>
+
+
+<div class="viewcode-block" id="hash_preprocessors">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/utils/data_utils/index.html#src.FRAME_FM.utils.data_utils.hash_preprocessors">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">hash_preprocessors</span><span class="p">(</span><span class="n">preprocessors</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="c1"># Create a hash of the preprocessor list to use for caching</span>
+    <span class="c1"># This function should generate a unique hash based on the contents of the preprocessor list</span>
+    <span class="n">preprocessor_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">preprocessors</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">preprocessor_str</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span></div>
+
+
+
+<span class="c1"># def open_cached_zarrs(cache_path: str | Path) -&gt; xr.Dataset:</span>
+<span class="c1">#     print(f&quot;Opening Zarr file at path: {cache_path}&quot;)</span>
+<span class="c1">#     ds = xr.open_zarr(cache_path, zarr_format=DefaultSettings.zarr_format)</span>
+<span class="c1">#     return ds</span>
+
+
+<div class="viewcode-block" id="cache_data_to_zarr">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/utils/data_utils/index.html#src.FRAME_FM.utils.data_utils.cache_data_to_zarr">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cache_data_to_zarr</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">,</span> 
+                       <span class="n">preprocessors</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+                       <span class="n">chunks</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+                       <span class="n">cache_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+                       <span class="n">generate_stats</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Cache data to Zarr format based on the provided preprocessors and cache directory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">    - dataset (xr.Dataset): The xarray Dataset to be cached.</span>
+<span class="sd">    - preprocessors (list | None): A list of preprocessors (used for generating a hash only).</span>
+<span class="sd">    - chunks (dict | None): A dictionary specifying chunking strategy for Dask.</span>
+<span class="sd">    - cache_dir (str | Path): The directory where cached Zarr files will be stored.</span>
+<span class="sd">    - generate_stats (bool): Whether to generate statistics during caching.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    - xr.Dataset: The cached dataset loaded from the Zarr file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Create the cache directory if it doesn&#39;t exist</span>
+    <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">cache_path</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span>
+    <span class="n">Path</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">dataset</span>
+
+    <span class="c1"># Clear any existing cache files before caching new data (note that it is a directory)</span>
+    <span class="n">safely_remove_dir</span><span class="p">(</span><span class="n">cache_path</span><span class="p">)</span>
+
+    <span class="c1"># Compute a hash of the preprocessors for caching purposes</span>
+    <span class="n">preprocessor_hash</span> <span class="o">=</span> <span class="n">hash_preprocessors</span><span class="p">(</span><span class="n">preprocessors</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Computed hash for preprocessors: </span><span class="si">{</span><span class="n">preprocessor_hash</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">DatasetSettings</span><span class="o">.</span><span class="n">preprocessor_hash_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">preprocessor_hash</span>  <span class="c1"># Store the hash in the dataset attributes for reference</span>
+
+    <span class="n">USE_CHUNKED_METHOD</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Set to True to use chunked writing method, False for direct writing</span>
+    <span class="k">if</span> <span class="n">USE_CHUNKED_METHOD</span><span class="p">:</span>
+        <span class="c1"># Use output_utils to write in chunks</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using chunked writing method...&quot;</span><span class="p">)</span>
+        <span class="n">write_zarr</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">cache_path</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="n">chunks</span> <span class="ow">or</span> <span class="n">DatasetSettings</span><span class="o">.</span><span class="n">chunks</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>  <span class="c1"># Ensure the dataset is computed before writing to Zarr</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">to_zarr</span><span class="p">(</span><span class="n">cache_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">zarr_format</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished caching data to </span><span class="si">{</span><span class="n">cache_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">generate_stats</span><span class="p">:</span>
+        <span class="c1"># Generate and save statistics for the cached data</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Handle Stats here... (placeholder)&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Finished processing all selectors.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Now load the cached Zarr files into memory and add to the response dictionary</span>
+    <span class="k">return</span> <span class="n">load_data_from_uri</span><span class="p">(</span>
+                <span class="n">uri</span><span class="o">=</span><span class="n">cache_path</span><span class="p">,</span>
+                <span class="n">zarr_format</span><span class="o">=</span><span class="n">DefaultSettings</span><span class="o">.</span><span class="n">zarr_format</span>
+            <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="write_zarr">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/utils/data_utils/index.html#src.FRAME_FM.utils.data_utils.write_zarr">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">write_zarr</span><span class="p">(</span><span class="n">ds</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">,</span>  
+               <span class="n">output_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> 
+               <span class="n">chunks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return output after applying chunking and determining the output format and chunking.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing output to </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2"> with chunking: </span><span class="si">{</span><span class="n">chunks</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">chunked_ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">chunk</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span> <span class="k">if</span> <span class="n">chunks</span> <span class="k">else</span> <span class="n">ds</span>
+
+    <span class="c1"># TODO: writing output works currently only in sync mode, see:</span>
+    <span class="c1">#  - https://github.com/roocs/rook/issues/55</span>
+    <span class="c1">#  - https://docs.dask.org/en/latest/scheduling.html</span>
+    <span class="k">with</span> <span class="n">dask</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;synchronous&quot;</span><span class="p">):</span>
+        <span class="n">delayed_obj</span> <span class="o">=</span> <span class="n">chunked_ds</span><span class="o">.</span><span class="n">to_zarr</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="n">zarr_format</span><span class="o">=</span><span class="n">DefaultSettings</span><span class="o">.</span><span class="n">zarr_format</span><span class="p">,</span> <span class="n">compute</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">delayed_obj</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wrote output file: </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output_path</span></div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Adam Ward, National Oceanography Centre.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

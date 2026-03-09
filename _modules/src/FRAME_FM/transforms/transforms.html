@@ -1,0 +1,707 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src.FRAME_FM.transforms.transforms &mdash; FRAME-FM 0.0.0a documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=d75fae25" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-codeautolink.css?v=b2176991" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=24f8de0c" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/dark_mode_css/general.css?v=c0a7eb24" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/dark_mode_css/dark.css?v=70edf1c7" />
+
+  
+    <link rel="canonical" href="https://NERC-EDS.github.io/FRAME-FM/_modules/src/FRAME_FM/transforms/transforms.html" />
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=e8454e50"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../../_static/copybutton.js?v=df1a032d"></script>
+      <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script src="../../../../_static/dark_mode_js/default_dark.js?v=fd565c74"></script>
+      <script src="../../../../_static/dark_mode_js/theme_switcher.js?v=358d3910"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            FRAME-FM
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">FRAME-FM</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">src.FRAME_FM.transforms.transforms</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for src.FRAME_FM.transforms.transforms</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Define transforms</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cf_xarray</span>  <span class="c1"># noqa: F401 - We just need to register the accessor for CF-compliant operations on xarray objects</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+<div class="viewcode-block" id="DA">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.DA">[docs]</a>
+<span class="n">DA</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span></div>
+
+<div class="viewcode-block" id="DS">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.DS">[docs]</a>
+<span class="n">DS</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span></div>
+
+<div class="viewcode-block" id="TT">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.TT">[docs]</a>
+<span class="n">TT</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span></div>
+
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">FRAME_FM.utils.transform_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_object_type</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">FRAME_FM.utils.data_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert_subset_selectors_to_slices</span>
+
+
+<div class="viewcode-block" id="BaseTransform">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.BaseTransform">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BaseTransform</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="BaseTransform.__call__">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.BaseTransform.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Transform must implement the __call__ method.&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FillMissingValueTransform">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.FillMissingValueTransform">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FillMissingValueTransform</span><span class="p">(</span><span class="n">BaseTransform</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;constant&quot;</span><span class="p">,</span> <span class="n">fill_value</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">method</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;linear&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="FillMissingValueTransform.strategy">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.FillMissingValueTransform.strategy">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span> <span class="o">=</span> <span class="n">strategy</span></div>
+
+<div class="viewcode-block" id="FillMissingValueTransform.fill_value">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.FillMissingValueTransform.fill_value">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fill_value</span> <span class="o">=</span> <span class="n">fill_value</span></div>
+
+<div class="viewcode-block" id="FillMissingValueTransform.method">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.FillMissingValueTransform.method">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span></div>
+
+
+<div class="viewcode-block" id="FillMissingValueTransform.__call__">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.FillMissingValueTransform.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">:</span> <span class="n">DS</span> <span class="o">|</span> <span class="n">DA</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DS</span> <span class="o">|</span> <span class="n">DA</span><span class="p">:</span>
+        <span class="c1"># Implement missing value filling logic here</span>
+        <span class="n">check_object_type</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">allowed_types</span><span class="o">=</span><span class="p">(</span><span class="n">DS</span><span class="p">,</span> <span class="n">DA</span><span class="p">),</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+        <span class="c1"># Depending on the method, implement infilling strategy</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span> <span class="o">==</span> <span class="s2">&quot;constant&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fill_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;fill_value must be provided for &#39;constant&#39; method.&quot;</span><span class="p">)</span>
+            <span class="n">filled</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fill_value</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span> <span class="o">==</span> <span class="s2">&quot;interpolate&quot;</span><span class="p">:</span>
+            <span class="n">filled</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">interpolate_na</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported fill strategy: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">filled</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FillNaNTransform">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.FillNaNTransform">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FillNaNTransform</span><span class="p">(</span><span class="n">FillMissingValueTransform</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="NormalizeTransform">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.NormalizeTransform">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NormalizeTransform</span><span class="p">(</span><span class="n">BaseTransform</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mean</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">std</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<div class="viewcode-block" id="NormalizeTransform.mean">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.NormalizeTransform.mean">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="n">mean</span></div>
+
+<div class="viewcode-block" id="NormalizeTransform.std">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.NormalizeTransform.std">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std</span> <span class="o">=</span> <span class="n">std</span></div>
+
+
+<div class="viewcode-block" id="NormalizeTransform.__call__">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.NormalizeTransform.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">:</span> <span class="n">DA</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DA</span><span class="p">:</span>
+        <span class="c1"># Implement normalization logic here</span>
+        <span class="n">check_object_type</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">allowed_types</span><span class="o">=</span><span class="n">DA</span><span class="p">,</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">sample</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">std</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ScaleTransform">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.ScaleTransform">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ScaleTransform</span><span class="p">(</span><span class="n">NormalizeTransform</span><span class="p">):</span> 
+    <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="RenameTransform">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.RenameTransform">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RenameTransform</span><span class="p">(</span><span class="n">BaseTransform</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">new_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<div class="viewcode-block" id="RenameTransform.var_id">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.RenameTransform.var_id">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_id</span> <span class="o">=</span> <span class="n">var_id</span></div>
+
+<div class="viewcode-block" id="RenameTransform.new_name">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.RenameTransform.new_name">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_name</span> <span class="o">=</span> <span class="n">new_name</span></div>
+
+
+<div class="viewcode-block" id="RenameTransform.__call__">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.RenameTransform.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">:</span> <span class="n">DS</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DS</span><span class="p">:</span>
+        <span class="c1"># Implement renaming logic here</span>
+        <span class="n">check_object_type</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">allowed_types</span><span class="o">=</span><span class="n">DS</span><span class="p">,</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="n">sample</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">rename_vars</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">var_id</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_name</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">sample</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ResampleTransform">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.ResampleTransform">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ResampleTransform</span><span class="p">(</span><span class="n">BaseTransform</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">freq</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span> <span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="ResampleTransform.dim">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.ResampleTransform.dim">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">dim</span></div>
+
+<div class="viewcode-block" id="ResampleTransform.freq">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.ResampleTransform.freq">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq</span> <span class="o">=</span> <span class="n">freq</span></div>
+
+<div class="viewcode-block" id="ResampleTransform.method">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.ResampleTransform.method">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span></div>
+
+
+<div class="viewcode-block" id="ResampleTransform.__call__">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.ResampleTransform.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">):</span>
+        <span class="c1"># Implement resampling logic here</span>
+        <span class="n">check_object_type</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">allowed_types</span><span class="o">=</span><span class="p">(</span><span class="n">DS</span><span class="p">,</span> <span class="n">DA</span><span class="p">),</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;sum&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;median&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported resampling method: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Choose resample if we have a time dimension, otherwise use coarsen for spatial dimensions</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span> <span class="s2">&quot;time&quot;</span><span class="p">:</span>
+            <span class="n">resampled</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">resample</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">freq</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">resampled</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">coarsen</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">freq</span><span class="p">},</span> <span class="n">boundary</span><span class="o">=</span><span class="s2">&quot;trim&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">resampled</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid resample method: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">resampled</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="p">)()</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ReshapeTransform">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.ReshapeTransform">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ReshapeTransform</span><span class="p">(</span><span class="n">BaseTransform</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">):</span>
+<div class="viewcode-block" id="ReshapeTransform.shape">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.ReshapeTransform.shape">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">shape</span></div>
+
+
+<div class="viewcode-block" id="ReshapeTransform.__call__">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.ReshapeTransform.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">):</span>
+        <span class="c1"># Implement reshaping logic here</span>
+        <span class="n">check_object_type</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">allowed_types</span><span class="o">=</span><span class="n">DA</span><span class="p">,</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sample</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="RollTransform">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.RollTransform">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RollTransform</span><span class="p">(</span><span class="n">BaseTransform</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">shift</span><span class="p">:</span> <span class="kc">None</span><span class="o">|</span><span class="nb">int</span><span class="p">):</span>
+<div class="viewcode-block" id="RollTransform.dim">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.RollTransform.dim">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">dim</span></div>
+
+<div class="viewcode-block" id="RollTransform.shift">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.RollTransform.shift">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shift</span> <span class="o">=</span> <span class="n">shift</span></div>
+
+
+<div class="viewcode-block" id="RollTransform.__call__">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.RollTransform.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">):</span>
+        <span class="c1"># Implement rolling logic here</span>
+        <span class="n">check_object_type</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">allowed_types</span><span class="o">=</span><span class="n">DS</span><span class="p">,</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="n">shift</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shift</span>
+        
+        <span class="k">if</span> <span class="n">shift</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Check if we need to roll</span>
+            <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">sample</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">350</span> <span class="ow">and</span> <span class="nb">float</span><span class="p">(</span><span class="n">sample</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+                <span class="n">shift</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">sizes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">shift</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rolling </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="si">}</span><span class="s2"> by </span><span class="si">{</span><span class="n">shift</span><span class="si">}</span><span class="s2"> positions.&quot;</span><span class="p">)</span>
+        <span class="n">rolled</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">roll</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">:</span> <span class="n">shift</span><span class="p">},</span> <span class="n">roll_coords</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Adjust the coordinate values after rolling</span>
+        <span class="n">coord_vals</span> <span class="o">=</span> <span class="n">rolled</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">rolled</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">coord_vals</span> <span class="o">&gt;=</span> <span class="mf">180.</span><span class="p">,</span> <span class="n">coord_vals</span> <span class="o">-</span> <span class="mf">360.</span><span class="p">,</span> <span class="n">coord_vals</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">rolled</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ReverseAxisTransform">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.ReverseAxisTransform">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ReverseAxisTransform</span><span class="p">(</span><span class="n">BaseTransform</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<div class="viewcode-block" id="ReverseAxisTransform.dim">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.ReverseAxisTransform.dim">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">dim</span></div>
+
+
+<div class="viewcode-block" id="ReverseAxisTransform.__call__">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.ReverseAxisTransform.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">):</span>
+        <span class="c1"># Implement axis reversal logic here</span>
+        <span class="n">check_object_type</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">allowed_types</span><span class="o">=</span><span class="n">DS</span><span class="p">,</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="n">ds_rev</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">isel</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">:</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)})</span>
+        <span class="k">return</span> <span class="n">ds_rev</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SortAxisTransform">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.SortAxisTransform">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SortAxisTransform</span><span class="p">(</span><span class="n">BaseTransform</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ascending</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="SortAxisTransform.dim">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.SortAxisTransform.dim">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">dim</span></div>
+
+<div class="viewcode-block" id="SortAxisTransform.ascending">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.SortAxisTransform.ascending">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ascending</span> <span class="o">=</span> <span class="n">ascending</span></div>
+
+
+<div class="viewcode-block" id="SortAxisTransform.__call__">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.SortAxisTransform.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">):</span>
+        <span class="c1"># Implement axis sorting logic here</span>
+        <span class="n">check_object_type</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">allowed_types</span><span class="o">=</span><span class="n">DS</span><span class="p">,</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="n">sorted_sample</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">sortby</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ascending</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sorted_sample</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SubsetTransform">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.SubsetTransform">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SubsetTransform</span><span class="p">(</span><span class="n">BaseTransform</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">subset_selectors</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s2">&quot;variables&quot;</span> <span class="ow">in</span> <span class="n">subset_selectors</span><span class="p">:</span>
+            <span class="n">variables</span> <span class="o">=</span> <span class="n">subset_selectors</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;variables&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="n">variables</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="k">else</span> <span class="p">[</span><span class="n">variables</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="kc">None</span>
+<div class="viewcode-block" id="SubsetTransform.subset_selectors">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.SubsetTransform.subset_selectors">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subset_selectors</span> <span class="o">=</span> <span class="n">convert_subset_selectors_to_slices</span><span class="p">(</span><span class="n">subset_selectors</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SubsetTransform.__call__">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.SubsetTransform.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">):</span>
+        <span class="c1"># Implement subsetting logic here</span>
+        <span class="n">check_object_type</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">allowed_types</span><span class="o">=</span><span class="p">(</span><span class="n">DS</span><span class="p">,</span> <span class="n">DA</span><span class="p">),</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># If no specific variables are provided, apply the subset to all variables in </span>
+            <span class="c1"># the Dataset or the single DataArray</span>
+            <span class="k">return</span> <span class="n">sample</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">subset_selectors</span><span class="p">)</span>
+        
+        <span class="c1"># If we have variables then we need to create a new Dataset with only those </span>
+        <span class="c1"># variables and apply the subset selectors to each variable</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">()</span>
+        <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">var_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="c1"># Use common subset selectors unless overridden by variable-specific selectors</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_selectors</span><span class="p">:</span>
+                <span class="n">ds</span><span class="p">[</span><span class="n">var_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="n">var_id</span><span class="p">]</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">subset_selectors</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ds</span><span class="p">[</span><span class="n">var_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="n">var_id</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">ds</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SqueezeTransform">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.SqueezeTransform">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SqueezeTransform</span><span class="p">(</span><span class="n">BaseTransform</span><span class="p">):</span>
+<div class="viewcode-block" id="SqueezeTransform.__call__">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.SqueezeTransform.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">):</span>
+        <span class="c1"># Implement squeezing logic here</span>
+        <span class="n">check_object_type</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">allowed_types</span><span class="o">=</span><span class="p">(</span><span class="n">DS</span><span class="p">,</span> <span class="n">DA</span><span class="p">,</span> <span class="n">TT</span><span class="p">),</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sample</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TilerTransform">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.TilerTransform">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TilerTransform</span><span class="p">(</span><span class="n">BaseTransform</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A transform that takes a Dataset or DataArray and breaks it into smaller tiles along specified dimensions.</span>
+<span class="sd">    This uses the xarray `coarsen` + `construct` pattern to create non-overlapping tiles of the data, which can </span>
+<span class="sd">    be useful for training models on large spatial datasets by reducing memory usage and allowing for batch </span>
+<span class="sd">    processing of smaller chunks of data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">boundary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;pad&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">dim_tile_sizes</span><span class="p">):</span>
+<div class="viewcode-block" id="TilerTransform.boundary">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.TilerTransform.boundary">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundary</span> <span class="o">=</span> <span class="n">boundary</span></div>
+
+<div class="viewcode-block" id="TilerTransform.tile_sizes">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.TilerTransform.tile_sizes">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tile_sizes</span> <span class="o">=</span> <span class="n">dim_tile_sizes</span></div>
+
+
+<div class="viewcode-block" id="TilerTransform.__call__">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.TilerTransform.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">:</span> <span class="n">DA</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DA</span><span class="p">:</span>
+        <span class="n">check_object_type</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">allowed_types</span><span class="o">=</span><span class="n">DA</span><span class="p">,</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+        <span class="c1"># Create the dictionary to send to the &quot;.construct()&quot; method, using a naming convention of</span>
+        <span class="c1"># (&quot;{dim}_coarse&quot;, &quot;{dim}_fine&quot;) for the new dimensions created by the tiling process.</span>
+        <span class="n">tile_dims</span> <span class="o">=</span> <span class="p">{</span><span class="n">dim</span><span class="p">:</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dim</span><span class="si">}</span><span class="s2">_coarse&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dim</span><span class="si">}</span><span class="s2">_fine&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_sizes</span><span class="p">}</span>
+        <span class="n">coarsened</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">coarsen</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_sizes</span><span class="p">,</span> <span class="n">boundary</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">boundary</span><span class="p">)</span><span class="o">.</span><span class="n">construct</span><span class="p">(</span><span class="o">**</span><span class="n">tile_dims</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+        <span class="c1"># Prepare a stacking regrouping of the original dimensions and the new dimensions</span>
+        <span class="n">batch_dims</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">target_dims</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">sample</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_sizes</span><span class="p">:</span>
+                <span class="n">batch_dims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dim</span><span class="si">}</span><span class="s2">_coarse&quot;</span><span class="p">)</span>
+                <span class="n">target_dims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dim</span><span class="si">}</span><span class="s2">_fine&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">target_dims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span> 
+
+        <span class="n">stacked</span> <span class="o">=</span> <span class="n">coarsened</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">batch_dim</span><span class="o">=</span><span class="n">batch_dims</span><span class="p">)</span>
+        <span class="c1"># Reorder to have batch_dim first, followed by the original dimensions and then the fine tile dimensions</span>
+        <span class="n">tiled</span> <span class="o">=</span> <span class="n">stacked</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="s2">&quot;batch_dim&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">target_dims</span><span class="p">)</span>
+
+        <span class="c1"># Store reverse-lookup metadata in attrs</span>
+        <span class="n">tiled</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+            <span class="s2">&quot;tiler_tile_sizes&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_sizes</span><span class="p">,</span>
+            <span class="s2">&quot;tiler_boundary&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary</span><span class="p">,</span>
+            <span class="s2">&quot;tiler_original_sizes&quot;</span><span class="p">:</span> <span class="p">{</span><span class="n">dim</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">sizes</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_sizes</span><span class="p">},</span>
+            <span class="s2">&quot;tiler_original_coords&quot;</span><span class="p">:</span> <span class="p">{</span><span class="n">dim</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> 
+                                    <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_sizes</span> <span class="k">if</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">sample</span><span class="o">.</span><span class="n">coords</span><span class="p">},</span>
+        <span class="p">})</span>
+        <span class="k">return</span> <span class="n">tiled</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ToDataArray">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.ToDataArray">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ToDataArray</span><span class="p">(</span><span class="n">BaseTransform</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<div class="viewcode-block" id="ToDataArray.var_id">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.ToDataArray.var_id">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_id</span> <span class="o">=</span> <span class="n">var_id</span></div>
+
+
+<div class="viewcode-block" id="ToDataArray.__call__">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.ToDataArray.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">:</span> <span class="n">DS</span> <span class="o">|</span> <span class="n">DA</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DA</span><span class="p">:</span>
+        <span class="c1"># Implement conversion to xarray DataArray here</span>
+        <span class="n">check_object_type</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">allowed_types</span><span class="o">=</span><span class="p">(</span><span class="n">DS</span><span class="p">,</span> <span class="n">DA</span><span class="p">),</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">DS</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">data_vars</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;ToDataArrayTransform can only be applied to Datasets with a single variable.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">sample</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var_id</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">sample</span></div>
+</div>
+
+    
+
+<div class="viewcode-block" id="ToTensorTransform">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.ToTensorTransform">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ToTensorTransform</span><span class="p">(</span><span class="n">BaseTransform</span><span class="p">):</span>
+<div class="viewcode-block" id="ToTensorTransform.__call__">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.ToTensorTransform.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">:</span> <span class="n">DA</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="c1"># Implement conversion to PyTorch tensor here</span>
+        <span class="n">check_object_type</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">allowed_types</span><span class="o">=</span><span class="p">(</span><span class="n">DA</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">DA</span><span class="p">):</span>
+            <span class="n">sample</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">values</span>
+
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span></div>
+</div>
+
+    
+
+<div class="viewcode-block" id="TransposeTransform">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.TransposeTransform">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TransposeTransform</span><span class="p">(</span><span class="n">BaseTransform</span><span class="p">):</span>
+<div class="viewcode-block" id="TransposeTransform.__call__">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.TransposeTransform.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">):</span>
+        <span class="c1"># Implement transposing logic here</span>
+        <span class="n">check_object_type</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">allowed_types</span><span class="o">=</span><span class="p">(</span><span class="n">DA</span><span class="p">,</span> <span class="n">TT</span><span class="p">),</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sample</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> </div>
+</div>
+
+
+
+<div class="viewcode-block" id="VarsToDimensionTransform">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.VarsToDimensionTransform">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">VarsToDimensionTransform</span><span class="p">(</span><span class="n">BaseTransform</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A transform that takes a list of variables from a Dataset and stacks them into a </span>
+<span class="sd">    new dimension, effectively converting the variable dimension into a coordinate </span>
+<span class="sd">    dimension. This is useful for models that expect a single multi-channel input </span>
+<span class="sd">    rather than separate variables.</span>
+
+<span class="sd">    Since the purpose is to prepare the data for conversion to a Tensor, we assume </span>
+<span class="sd">    that ancillary variables that are not genuine coordinates can be dropped.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="VarsToDimensionTransform.exclusion_vars">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.VarsToDimensionTransform.exclusion_vars">[docs]</a>
+    <span class="n">exclusion_vars</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;time_bounds&quot;</span><span class="p">,</span> <span class="s2">&quot;lat_bounds&quot;</span><span class="p">,</span> <span class="s2">&quot;lon_bounds&quot;</span><span class="p">,</span> 
+                       <span class="s2">&quot;time_bnds&quot;</span><span class="p">,</span> <span class="s2">&quot;lat_bnds&quot;</span><span class="p">,</span> <span class="s2">&quot;lon_bnds&quot;</span><span class="p">,</span>
+                       <span class="s2">&quot;crs&quot;</span><span class="p">,</span> <span class="s2">&quot;spatial_ref&quot;</span><span class="p">,</span> <span class="s2">&quot;bounds&quot;</span><span class="p">,</span> <span class="s2">&quot;bnds&quot;</span><span class="p">]</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variables</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">new_dim</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">only_vars_with_time</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="VarsToDimensionTransform.variables">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.VarsToDimensionTransform.variables">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="n">variables</span></div>
+
+<div class="viewcode-block" id="VarsToDimensionTransform.new_dim">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.VarsToDimensionTransform.new_dim">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_dim</span> <span class="o">=</span> <span class="n">new_dim</span></div>
+
+<div class="viewcode-block" id="VarsToDimensionTransform.only_vars_with_time">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.VarsToDimensionTransform.only_vars_with_time">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">only_vars_with_time</span> <span class="o">=</span> <span class="n">only_vars_with_time</span></div>
+
+
+<div class="viewcode-block" id="VarsToDimensionTransform.__call__">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.VarsToDimensionTransform.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">):</span>
+        <span class="c1"># Implement logic to convert variables to a new dimension here</span>
+        <span class="n">check_object_type</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">allowed_types</span><span class="o">=</span><span class="n">DS</span><span class="p">,</span> <span class="n">caller</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+        <span class="c1"># Check special case of variables = &quot;__all__&quot;, take all variables and filter out those not needed/suitable</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">==</span> <span class="s2">&quot;__all__&quot;</span><span class="p">:</span>
+
+            <span class="c1"># Exclude variables relate to bounds and coordinates</span>
+            <span class="n">bounds_vars</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">b_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">b_list</span> <span class="ow">in</span> <span class="n">sample</span><span class="o">.</span><span class="n">cf</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">values</span><span class="p">()])</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">only_vars_with_time</span><span class="p">:</span>
+                <span class="n">vars_without_time</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">var_id</span> <span class="k">for</span> <span class="n">var_id</span> <span class="ow">in</span> <span class="n">sample</span><span class="o">.</span><span class="n">data_vars</span> 
+                                        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sample</span><span class="p">[</span><span class="n">var_id</span><span class="p">],</span> <span class="s2">&quot;time&quot;</span><span class="p">)])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">vars_without_time</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+            <span class="n">exclusion_vars</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">var_id</span> <span class="k">for</span> <span class="n">var_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exclusion_vars</span> <span class="k">if</span> <span class="n">var_id</span> <span class="ow">in</span> <span class="n">sample</span><span class="o">.</span><span class="n">data_vars</span><span class="p">])</span>
+
+            <span class="c1"># Combine all exclusion criteria into a single set of variables to drop</span>
+            <span class="n">all_exclusion_vars</span> <span class="o">=</span> <span class="n">bounds_vars</span> <span class="o">|</span> <span class="n">vars_without_time</span> <span class="o">|</span> <span class="n">exclusion_vars</span>
+
+            <span class="c1"># Drop the variables from the sample.</span>
+            <span class="n">sample</span><span class="o">.</span><span class="n">drop_vars</span><span class="p">(</span><span class="n">all_exclusion_vars</span><span class="p">)</span>
+            <span class="c1"># Remove those variables from the wish list</span>
+            <span class="n">variables</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">data_vars</span><span class="p">)</span> <span class="o">-</span> <span class="n">all_exclusion_vars</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span>
+
+        <span class="c1"># Create a set of arrays to concatenate together</span>
+        <span class="n">arrays</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample</span><span class="p">[</span><span class="n">var_id</span><span class="p">]</span> <span class="k">for</span> <span class="n">var_id</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">]</span>
+
+        <span class="n">stacked</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">arrays</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">new_dim</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">stacked</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="transform_mapping">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.transform_mapping">[docs]</a>
+<span class="n">transform_mapping</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;fill_missing&quot;</span><span class="p">:</span> <span class="n">FillMissingValueTransform</span><span class="p">,</span>
+    <span class="s2">&quot;fill_nan&quot;</span><span class="p">:</span> <span class="n">FillNaNTransform</span><span class="p">,</span>
+    <span class="s2">&quot;normalize&quot;</span><span class="p">:</span> <span class="n">NormalizeTransform</span><span class="p">,</span>
+    <span class="s2">&quot;rename&quot;</span><span class="p">:</span> <span class="n">RenameTransform</span><span class="p">,</span>
+    <span class="s2">&quot;resample&quot;</span><span class="p">:</span> <span class="n">ResampleTransform</span><span class="p">,</span>
+    <span class="s2">&quot;reshape&quot;</span><span class="p">:</span> <span class="n">ReshapeTransform</span><span class="p">,</span>
+    <span class="s2">&quot;reverse_axis&quot;</span><span class="p">:</span> <span class="n">ReverseAxisTransform</span><span class="p">,</span>
+    <span class="s2">&quot;roll&quot;</span><span class="p">:</span> <span class="n">RollTransform</span><span class="p">,</span>
+    <span class="s2">&quot;scale&quot;</span><span class="p">:</span> <span class="n">ScaleTransform</span><span class="p">,</span>
+    <span class="s2">&quot;sort_axis&quot;</span><span class="p">:</span> <span class="n">SortAxisTransform</span><span class="p">,</span>
+    <span class="s2">&quot;squeeze&quot;</span><span class="p">:</span> <span class="n">SqueezeTransform</span><span class="p">,</span>
+    <span class="s2">&quot;subset&quot;</span><span class="p">:</span> <span class="n">SubsetTransform</span><span class="p">,</span>
+    <span class="s2">&quot;tiler&quot;</span><span class="p">:</span> <span class="n">TilerTransform</span><span class="p">,</span>
+    <span class="s2">&quot;to_dataarray&quot;</span><span class="p">:</span> <span class="n">ToDataArray</span><span class="p">,</span>
+    <span class="s2">&quot;to_tensor&quot;</span><span class="p">:</span> <span class="n">ToTensorTransform</span><span class="p">,</span>
+    <span class="s2">&quot;transpose&quot;</span><span class="p">:</span> <span class="n">TransposeTransform</span><span class="p">,</span>
+    <span class="s2">&quot;vars_to_dimension&quot;</span><span class="p">:</span> <span class="n">VarsToDimensionTransform</span>
+<span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="resolve_transform">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.resolve_transform">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resolve_transform</span><span class="p">(</span><span class="n">transform_config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseTransform</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    If a transform is a dictionary with a &quot;type&quot; key, resolve it to the corresponding transform class instance.</span>
+<span class="sd">    If it is already an instance of a transform class, return it as is.</span>
+<span class="sd">    Args:</span>
+<span class="sd">    - transform_config (dict or BaseTransform): The transform configuration to resolve.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">    - BaseTransform: An instance of a transform class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transform_config</span><span class="p">,</span> <span class="n">BaseTransform</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">transform_config</span>
+    
+    <span class="n">transform_type</span> <span class="o">=</span> <span class="n">transform_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">transform_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">transform_mapping</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported transform type: </span><span class="si">{</span><span class="n">transform_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="n">transform_class</span> <span class="o">=</span> <span class="n">transform_mapping</span><span class="p">[</span><span class="n">transform_type</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">transform_class</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">transform_config</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">&quot;type&quot;</span><span class="p">})</span></div>
+
+
+
+<div class="viewcode-block" id="apply_transforms">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.apply_transforms">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">apply_transforms</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">|</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">,</span> <span class="n">preprocessors</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">|</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply a list of preprocessing transforms to a data sample.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        sample (xr.Dataset | xr.DataArray): The input data sample to be transformed.</span>
+<span class="sd">        preprocessors (list): A list of transform configurations to apply to the sample.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        xr.Dataset | xr.DataArray: The transformed data sample after applying all preprocessors.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">preprocessor</span> <span class="ow">in</span> <span class="n">preprocessors</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">preprocessor</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;type&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">preprocessor</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Each preprocessor must be a dictionary with a &#39;type&#39; key. Invalid preprocessor: </span><span class="si">{</span><span class="n">preprocessor</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">resolve_transform</span><span class="p">(</span><span class="n">preprocessor</span><span class="p">)(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+
+<span class="c1"># Create `apply_preprocessors` as an alias for `apply_transforms` to allow for more intuitive naming when used </span>
+<span class="c1"># in the context of preprocessing steps.</span>
+<div class="viewcode-block" id="apply_preprocessors">
+<a class="viewcode-back" href="../../../../api/src/FRAME_FM/transforms/transforms/index.html#src.FRAME_FM.transforms.apply_preprocessors">[docs]</a>
+<span class="n">apply_preprocessors</span> <span class="o">=</span> <span class="n">apply_transforms</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Adam Ward, National Oceanography Centre.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
