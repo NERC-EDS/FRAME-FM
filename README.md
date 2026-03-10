@@ -4,7 +4,7 @@
 
 ### Purpose
 
-Welcome to the **Framework for the Rapid Developement of Environmental Foundation Models** (FRAME-FM).
+Welcome to the **Framework for the Rapid Developement of Environmental Foundation Models** (FRAME-FM)!
 
 FRAME-FM is an open-source software framework designed to enable the fast, scalable, and accessible development of Foundation Models (FMs) for large-scale environmental datasets. This includes petabyte-scale archives held by the UK’s NERC Environmental Data Service (EDS).
 
@@ -18,6 +18,47 @@ This repository was created in October 2025. As such, it is quickly evolving as 
 - What is and isn't complete?
 
 ### Repository Breakdown
+
+The FRAME-FM repository ocntains many directories. The most important of which are explained below.
+
+#### Essential Dependencies
+
+| **Dependency** | **Purpose** |
+|---|---|
+| PyTorch | |
+| Mlflow | |
+| Marimo | |
+| | |
+| | |
+| | |
+
+#### Source Code
+
+All of the source code for the FRAME-FM project can be found in "src/FRAME-FM".
+
+More specifically, this directory contains:
+
+| **Subfolder** | **Description** |
+|---|---|
+| utils | This directory contains wrappers around important PyTorch modules. Wrappers like ` LightningDataModule ` and ` LightningModule ` contain customisations essential for FRAME-FM such as standardisations, constructions and consistent logging. |
+| dataloaders | The ` LightningDataModule ` implementations for loading and pre-processing external datasets. This allows FRAME-FM to keep the model code separate from the data-handling, transform and batching logic. |
+| datasets | |
+| models | The implementations of ` LightningModule ` from PyTorch. Each of the files within defines a modular and configurable model that should be instantiated through Hydra. |
+| training | This holds the Hydra-driver ` train.py ` script used to launch model training runs. This directory also holds training entry points for Mlflow logging helpers, callbacks and trainer utilities. |
+| transforms | This directory will hold all of our transformation classes and relevant utilities to glue them into FRAME-FM. |
+
+For more detail on each file within the source code, dive into our carefully written Sphinx code:
+
+- https://nerc-eds.github.io/FRAME-FM/
+
+#### Configs
+
+- Go to Sphinx to read *configs_README.md*
+
+#### Examples
+
+#### Other Directories
+
 
 - Structure of the Repo
 - Current state (what is complete and what isn't complete)
@@ -48,6 +89,9 @@ This repository was created in October 2025. As such, it is quickly evolving as 
 
 ### Hardware Requirements
 
+- Built for x86
+- Works on ARM like the Isembard supercomputer
+
 ### Steps
 
 ### Expected Output
@@ -59,6 +103,7 @@ This repository was created in October 2025. As such, it is quickly evolving as 
 ### Pre-Requisites
 
 - JASMIN access
+- Same python, uv, etc requirements
 
 ---
 
@@ -67,6 +112,9 @@ This repository was created in October 2025. As such, it is quickly evolving as 
 ---
 
 ## Technical Documentation
+
+- Link to Sphinx
+- https://nerc-eds.github.io/FRAME-FM/
 
 ---
 
