@@ -1,4 +1,118 @@
 # FRAME-FM
+
+## Overview
+
+### Purpose
+
+Welcome to the **Framework for the Rapid Developement of Environmental Foundation Models** (FRAME-FM).
+
+FRAME-FM is an open-source software framework designed to enable the fast, scalable, and accessible development of Foundation Models (FMs) for large-scale environmental datasets. This includes petabyte-scale archives held by the UK’s NERC Environmental Data Service (EDS).
+
+While environmental data archives are vast and information-rich, they are difficult to process directly. This project addresses this critical gap by lowering the barrier to use these datasets by providing standardised workflows, infrastructure, and tools. This allow users to train, evaluate, fine-tune, and publish foundation models efficiently.
+
+### Current Status
+
+This repository was created in October 2025. As such, it is quickly evolving as more functionality, documentation and examples are provided.
+
+- What is it's current state?
+- What is and isn't complete?
+
+### Repository Breakdown
+
+- Structure of the Repo
+- Current state (what is complete and what isn't complete)
+
+### Table of Contents
+
+- [Who is FRAME-FM Built for?](#who-is-frame-fm-built-for)
+- [Running FRAME-FM Locally](#running-frame-fm-locally)
+- [Running FRAME-FM on JASMIN](#running-frame-fm-on-jasmin)
+- [Other Examples](#other-examples)
+- [Technical Documentation](#technical-documentation)
+
+---
+
+## Who is FRAME-FM Built for?
+
+- Scientists who...
+
+---
+
+## Running FRAME-FM Locally
+
+### Pre-Requisites
+
+- Designed for Linux
+- Python >=3.11,<3.13
+- uv
+
+### Hardware Requirements
+
+### Steps
+
+### Expected Output
+
+---
+
+## Running FRAME-FM on JASMIN
+
+### Pre-Requisites
+
+- JASMIN access
+
+---
+
+## Other Examples
+
+---
+
+## Technical Documentation
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
+
 **Framework for the Rapid development of Environmental Foundation Models**
 
 FRAME-FM is an open-source software framework designed to enable the fast, scalable, and accessible development of Foundation Models (FMs) for large-scale environmental datasets, including petabyte-scale archives held by the UK’s NERC Environmental Data Service (EDS).
