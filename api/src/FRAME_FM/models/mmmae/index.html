@@ -112,6 +112,11 @@
 <dd></dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="src.FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.ec_mode_embeddings">
+<span class="sig-name descname"><span class="pre">ec_mode_embeddings</span></span><a class="reference internal" href="../../../../../_modules/src/FRAME_FM/models/mmmae.html#MultimodalMaskedAutoencoder.ec_mode_embeddings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.ec_mode_embeddings" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="src.FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.blocks">
 <span class="sig-name descname"><span class="pre">blocks</span></span><a class="reference internal" href="../../../../../_modules/src/FRAME_FM/models/mmmae.html#MultimodalMaskedAutoencoder.blocks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.blocks" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -124,6 +129,11 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="src.FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.decoder_embed">
 <span class="sig-name descname"><span class="pre">decoder_embed</span></span><a class="reference internal" href="../../../../../_modules/src/FRAME_FM/models/mmmae.html#MultimodalMaskedAutoencoder.decoder_embed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.decoder_embed" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="src.FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.dc_mode_embeddings">
+<span class="sig-name descname"><span class="pre">dc_mode_embeddings</span></span><a class="reference internal" href="../../../../../_modules/src/FRAME_FM/models/mmmae.html#MultimodalMaskedAutoencoder.dc_mode_embeddings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.dc_mode_embeddings" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -202,7 +212,7 @@ token and position embeddings of shapes ([B, L_i, D])_i and ([B, L_i, D_d])_i</p
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p>Encodings of randomly selected input embeddings, shape [B, 1 + (1-p)sum(L_i), D].</p></li>
-<li><p>Batched position embeddings for decoder, shape [B, sum(L_i), D_d]</p></li>
+<li><p>Batched mode and position embeddings for decoder, shape [B, sum(L_i), D_d]</p></li>
 <li><p>Mask with 0 where token extracted, 1 otherwise, shape [B, sum(L_i)].</p></li>
 <li><p>IDs with which to restore original, unshuffled token embeddings, shape [B, sum(L_i)].</p></li>
 </ul>
@@ -216,7 +226,7 @@ token and position embeddings of shapes ([B, L_i, D])_i and ([B, L_i, D_d])_i</p
 
 <dl class="py method">
 <dt class="sig sig-object py" id="src.FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.forward_decoder">
-<span class="sig-name descname"><span class="pre">forward_decoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ids_restore</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos_embed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/src/FRAME_FM/models/mmmae.html#MultimodalMaskedAutoencoder.forward_decoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.forward_decoder" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">forward_decoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ids_restore</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata_embed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/src/FRAME_FM/models/mmmae.html#MultimodalMaskedAutoencoder.forward_decoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder.forward_decoder" title="Link to this definition"></a></dt>
 <dd><p>Transform encoding of masked inputs, decode using a transformer, and reconstruct tokens.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -224,7 +234,7 @@ token and position embeddings of shapes ([B, L_i, D])_i and ([B, L_i, D_d])_i</p
 <li><p><strong>x</strong> (<em>torch.Tensor</em>) – Encodings of shuffled, masked tokens, shape [B, 1 + (1-p)L, D].</p></li>
 <li><p><strong>ids_restore</strong> (<em>torch.Tensor</em>) – IDs with which to restore original, unshuffled encodings,
 shape [B, L].</p></li>
-<li><p><strong>pos_embed</strong> (<em>torch.Tensor</em>) – Encodings of input positions, shape [B, L, D_d]</p></li>
+<li><p><strong>metadata_embed</strong> (<em>torch.Tensor</em>) – Encodings of input mode and positions, shape [B, L, D_d]</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
