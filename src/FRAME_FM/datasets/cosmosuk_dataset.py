@@ -85,7 +85,7 @@ def process_flags(df, flags_df, drop_qc_flags: list):
 
 def csv_to_xarray(data_path: str, qc_bitmask: int, drop_qc_flags: list):
     '''
-    Loads the CSV 
+    Loads the cosmos UK CSV data and converts it into an Xarray dataset
 
     data_path is the directory inside base path where the data is stored. Do not specify file names, the code automatically picks up files with the correct names (cosmos-uk_*_hydrosoil_sh_????-????.csv). It is assumed that a metadata file called cosmos-uk_sitemetadata_2013-2024.csv exists in the parent directory 
     of this. This will contain the station locations. 
