@@ -24,18 +24,24 @@ def process_bitmask(df, qc_df, qc_bitmask: int):
         #ensure any NaNs are zero or they'll fail the integer conversion
         qc_df[column] = qc_df[column].fillna(0)
         qc_df[column] = qc_df[column].astype(int)
+        #print("QC mask ", column)
+        #print(qc_df[column])
         #applies a bitwise AND to every row in the column against our mask of acceptable values
         qc_df[column] = np.bitwise_and(qc_df[column].astype("int16"), qc_bitmask)
-        
+        #print("QC mask anded")
+        #print(qc_df[column])
         #convert all values to booleans, by default anything non-zero becomes true, but non-zero means we want to drop it
         #so invert the output, qc_df now contains true for all entries which passed QC and false for entries which failed it
         qc_df[column] = ~qc_df[column].astype("bool")
+        #print("QC inverted and turned into a boolean")
+        #print(qc_df[column])
 
     #apply the boolean mask to the data
     #anything with a true in the mask will stay, anything with a false turns into a NaN
     for column in df.columns[2:]:
         df[column] = df[column].where(qc_df[column + "_QCFLAG"])
-
+        #print("Final result for column", column)
+        #print(df[column])
     return df
 
 def process_flags(df, flags_df, drop_qc_flags: list):
@@ -50,20 +56,30 @@ def process_flags(df, flags_df, drop_qc_flags: list):
     # convert QC array to a mask
     # turn all entries to a true where there are no flags/no flags we want to drop and a false where there's a flag we want to drop
     for column in flags_df.columns[2:]:
-        
+        #print("Processing flags for column", column, "before masking:")
+        #print(flags_df[column])
         for flag in drop_qc_flags:
             # flags which were empty are already NaNs, these will turn into False when we run notna()
             # make flags into Trues, notna() will keep them as true, but if invert it's response we'll get what we want
             # e.g. flags = false, no flag = true
             flags_df[column] = flags_df[column].where(flags_df[column] != flag, "False")
-        flags_df[column] = ~flags_df[column].notna()
-    
+        #print("after masking:\n",flags_df[column])
+        #columns are either NaN (no flags), false (flagged to drop) or a value (flag which we are ignoring)
+        #convert anything that's not false to true
+        flags_df[column] = flags_df[column].where(flags_df[column] == "False", "True")
+        #print("before inversion:\n",flags_df[column])
+        flags_df[column] = flags_df[column].where(flags_df[column] == "True", 0).astype("bool")
+        #flags_df[column] = flags_df[column].astype("bool")
+        #print("after inversion")
+        #print(flags_df[column])
     # flags_df should now be a boolean mask
     
     # convert flagged columns to NaNs
     for column in df.columns[2:]:
+        #print("masking column",column)
+        #print("value before mask",df[column])
         df[column] = df[column].where(flags_df[column + "_FLAG"])
-
+        #print("value after mask", df[column])
     return df
 
 
