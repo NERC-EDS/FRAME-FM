@@ -313,6 +313,26 @@ def tiled_to_pixel_coordinates(
         tensors.append(torch.tensor(values, dtype=dtype))
 
     return torch.stack(tensors, dim=1)
+
+
+def tiled_to_coordinate_bounds(
+    tiles: DA,
+    coord_dims: list[str] | None = None,
+    dtype: torch.dtype = torch.float32,
+) -> torch.Tensor:
+    """
+    Convert tiled coordinates into per-tile coordinate bounds.
+
+    Returns:
+        torch.Tensor with shape (N, D, 2), where each bound is [min, max].
+    """
+    pixel_coords = tiled_to_pixel_coordinates(tiles=tiles, coord_dims=coord_dims, dtype=dtype)
+    reduce_dims = tuple(range(2, pixel_coords.ndim))
+    mins = pixel_coords.amin(dim=reduce_dims)
+    maxs = pixel_coords.amax(dim=reduce_dims)
+    return torch.stack([mins, maxs], dim=-1)
+
+
 class ToDataArray(BaseTransform):
     def __init__(self, var_id: str):
         self.var_id = var_id
