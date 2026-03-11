@@ -333,6 +333,108 @@ def tiled_to_coordinate_bounds(
     return torch.stack([mins, maxs], dim=-1)
 
 
+@dataclass
+class TiledIndexMapper:
+    """
+    Reverse-lookup helper for tiled DataArray outputs created by TilerTransform.
+
+    It maps physical coordinates (e.g. time/lat/lon values) to a tile id in batch_dim,
+    and supports the inverse mapping from tile id to coarse tile indices.
+    """
+
+    tile_sizes: dict[str, int]
+    original_sizes: dict[str, int]
+    original_coords: dict[str, list]
+    batch_dims: list[str]
+
+    @classmethod
+    def from_tiled_array(cls, tiles: DA) -> "TiledIndexMapper":
+        check_object_type(tiles, allowed_types=DA, caller="TiledIndexMapper.from_tiled_array")
+        tile_sizes = _as_tiler_dict(tiles.attrs.get("tiler_tile_sizes"), "tiler_tile_sizes")
+        original_sizes = _as_tiler_dict(tiles.attrs.get("tiler_original_sizes"), "tiler_original_sizes")
+        original_coords = _as_tiler_dict(tiles.attrs.get("tiler_original_coords"), "tiler_original_coords")
+        batch_dims = tiles.attrs.get("tiler_batch_dims")
+        if not isinstance(batch_dims, list):
+            raise ValueError("Missing required tiler metadata field: 'tiler_batch_dims'.")
+        return cls(
+            tile_sizes={str(k): int(v) for k, v in tile_sizes.items()},
+            original_sizes={str(k): int(v) for k, v in original_sizes.items()},
+            original_coords={str(k): list(v) for k, v in original_coords.items()},
+            batch_dims=[str(d) for d in batch_dims],
+        )
+
+    def _original_dim_from_batch_dim(self, batch_dim: str) -> str:
+        if batch_dim.endswith("_coarse"):
+            return batch_dim[:-7]
+        raise ValueError(f"Unexpected batch dim '{batch_dim}'. Expected suffix '_coarse'.")
+
+    def _n_coarse_for_dim(self, dim: str) -> int:
+        return int(math.ceil(self.original_sizes[dim] / self.tile_sizes[dim]))
+
+    def _coarse_index_from_coord(self, dim: str, coord_value: float | int | np.datetime64) -> int:
+        coords = np.asarray(self.original_coords[dim])
+        if np.issubdtype(coords.dtype, np.datetime64):
+            target = np.datetime64(coord_value)
+            abs_diff = np.abs(coords - target)
+            idx = int(abs_diff.argmin())
+        else:
+            target = float(coord_value)
+            abs_diff = np.abs(coords.astype(np.float64) - target)
+            idx = int(abs_diff.argmin())
+
+        coarse_idx = idx // self.tile_sizes[dim]
+        max_idx = self._n_coarse_for_dim(dim) - 1
+        return int(min(max(coarse_idx, 0), max_idx))
+
+    def tile_id_from_coordinates(self, **coords: float | int | np.datetime64) -> int:
+        """
+        Map real-world coordinates to a tile id in batch_dim.
+
+        Example:
+            mapper.tile_id_from_coordinates(time=np.datetime64("2005-01-01T01"), latitude=48.0, longitude=-3.0)
+        """
+        coarse_indices: list[int] = []
+        n_coarses: list[int] = []
+
+        for batch_dim in self.batch_dims:
+            dim = self._original_dim_from_batch_dim(batch_dim)
+            if dim not in coords:
+                raise ValueError(f"Missing coordinate for '{dim}'. Provided keys: {list(coords)}")
+            coarse_indices.append(self._coarse_index_from_coord(dim, coords[dim]))
+            n_coarses.append(self._n_coarse_for_dim(dim))
+
+        tile_id = 0
+        for coarse_idx, n_coarse in zip(coarse_indices, n_coarses):
+            tile_id = tile_id * n_coarse + coarse_idx
+        return int(tile_id)
+
+    def coordinates_from_tile_id(self, tile_id: int) -> dict[str, int]:
+        """
+        Inverse mapping from tile id to coarse tile indices by original dimension.
+        """
+        n_total = 1
+        n_coarses: list[int] = []
+        dims: list[str] = []
+        for batch_dim in self.batch_dims:
+            dim = self._original_dim_from_batch_dim(batch_dim)
+            dims.append(dim)
+            n_coarse = self._n_coarse_for_dim(dim)
+            n_coarses.append(n_coarse)
+            n_total *= n_coarse
+
+        if tile_id < 0 or tile_id >= n_total:
+            raise ValueError(f"tile_id {tile_id} is out of range [0, {n_total - 1}]")
+
+        indices_reversed: list[int] = []
+        remaining = int(tile_id)
+        for n_coarse in reversed(n_coarses):
+            indices_reversed.append(remaining % n_coarse)
+            remaining //= n_coarse
+
+        coarse_indices = list(reversed(indices_reversed))
+        return {dim: idx for dim, idx in zip(dims, coarse_indices)}
+
+
 class ToDataArray(BaseTransform):
     def __init__(self, var_id: str):
         self.var_id = var_id
