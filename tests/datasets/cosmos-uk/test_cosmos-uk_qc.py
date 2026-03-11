@@ -1,5 +1,5 @@
 import pytest
-import FRAME_FM.datasets.cosmosuk_dataset as csv_loader
+import FRAME_FM.datasets.cosmosuk_dataset as cosmosuk
 
 import math
 import numpy as np
@@ -13,43 +13,43 @@ import numpy as np
 # test QC masks
 
 def test_qc_mask_all_flags():
-    ds = csv_loader.csv_to_xarray("FRAME-FM/tests/datasets/fixtures/cosmos-uk/", 0b11111111111, [])
-    assert np.array_equal(ds['LWIN'].values,[339.4, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],equal_nan=True)
+    ds = cosmosuk.CosmosUKDataset(data_uri="FRAME-FM/tests/datasets/fixtures/cosmos-uk/", qc_bitmask = 0b11111111111,  drop_qc_flags = []).data
+    assert np.array_equal(ds[0]['TDT1_TSOIL'].values,[339.4, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],equal_nan=True)
 
 def test_qc_mask_missing():
-    ds = csv_loader.csv_to_xarray("FRAME-FM/tests/datasets/fixtures/cosmos-uk/", 0b0000000001, [])
-    assert np.array_equal(ds['LWIN'].values,[339.4, math.nan, 316.6,  316.5, 313.0, 316.8, 323.6, math.nan, math.nan],equal_nan=True)
+    ds = cosmosuk.CosmosUKDataset(data_uri="FRAME-FM/tests/datasets/fixtures/cosmos-uk/", qc_bitmask = 0b0000000001, drop_qc_flags = []).data
+    assert np.array_equal(ds[0]['TDT1_TSOIL'].values,[339.4, math.nan, 316.6,  316.5, 313.0, 316.8, 323.6, math.nan, math.nan],equal_nan=True)
 
 def test_qc_mask_no_flags():
-    ds = csv_loader.csv_to_xarray("FRAME-FM/tests/datasets/fixtures/cosmos-uk/", 0b0000000000, [])
-    assert np.array_equal(ds['LWIN'].values,[339.4, 329.4, 316.6,  316.5, 313.0, 316.8, 323.6, 336.2, 324.0],equal_nan=True)
+    ds = cosmosuk.CosmosUKDataset(data_uri="FRAME-FM/tests/datasets/fixtures/cosmos-uk/", qc_bitmask = 0b0000000000, drop_qc_flags = []).data
+    assert np.array_equal(ds[0]['TDT1_TSOIL'].values,[339.4, 329.4, 316.6,  316.5, 313.0, 316.8, 323.6, 336.2, 324.0],equal_nan=True)
     
 # test flags
 def test_flags_none():
-    ds = csv_loader.csv_to_xarray("FRAME-FM/tests/datasets/fixtures/cosmos-uk/", 0b0000000000, [])
-    assert np.array_equal(ds['LWIN'].values, [339.4, 329.4, 316.6,  316.5, 313.0, 316.8, 323.6, 336.2, 324.0],equal_nan=True)
+    ds = cosmosuk.CosmosUKDataset(data_uri="FRAME-FM/tests/datasets/fixtures/cosmos-uk/", qc_bitmask = 0b0000000000, drop_qc_flags = []).data
+    assert np.array_equal(ds[0]['TDT1_TSOIL'].values, [339.4, 329.4, 316.6,  316.5, 313.0, 316.8, 323.6, 336.2, 324.0],equal_nan=True)
 
 def test_flags_all():
-    ds = csv_loader.csv_to_xarray("FRAME-FM/tests/datasets/fixtures/cosmos-uk/", 0b0000000000, ["I", "M", "E", "U"])
-    assert np.array_equal(ds['LWIN'].values, [math.nan, math.nan, math.nan, math.nan, 313.0, 316.8, 323.6, 336.2, 324.0],equal_nan=True)
+    ds = cosmosuk.CosmosUKDataset(data_uri="FRAME-FM/tests/datasets/fixtures/cosmos-uk/", qc_bitmask = 0b0000000000, drop_qc_flags =  ["I", "M", "E", "U"]).data
+    assert np.array_equal(ds[0]['TDT1_TSOIL'].values, [math.nan, math.nan, math.nan, math.nan, 313.0, 316.8, 323.6, 336.2, 324.0],equal_nan=True)
 
 def test_flags_u():
-    ds = csv_loader.csv_to_xarray("FRAME-FM/tests/datasets/fixtures/cosmos-uk/", 0b0000000000, ["U"])
-    assert np.array_equal(ds['LWIN'].values,[math.nan, 329.4, 316.6,  316.5, 313.0, 316.8, 323.6, 336.2, 324.0],equal_nan=True)
+    ds = cosmosuk.CosmosUKDataset(data_uri="FRAME-FM/tests/datasets/fixtures/cosmos-uk/", qc_bitmask = 0b0000000000, drop_qc_flags =  ["U"]).data
+    assert np.array_equal(ds[0]['TDT1_TSOIL'].values,[math.nan, 329.4, 316.6,  316.5, 313.0, 316.8, 323.6, 336.2, 324.0],equal_nan=True)
 
 def test_flags_i():
-    ds = csv_loader.csv_to_xarray("FRAME-FM/tests/datasets/fixtures/cosmos-uk/", 0b0000000000, ["I"])
-    assert np.array_equal(ds['LWIN'].values,[339.4, math.nan, 316.6,  316.5, 313.0, 316.8, 323.6, 336.2, 324.0],equal_nan=True)
+    ds = cosmosuk.CosmosUKDataset(data_uri="FRAME-FM/tests/datasets/fixtures/cosmos-uk/", qc_bitmask = 0b0000000000, drop_qc_flags =  ["I"]).data
+    assert np.array_equal(ds[0]['TDT1_TSOIL'].values,[339.4, math.nan, 316.6,  316.5, 313.0, 316.8, 323.6, 336.2, 324.0],equal_nan=True)
 
 def test_flags_e():
-    ds = csv_loader.csv_to_xarray("FRAME-FM/tests/datasets/fixtures/cosmos-uk/", 0b0000000000, ["E"])
-    assert np.array_equal(ds['LWIN'].values,[339.4, 329.4, math.nan, 316.5, 313.0, 316.8, 323.6, 336.2, 324.0],equal_nan=True)
+    ds = cosmosuk.CosmosUKDataset(data_uri="FRAME-FM/tests/datasets/fixtures/cosmos-uk/", qc_bitmask = 0b0000000000, drop_qc_flags =  ["E"]).data
+    assert np.array_equal(ds[0]['TDT1_TSOIL'].values,[339.4, 329.4, math.nan, 316.5, 313.0, 316.8, 323.6, 336.2, 324.0],equal_nan=True)
 
 def test_flags_m():
-    ds = csv_loader.csv_to_xarray("FRAME-FM/tests/datasets/fixtures/cosmos-uk/", 0b0000000000, ["M"])
-    assert np.array_equal(ds['LWIN'].values,[339.4, 329.4, 316.6, math.nan, 313.0, 316.8, 323.6, 336.2, 324.0],equal_nan=True)
+    ds = cosmosuk.CosmosUKDataset(data_uri="FRAME-FM/tests/datasets/fixtures/cosmos-uk/", qc_bitmask = 0b0000000000, drop_qc_flags =  ["M"]).data
+    assert np.array_equal(ds[0]['TDT1_TSOIL'].values,[339.4, 329.4, 316.6, math.nan, 313.0, 316.8, 323.6, 336.2, 324.0],equal_nan=True)
 
 def test_flags_invalid():
     # specify a flag we don't use, all data should be present
-    ds = csv_loader.csv_to_xarray("FRAME-FM/tests/datasets/fixtures/cosmos-uk/", 0b0000000000, ["A"])
-    assert np.array_equal(ds['LWIN'].values,[339.4, 329.4, 316.6, 316.5, 313.0, 316.8, 323.6, 336.2, 324.0],equal_nan=True)
+    ds = cosmosuk.CosmosUKDataset(data_uri="FRAME-FM/tests/datasets/fixtures/cosmos-uk/", qc_bitmask = 0b0000000000, drop_qc_flags =  ["A"]).data
+    assert np.array_equal(ds[0]['TDT1_TSOIL'].values,[339.4, 329.4, 316.6, 316.5, 313.0, 316.8, 323.6, 336.2, 324.0],equal_nan=True)

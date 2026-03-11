@@ -3,6 +3,7 @@ import pandas as pd
 import glob
 import os
 import numpy as np
+from pathlib import Path
 from FRAME_FM.datasets.base_dataset import BaseDataset
 
 
@@ -14,9 +15,12 @@ class CosmosUKDataset(BaseDataset):
     
     Descriptions of the data format are in cosmos-uk_supportinginformation_2013-2024.docx from https://data-package.ceh.ac.uk/sd/2dce161d-2fab-47bb-9fe6-38e7ed1ae18a.zip
     """
+    def __init__(self, data_uri: str | Path | list | tuple, qc_bitmask: int = 0b11111111111, drop_qc_flags: list = ["M", "U", "I", "E"]):
+        self.data_uri = data_uri
+        self._setup_dataset(qc_bitmask, drop_qc_flags)
 
-    def _setup_dataset(self):
-        self.data = self._csv_to_xarray(self.data_uri, 0b11111111111, ["M", "U", "I", "E"])
+    def _setup_dataset(self, qc_bitmask: int = 0b11111111111, drop_qc_flags: list = ["M", "U", "I", "E"]):
+        self.data = self._csv_to_xarray(self.data_uri, qc_bitmask, drop_qc_flags)
 
     def __len__(self):
         return len(self.data)
@@ -160,19 +164,28 @@ class CosmosUKDataset(BaseDataset):
             assert data_df.SITE_ID.nunique() == 1
             latitude = metadata_df.LATITUDE[station_id]
             longitude = metadata_df.LONGITUDE[station_id]
-            data_df['LATITUDE'] = latitude
-            data_df['LONGITUDE'] = longitude
+            #data_df['LATITUDE'] = latitude
+            #data_df['LONGITUDE'] = longitude
             
             # remove timezone from the datetime as xarray's to_netcdf doesn't like it
             data_df["DATE_TIME"] = pd.to_datetime(data_df.DATE_TIME).dt.tz_localize(None)
             # make DATE_TIME the index instead of using a index number
-            all_data.append(data_df.set_index(["DATE_TIME"]))
+            data_df.set_index(["DATE_TIME"]).sort_index().to_xarray()
+            
+            #add to an xarray dataset
+            ds = xr.Dataset({"TDT1_TSOIL" : (("TIME_DATE"), data_df['TDT1_TSOIL'] )}, attrs={"latitude" : latitude, "longitude": longitude, "site_id": station_id}, coords = {"DATE_TIME" : data_df["DATE_TIME"]})
+            
+            
+            all_data.append(ds)
             # should site ID form part of the index?
             # sorts all the entries by date_time as not doing can break selecting on dates
         
         # convert to xarray    
         # note that there can be multiple entries with the same timestamp so the index_col entries are not unique
         # should we make station ID part of the index?
-        ds = pd.concat(all_data).sort_index().to_xarray() 
+        #ds = pd.concat(all_data).sort_index().to_xarray() 
+
+        #what should the final result look like?
+        #soil moisture was important, how do we handle multiple soil moisiture variables
     
-        return ds
+        return all_data
