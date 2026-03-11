@@ -1,54 +1,62 @@
 # Observability
 ## Overview
 
-This repository integrates with [MLflow](https://www.mlflow.org/docs/latest/ml/) to provide experiment observability for
+FRAME-FM integrates with [MLflow](https://www.mlflow.org/docs/latest/ml/) to provide experiment observability for
 all model‑training workflows within the framework. The MLflow UI can be used to compare metrics between model variants or datasets.
 
 MLflow support is implemented via a custom MLflow logger that captures metrics, parameters, configuration, and artifacts generated during training.
 
-By default, the framework’s main configuration file ([config.yaml](../../../configs/config.yaml)) references a logging configuration
+By default, the FRAME‑FM's main configuration file ([config.yaml](../../../configs/config.yaml)) references a logging configuration
 ([demo_mlflow.yaml](../../../configs/logging/demo_mlflow.yaml)) located in configs/logging/. This file demonstrates how to:
 
-- Configure an MLflow logger instance
-- Set experiment names
-- Define run names
-- Attach user-defined tags (e.g., project, dataset, model)
+- configure an MLflow logger instance
+- set experiment names
+- define run names
+- attach user-defined tags (e.g., project, dataset, model)
 
 These settings allow you to organise training runs and compare results across models, datasets, and configurations.
 
-## MLflow Tracking URI
+## MLflow server
 
-MLflow uses the MLFLOW_TRACKING_URI environment variable to determine where to store experiment metadata and artifacts.
+### Prerequisites
 
-- **If `MLFLOW_TRACKING_URI` is set:** All run data is logged to the location or server specified.
-- **If it is not set:** MLflow defaults to a local directory named mlruns in the project root.
+MLflow is included in the FRAME‑FM environment. After following the environment setup steps in the main [README](../../../README.md), MLflow will be available automatically. 
 
-For local development, you can start a lightweight MLflow UI server with:
-
+If you are working outside the FRAME‑FM environment, you can install MLflow manually:
 ```shell
-uv run mlflow server \
---backend-store-uri file:./mlruns \
---default-artifact-root file:./mlruns \
---host 127.0.0.1 \
---port 5000
+pip install mlflow
+```
+
+### Running a local MLflow server
+
+For local development, you can start a lightweight MLflow tracking server and UI.
+
+Inside the FRAME‑FM environment (using uv):
+```shell
+uv run mlflow server --port 5000
+```
+
+Outside FRAME‑FM (using a regular Python environment):
+```shell
+mlflow server --port 5000
 ```
 
 Once running, the MLflow UI is available at:
 
 http://127.0.0.1:5000
 
-This interface lets you track experiment histories, compare metrics visually, inspect model artifacts, and review metadata for reproducibility.
+This interface allows you to track experiment histories, compare metrics, and review metadata for reproducibility.
 
 ## Logging Configuration
 
-MLflow logging is configured via Hydra YAML files in configs/logging/.
-Below is an example configuration ([demo_mlflow.yaml](../../../configs/logging/demo_mlflow.yaml)) that defines a simple MLflow logger:
+MLflow logging in FRAME‑FM is controlled by Hydra configuration files stored in `configs/logging/`.
+Below is an example configuration ([demo_mlflow.yaml](../../../configs/logging/demo_mlflow.yaml)):
 
 ```yaml
 _target_: FRAME_FM.training.logger.create_mlflow_logger
 
 experiment_name: "frame-fm-mmmae-demo"
-tracking_uri: ${oc.env:MLFLOW_TRACKING_URI, "file:./mlruns"}
+tracking_uri: ${oc.env:MLFLOW_TRACKING_URI, "sqlite:///${hydra:runtime.cwd}/mlflow.db"}
 run_name: "initial-demo"
 
 tags:
@@ -63,20 +71,53 @@ tags:
 The function responsible for instantiating the MLflow logger.
 
 #### `experiment_name`
-Groups related training runs under a single MLflow experiment.
+Groups related training runs under an MLflow experiment.
 
 #### `tracking_uri`
-Points to the MLflow tracking backend. Falls back to a local mlruns directory if no environment variable is set.
+Points to the MLflow tracking backend. FRAME‑FM defaults to a local SQLite file (mlflow.db) unless overridden via the `MLFLOW_TRACKING_URI` environment variable.
 
 #### `run_name`
 Human-readable name for the run, visible in the MLflow UI.
 
 #### `tags`
-Metadata for filtering or searching runs. Useful tags include:
+Custom metadata for filtering or searching runs. Useful tags include:
 - Project identifiers
 - Dataset names
 - Model architectures
 - Training configurations
+
+## Storage locations for metadata and artifacts
+
+MLflow uses two storage components:
+
+- **Backend store** for experiment metadata, params, metrics
+- **Artifact store** for files generated during runs (models, plots, logs, checkpoints)
+
+FRAME-FM's example MLflow configuration ([demo_mlflow.yaml](../../../configs/logging/demo_mlflow.yaml)) sets the backend store location via the `MLFLOW_TRACKING_URI` environment variable. If this is not set, this configuration defaults to storing metadata in a SQLite database located at: `<Hydra working directory>/mlflow.db`.
+
+The artifact store location defaults to `./mlruns/`.
+
+MLflow will create the directory structure automatically if it doesn’t exist.
+
+When starting an MLflow server, you must point it to the same backend store and artifact directory used by FRAME‑FM in order to view your runs in the MLflow UI. If you start the server with different paths, MLflow will initialise new empty stores and your existing runs will not appear in the UI.
+
+You can specify storage paths explicitly when launching the server via `--backend-store-uri` and `--default-artifact-root`:
+
+```shell
+uv run mlflow server \
+  --backend-store-uri sqlite:///path/to/mlflow.db \
+  --default-artifact-root file:/path/to/mlruns \
+  --host 127.0.0.1 \
+  --port 5000
+```
+or, if you prefer using the `MLFLOW_TRACKING_URI` environment variable:
+```shell
+export MLFLOW_TRACKING_URI="sqlite:///path/to/mlflow.db"
+uv run mlflow server \
+  --default-artifact-root file:/path/to/mlruns \
+  --host 127.0.0.1 \
+  --port 5000
+```
 
 ## Running MLflow on JASMIN and viewing locally
 
@@ -85,8 +126,9 @@ You can run the MLflow tracking server on a JASMIN host and view the UI from you
 First, start an MLflow server on JASMIN (e.g., a `sci` node), ensuring `backend-store-uri` points to the configured MLflow tracking backend.
 
 ```shell
+export MLFLOW_TRACKING_URI="sqlite:///path/to/mlflow.db"
 uv run mlflow server \
---backend-store-uri file:./mlruns \
+--backend-store-uri $MLFLOW_TRACKING_URI \
 --default-artifact-root file:./mlruns \
 --host 127.0.0.1 \
 --port 5000
