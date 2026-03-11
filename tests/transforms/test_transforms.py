@@ -258,6 +258,25 @@ def test_tiled_coordinate_utilities_static_grid():
     assert torch.equal(bounds[0, 1], torch.tensor([10.0, 20.0]))
 
 
+def test_tiled_index_mapper_roundtrip():
+    da = xr.DataArray(
+        np.zeros((1, 3, 4), dtype=np.float32),
+        dims=("band", "y", "x"),
+        coords={
+            "band": [0],
+            "y": [10.0, 20.0, 30.0],
+            "x": [100.0, 110.0, 120.0, 130.0],
+        },
+    )
+    tiled = TilerTransform(y=2, x=2, boundary="pad")(da)
+    mapper = TiledIndexMapper.from_tiled_array(tiled)
+
+    tile_id = mapper.tile_id_from_coordinates(y=30.0, x=120.0)
+    assert tile_id == 3
+
+    coarse_ids = mapper.coordinates_from_tile_id(tile_id)
+    assert coarse_ids == {"y": 1, "x": 1}
+
 def test_ToTensorTransform():
     da = _load_data(response_type="DataArray")
 
