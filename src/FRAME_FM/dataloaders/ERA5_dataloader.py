@@ -333,6 +333,45 @@ class ERA5SpatialPixelsDataModule(ERA5BaseDataModule):
         return self._tile_index_mapper
 
 
+class ERA5SpatialBoundsDataModule(ERA5BaseDataModule):
+    """
+    ERA5 loader that returns per-tile coordinate bounds.
+
+    Each sample is:
+        values    -> (C, T, H, W)
+        times     -> (T,)
+        positions -> (3, 2) for bounds in (time, latitude, longitude)
+
+    This matches MMMAE / inputs_positioned="bounds" for spatiotemporal inputs.
+    """
+
+    def _extract_tile_bounds(self, tiles: xr.DataArray) -> torch.Tensor:
+        return tiled_to_coordinate_bounds(tiles, coord_dims=["time", "latitude", "longitude"])
+
+    def _create_datasets(self, stage: str | None = None) -> None:
+        tiles = self._tile_array(self._raw_data)
+        self._tile_index_mapper = TiledIndexMapper.from_tiled_array(tiles)
+        values = torch.tensor(tiles.values, dtype=torch.float32)
+        times = self._extract_times(tiles)
+        bounds = self._extract_tile_bounds(tiles)
+
+        base = TensorDataset(values, times, bounds)
+        train_base, val_base, test_base = self._split_dataset(base)
+
+        self.train_dataset = TransformedInputTimeCoordsDataset(train_base, self.train_transforms)
+        self.val_dataset = TransformedInputTimeCoordsDataset(val_base, self.val_transforms)
+        self.test_dataset = (
+            None
+            if test_base is None
+            else TransformedInputTimeCoordsDataset(test_base, self.test_transforms)
+        )
+
+    def get_tile_index_mapper(self) -> TiledIndexMapper:
+        if self._tile_index_mapper is None:
+            raise RuntimeError("Tile index mapper is not available before setup()/_create_datasets().")
+        return self._tile_index_mapper
+
+
 if __name__ == "__main__":
     from FRAME_FM.models.mmmae import MultimodalMaskedAutoencoder
 
