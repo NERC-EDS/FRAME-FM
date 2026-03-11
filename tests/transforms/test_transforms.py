@@ -277,6 +277,35 @@ def test_tiled_index_mapper_roundtrip():
     coarse_ids = mapper.coordinates_from_tile_id(tile_id)
     assert coarse_ids == {"y": 1, "x": 1}
 
+
+def test_time_aware_tiling_positions_and_bounds():
+    times = np.array([
+        np.datetime64("2005-01-01T00:00:00"),
+        np.datetime64("2005-01-01T01:00:00"),
+        np.datetime64("2005-01-01T02:00:00"),
+    ])
+    da = xr.DataArray(
+        np.random.randn(1, 3, 3, 3).astype(np.float32),
+        dims=("channel", "time", "latitude", "longitude"),
+        coords={
+            "channel": [0],
+            "time": times,
+            "latitude": [50.0, 51.0, 52.0],
+            "longitude": [-2.0, -1.0, 0.0],
+        },
+    )
+    tiled = TilerTransform(time=2, latitude=2, longitude=2, boundary="pad")(da)
+    pixel_coords = tiled_to_pixel_coordinates(tiled, coord_dims=["time", "latitude", "longitude"])
+    bounds = tiled_to_coordinate_bounds(tiled, coord_dims=["time", "latitude", "longitude"])
+
+    assert pixel_coords.shape == (8, 3, 2, 2, 2)
+    assert bounds.shape == (8, 3, 2)
+
+    first_time_bounds = bounds[0, 0]
+    expected_t0 = torch.tensor(times[0].astype("datetime64[s]").astype("int64"), dtype=torch.float32)
+    expected_t1 = torch.tensor(times[1].astype("datetime64[s]").astype("int64"), dtype=torch.float32)
+    assert torch.equal(first_time_bounds, torch.stack([expected_t0, expected_t1]))
+
 def test_ToTensorTransform():
     da = _load_data(response_type="DataArray")
 
