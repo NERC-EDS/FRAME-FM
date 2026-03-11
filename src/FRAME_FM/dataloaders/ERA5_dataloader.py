@@ -264,7 +264,7 @@ class ERA5BaseDataModule(BaseDataModule):
         return np.concatenate([axis_slice, pad], axis=0)
 
 
-class ERA5SpatialPixelsDataModule(ERA5TiledBaseDataModule):
+class ERA5SpatialPixelsDataModule(ERA5BaseDataModule):
     """
     ERA5 loader that returns full per-pixel spatiotemporal coordinates.
 
@@ -294,38 +294,7 @@ class ERA5SpatialPixelsDataModule(ERA5TiledBaseDataModule):
         - positions tell the model "where and when it happened"
         """
 
-        if self._global_lat is None or self._global_lon is None:
-            raise RuntimeError("Global coordinates were not stored before position extraction.")
-
-        batch_tuples = tiles["batch_dim"].values
-        n_samples = tiles.sizes["batch_dim"]
-        t_size = tiles.sizes["time_inner"]
-        h_size = tiles.sizes["tile_lat"]
-        w_size = tiles.sizes["tile_lon"]
-
-        # Use the tile-aligned time coordinate created by xarray, not the batch index.
-        time_np = np.asarray(tiles["time"].values).astype("datetime64[s]").astype("int64")
-        if time_np.ndim == 1:
-            time_np = time_np[:, None]
-
-        pos = torch.empty((n_samples, 3, t_size, h_size, w_size), dtype=torch.float32)
-
-        for i, (_, tile_lat_id, tile_lon_id) in enumerate(batch_tuples):
-            lat_start = int(tile_lat_id) * self.tile_size_lat
-            lon_start = int(tile_lon_id) * self.tile_size_lon
-
-            lat_slice = self._pad_axis_slice(self._global_lat[lat_start: lat_start + h_size], h_size)
-            lon_slice = self._pad_axis_slice(self._global_lon[lon_start: lon_start + w_size], w_size)
-
-            lat_2d = torch.tensor(lat_slice, dtype=torch.float32).view(h_size, 1).repeat(1, w_size)
-            lon_2d = torch.tensor(lon_slice, dtype=torch.float32).view(1, w_size).repeat(h_size, 1)
-            t_1d = torch.tensor(time_np[i], dtype=torch.float32)
-
-            pos[i, 0] = t_1d.view(t_size, 1, 1).repeat(1, h_size, w_size)
-            pos[i, 1] = lat_2d.unsqueeze(0).repeat(t_size, 1, 1)
-            pos[i, 2] = lon_2d.unsqueeze(0).repeat(t_size, 1, 1)
-
-        return pos
+        return tiled_to_pixel_coordinates(tiles, coord_dims=["time", "latitude", "longitude"])
 
     def _create_datasets(self, stage: str | None = None) -> None:
         """
