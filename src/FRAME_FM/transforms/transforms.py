@@ -267,6 +267,52 @@ def _resolve_coord_dims(tiles: DA, coord_dims: list[str] | None = None) -> list[
         if dim not in tile_sizes:
             raise ValueError(f"Requested coordinate dim '{dim}' is not tiled. Available: {list(tile_sizes.keys())}")
     return coord_dims
+def tiled_to_pixel_coordinates(
+    tiles: DA,
+    coord_dims: list[str] | None = None,
+    dtype: torch.dtype = torch.float32,
+) -> torch.Tensor:
+    """
+    Convert a tiled DataArray into a per-pixel coordinate tensor.
+
+    Returns:
+        torch.Tensor with shape (N, D, *fine_dims)
+        where:
+          N = number of tiles (batch_dim)
+          D = number of coordinate channels
+    """
+    check_object_type(tiles, allowed_types=DA, caller="tiled_to_pixel_coordinates")
+    dims = _resolve_coord_dims(tiles, coord_dims)
+    fine_dims = _as_tiler_dict(tiles.attrs.get("tiler_fine_dims"), "tiler_fine_dims")
+
+    coord_arrays: list[xr.DataArray] = []
+    for dim in dims:
+        if dim in tiles.coords:
+            coord = tiles[dim]
+        else:
+            fine_dim = fine_dims[dim]
+            if fine_dim not in tiles.coords:
+                raise ValueError(
+                    f"Could not find coordinate '{dim}' or fallback coordinate '{fine_dim}' in tiled array."
+                )
+            coord = tiles[fine_dim]
+
+        if "batch_dim" not in coord.dims:
+            coord = coord.expand_dims(batch_dim=tiles.sizes["batch_dim"])
+        coord_arrays.append(coord)
+
+    broadcasted = xr.broadcast(*coord_arrays)
+    ordered_fine_dims = [fine_dims[d] for d in dims]
+
+    tensors: list[torch.Tensor] = []
+    for arr in broadcasted:
+        arr_t = arr.transpose("batch_dim", *ordered_fine_dims)
+        values = np.asarray(arr_t.values)
+        if np.issubdtype(values.dtype, np.datetime64):
+            values = values.astype("datetime64[s]").astype("int64")
+        tensors.append(torch.tensor(values, dtype=dtype))
+
+    return torch.stack(tensors, dim=1)
 class ToDataArray(BaseTransform):
     def __init__(self, var_id: str):
         self.var_id = var_id
