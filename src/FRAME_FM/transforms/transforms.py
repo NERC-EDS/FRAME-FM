@@ -212,12 +212,76 @@ class TilerTransform(BaseTransform):
     be useful for training models on large spatial datasets by reducing memory usage and allowing for batch 
     processing of smaller chunks of data.
     """
-    def __init__(self, boundary: str = "pad", **dim_tile_sizes):
+    def __init__(
+        self,
+        boundary: str = "pad",
+        validate_axis_order: bool = False,
+        discontinuity_periods: dict[str, float] | None = None,
+        **dim_tile_sizes,
+    ):
         self.boundary = boundary
+        self.validate_axis_order = validate_axis_order
+        self.discontinuity_periods = discontinuity_periods or {"longitude": 360.0, "lon": 360.0}
         self.tile_sizes = dim_tile_sizes
+
+    def _validate_axis_order(self, sample: DA) -> None:
+        for dim in self.tile_sizes:
+            if dim not in sample.coords:
+                continue
+            coords = np.asarray(sample.coords[dim].values)
+            if coords.ndim != 1:
+                continue
+            if coords.size < 2:
+                continue
+
+            diffs = np.diff(coords)
+            if np.issubdtype(diffs.dtype, np.timedelta64):
+                ok = np.all(diffs > np.timedelta64(0, "ns"))
+            else:
+                ok = np.all(diffs > 0)
+
+            if not ok:
+                raise ValueError(
+                    f"Axis '{dim}' is not strictly ascending. "
+                    "Either sort/reverse this axis before tiling, or set "
+                    "validate_axis_order=False to bypass this guardrail."
+                )
+
+    def _validate_no_discontinuity_crossing(self, coarsened: DA, tile_dims: dict[str, tuple[str, str]]) -> None:
+        for dim, period in self.discontinuity_periods.items():
+            if dim not in tile_dims:
+                continue
+            coarse_dim, fine_dim = tile_dims[dim]
+            if dim in coarsened.coords:
+                coord = coarsened[dim]
+            elif fine_dim in coarsened.coords:
+                coord = coarsened[fine_dim]
+            else:
+                continue
+
+            if coarse_dim not in coord.dims or fine_dim not in coord.dims:
+                continue
+
+            values = np.asarray(coord.transpose(coarse_dim, fine_dim).values)
+            if values.ndim != 2 or values.shape[1] < 2:
+                continue
+            if np.issubdtype(values.dtype, np.datetime64):
+                continue
+
+            diffs = np.abs(np.diff(values.astype(np.float64), axis=1))
+            crossing = diffs > (period / 2.0)
+            if np.any(crossing):
+                bad_tiles = np.where(crossing.any(axis=1))[0].tolist()
+                raise ValueError(
+                    f"Detected tiler discontinuity crossing on axis '{dim}' "
+                    f"(period={period}). Affected coarse tile ids: {bad_tiles[:10]}"
+                )
 
     def __call__(self, sample: DA) -> DA:
         check_object_type(sample, allowed_types=DA, caller=self.__class__.__name__)
+
+        if self.validate_axis_order:
+            self._validate_axis_order(sample)
 
         # Create the dictionary to send to the ".construct()" method, using a naming convention of
         # ("{dim}_coarse", "{dim}_fine") for the new dimensions created by the tiling process.
@@ -225,6 +289,8 @@ class TilerTransform(BaseTransform):
         coarse_dims = {dim: f"{dim}_coarse" for dim in self.tile_sizes}
         fine_dims = {dim: f"{dim}_fine" for dim in self.tile_sizes}
         coarsened = sample.coarsen(**self.tile_sizes, boundary=self.boundary).construct(**tile_dims)  # type: ignore
+
+        self._validate_no_discontinuity_crossing(coarsened, tile_dims)
 
         # Prepare a stacking regrouping of the original dimensions and the new dimensions
         batch_dims = []
@@ -244,6 +310,8 @@ class TilerTransform(BaseTransform):
         tiled.attrs.update({
             "tiler_tile_sizes": self.tile_sizes,
             "tiler_boundary": self.boundary,
+            "tiler_validate_axis_order": self.validate_axis_order,
+            "tiler_discontinuity_periods": self.discontinuity_periods,
             "tiler_original_sizes": {dim: sample.sizes[dim] for dim in self.tile_sizes},
             "tiler_original_coords": {dim: sample.coords[dim].values.tolist() 
                                     for dim in self.tile_sizes if dim in sample.coords},

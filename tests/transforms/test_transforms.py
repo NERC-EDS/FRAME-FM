@@ -306,6 +306,36 @@ def test_time_aware_tiling_positions_and_bounds():
     expected_t1 = torch.tensor(times[1].astype("datetime64[s]").astype("int64"), dtype=torch.float32)
     assert torch.equal(first_time_bounds, torch.stack([expected_t0, expected_t1]))
 
+
+def test_tiler_axis_order_guardrail_raises_on_descending_axis():
+    da = xr.DataArray(
+        np.zeros((1, 3, 4), dtype=np.float32),
+        dims=("band", "y", "x"),
+        coords={
+            "band": [0],
+            "y": [30.0, 20.0, 10.0],
+            "x": [100.0, 110.0, 120.0, 130.0],
+        },
+    )
+
+    with pytest.raises(ValueError, match="not strictly ascending"):
+        TilerTransform(y=2, x=2, validate_axis_order=True)(da)
+
+
+def test_tiler_discontinuity_guardrail_raises_for_wrapping_tile():
+    da = xr.DataArray(
+        np.zeros((1, 2, 4), dtype=np.float32),
+        dims=("band", "latitude", "longitude"),
+        coords={
+            "band": [0],
+            "latitude": [0.0, 1.0],
+            "longitude": [-179.0, -178.0, 179.0, 180.0],
+        },
+    )
+
+    with pytest.raises(ValueError, match="discontinuity crossing"):
+        TilerTransform(latitude=2, longitude=4, discontinuity_periods={"longitude": 360.0})(da)
+
 def test_ToTensorTransform():
     da = _load_data(response_type="DataArray")
 
