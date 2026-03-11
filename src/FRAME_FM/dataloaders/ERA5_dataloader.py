@@ -28,6 +28,12 @@ import xarray as xr
 
 from FRAME_FM.utils.LightningDataModuleWrapper import BaseDataModule
 from FRAME_FM.datasets.InputTimeCoords_Dataset import TransformedInputTimeCoordsDataset
+from FRAME_FM.transforms.transforms import (
+    TilerTransform,
+    tiled_to_pixel_coordinates,
+    tiled_to_coordinate_bounds,
+    TiledIndexMapper,
+)
 
 
 class ERA5BaseDataModule(BaseDataModule):
@@ -170,34 +176,17 @@ class ERA5BaseDataModule(BaseDataModule):
                 f"{n_lat}x{n_lon} < {self.tile_size_lat}x{self.tile_size_lon}"
             )
 
-        # coarsen(..., boundary="pad") means edge tiles are padded if the global
-        # grid size is not perfectly divisible by tile size.
-        tiles = arr.coarsen(
+        # Use the shared transform-layer tiler so ERA5 follows the same tiling
+        # contract as other geospatial dataloaders.
+        tiles = TilerTransform(
+            boundary="pad",
             time=self.time_slice_size,
             latitude=self.tile_size_lat,
             longitude=self.tile_size_lon,
-            boundary="pad",
-        )
+        )(arr)
 
-        # construct(...) splits each coarse axis into:
-        # - an outer index saying "which block is this?"
-        # - an inner index saying "where am I inside that block?"
-        #
-        # Example for time:
-        #   original time axis -> time_coarse x time_inner
-        # where time_inner has length time_slice_size.
-        tiles = tiles.construct(
-            time=("time_coarse", "time_inner"),
-            latitude=("tile_lat_id", "tile_lat"),
-            longitude=("tile_lon_id", "tile_lon"),
-        )
-
-        # A single sample is identified by:
-        #   (time_coarse, tile_lat_id, tile_lon_id)
-        tiles = tiles.stack(batch_dim=("time_coarse", "tile_lat_id", "tile_lon_id"))
-
-        # Final per-sample layout expected by the model side.
-        tiles = tiles.transpose("batch_dim", "channel", "time_inner", "tile_lat", "tile_lon")
+        # Final per-sample layout expected by model code.
+        tiles = tiles.transpose("batch_dim", "channel", "time_fine", "latitude_fine", "longitude_fine")
 
         # Padding introduced by xarray becomes NaN; fill with zeros for tensors.
         tiles = tiles.fillna(0)
@@ -206,9 +195,9 @@ class ERA5BaseDataModule(BaseDataModule):
             "Each sample shape (C, T, H, W) =",
             (
                 tiles.sizes["channel"],
-                tiles.sizes["time_inner"],
-                tiles.sizes["tile_lat"],
-                tiles.sizes["tile_lon"],
+                tiles.sizes["time_fine"],
+                tiles.sizes["latitude_fine"],
+                tiles.sizes["longitude_fine"],
             ),
         )
         self._log("Tiled array shape:", tiles.shape)
