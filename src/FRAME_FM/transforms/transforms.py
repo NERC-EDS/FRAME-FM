@@ -220,6 +220,8 @@ class TilerTransform(BaseTransform):
         # Create the dictionary to send to the ".construct()" method, using a naming convention of
         # ("{dim}_coarse", "{dim}_fine") for the new dimensions created by the tiling process.
         tile_dims = {dim: (f"{dim}_coarse", f"{dim}_fine") for dim in self.tile_sizes}
+        coarse_dims = {dim: f"{dim}_coarse" for dim in self.tile_sizes}
+        fine_dims = {dim: f"{dim}_fine" for dim in self.tile_sizes}
         coarsened = sample.coarsen(**self.tile_sizes, boundary=self.boundary).construct(**tile_dims)  # type: ignore
 
         # Prepare a stacking regrouping of the original dimensions and the new dimensions
@@ -243,6 +245,9 @@ class TilerTransform(BaseTransform):
             "tiler_original_sizes": {dim: sample.sizes[dim] for dim in self.tile_sizes},
             "tiler_original_coords": {dim: sample.coords[dim].values.tolist() 
                                     for dim in self.tile_sizes if dim in sample.coords},
+            "tiler_coarse_dims": coarse_dims,
+            "tiler_fine_dims": fine_dims,
+            "tiler_batch_dims": [coarse_dims[dim] for dim in sample.dims if dim in self.tile_sizes],
         })
         return tiled
 
