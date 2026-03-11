@@ -1,0 +1,9 @@
+[local_cwd]
+
+[local_docker]
+
+[kubernetes]
+queue = #FIXME:(str) Volcano queue to schedule job in
+
+[slurm]
+
