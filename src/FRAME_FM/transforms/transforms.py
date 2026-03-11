@@ -3,6 +3,8 @@ import xarray as xr
 import cf_xarray  # noqa: F401 - We just need to register the accessor for CF-compliant operations on xarray objects
 import numpy as np
 import torch
+from dataclasses import dataclass
+import math
 
 DA = xr.DataArray
 DS = xr.Dataset
@@ -259,6 +261,7 @@ def _as_tiler_dict(value: dict | None, field_name: str) -> dict:
         raise TypeError(f"Expected '{field_name}' metadata to be a dictionary, got: {type(value)}")
     return value
 
+
 def _resolve_coord_dims(tiles: DA, coord_dims: list[str] | None = None) -> list[str]:
     tile_sizes = _as_tiler_dict(tiles.attrs.get("tiler_tile_sizes"), "tiler_tile_sizes")
     if coord_dims is None:
@@ -267,6 +270,8 @@ def _resolve_coord_dims(tiles: DA, coord_dims: list[str] | None = None) -> list[
         if dim not in tile_sizes:
             raise ValueError(f"Requested coordinate dim '{dim}' is not tiled. Available: {list(tile_sizes.keys())}")
     return coord_dims
+
+
 def tiled_to_pixel_coordinates(
     tiles: DA,
     coord_dims: list[str] | None = None,
