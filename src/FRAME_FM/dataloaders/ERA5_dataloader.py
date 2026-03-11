@@ -111,6 +111,7 @@ class ERA5BaseDataModule(BaseDataModule):
 
         self._global_lat: np.ndarray | None = None
         self._global_lon: np.ndarray | None = None
+        self._tile_index_mapper: TiledIndexMapper | None = None
 
     def _log(self, *args) -> None:
         if self.debug:
@@ -310,6 +311,7 @@ class ERA5SpatialPixelsDataModule(ERA5BaseDataModule):
         """
 
         tiles = self._tile_array(self._raw_data)
+        self._tile_index_mapper = TiledIndexMapper.from_tiled_array(tiles)
         values = torch.tensor(tiles.values, dtype=torch.float32)
         times = self._extract_times(tiles)
         positions = self._extract_pixel_positions(tiles)
@@ -324,6 +326,11 @@ class ERA5SpatialPixelsDataModule(ERA5BaseDataModule):
             if test_base is None
             else TransformedInputTimeCoordsDataset(test_base, self.test_transforms)
         )
+
+    def get_tile_index_mapper(self) -> TiledIndexMapper:
+        if self._tile_index_mapper is None:
+            raise RuntimeError("Tile index mapper is not available before setup()/_create_datasets().")
+        return self._tile_index_mapper
 
 
 if __name__ == "__main__":
