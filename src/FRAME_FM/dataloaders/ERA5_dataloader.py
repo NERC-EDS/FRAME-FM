@@ -219,15 +219,11 @@ class ERA5BaseDataModule(BaseDataModule):
         coordinate logic later.
         """
 
-        # After xarray construct+stack, the remaining "time" coordinate is aligned
-        # with (batch_dim, time_inner). We convert it into Unix seconds.
-        time_np = np.asarray(tiles["time"].values).astype("datetime64[s]").astype("int64")
-
-        # If T=1, xarray may hand back shape (N,) instead of (N, 1).
-        # We normalise to always return (N, T).
-        if time_np.ndim == 1:
-            time_np = time_np[:, None]
-        return torch.tensor(time_np, dtype=torch.int64)
+        pos = tiled_to_pixel_coordinates(tiles, coord_dims=["time", "latitude", "longitude"])
+        times = pos[:, 0, :, 0, 0].to(torch.int64)
+        if times.ndim == 1:
+            times = times[:, None]
+        return times
 
     def _extract_time_bounds(self, times: torch.Tensor) -> torch.Tensor:
         """
