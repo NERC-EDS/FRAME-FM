@@ -259,6 +259,14 @@ def _as_tiler_dict(value: dict | None, field_name: str) -> dict:
         raise TypeError(f"Expected '{field_name}' metadata to be a dictionary, got: {type(value)}")
     return value
 
+def _resolve_coord_dims(tiles: DA, coord_dims: list[str] | None = None) -> list[str]:
+    tile_sizes = _as_tiler_dict(tiles.attrs.get("tiler_tile_sizes"), "tiler_tile_sizes")
+    if coord_dims is None:
+        return list(tile_sizes.keys())
+    for dim in coord_dims:
+        if dim not in tile_sizes:
+            raise ValueError(f"Requested coordinate dim '{dim}' is not tiled. Available: {list(tile_sizes.keys())}")
+    return coord_dims
 class ToDataArray(BaseTransform):
     def __init__(self, var_id: str):
         self.var_id = var_id
