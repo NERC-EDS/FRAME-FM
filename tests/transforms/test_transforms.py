@@ -231,6 +231,33 @@ def test_TilerTransform_time_series_data():
     "the original data, so the rest of the test has not been implemented yet. "
     "This needs further investigation before it can be implemented.")
 
+
+def test_tiled_coordinate_utilities_static_grid():
+    da = xr.DataArray(
+        np.arange(1 * 3 * 4, dtype=np.float32).reshape(1, 3, 4),
+        dims=("band", "y", "x"),
+        coords={
+            "band": [0],
+            "y": [10.0, 20.0, 30.0],
+            "x": [100.0, 110.0, 120.0, 130.0],
+        },
+    )
+    tiled = TilerTransform(y=2, x=2, boundary="pad")(da)
+
+    pixel_coords = tiled_to_pixel_coordinates(tiled, coord_dims=["y", "x"])
+    assert pixel_coords.shape == (4, 2, 2, 2)
+
+    first_y = pixel_coords[0, 0]
+    first_x = pixel_coords[0, 1]
+    assert torch.equal(first_y, torch.tensor([[10.0, 10.0], [20.0, 20.0]]))
+    assert torch.equal(first_x, torch.tensor([[100.0, 110.0], [100.0, 110.0]]))
+
+    bounds = tiled_to_coordinate_bounds(tiled, coord_dims=["x", "y"])
+    assert bounds.shape == (4, 2, 2)
+    assert torch.equal(bounds[0, 0], torch.tensor([100.0, 110.0]))
+    assert torch.equal(bounds[0, 1], torch.tensor([10.0, 20.0]))
+
+
 def test_ToTensorTransform():
     da = _load_data(response_type="DataArray")
 
