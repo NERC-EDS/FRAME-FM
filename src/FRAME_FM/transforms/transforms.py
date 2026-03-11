@@ -252,6 +252,13 @@ class TilerTransform(BaseTransform):
         return tiled
 
 
+def _as_tiler_dict(value: dict | None, field_name: str) -> dict:
+    if value is None:
+        raise ValueError(f"Missing required tiler metadata field: '{field_name}'.")
+    if not isinstance(value, dict):
+        raise TypeError(f"Expected '{field_name}' metadata to be a dictionary, got: {type(value)}")
+    return value
+
 class ToDataArray(BaseTransform):
     def __init__(self, var_id: str):
         self.var_id = var_id
