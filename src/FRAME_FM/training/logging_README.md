@@ -56,7 +56,7 @@ Below is an example configuration ([demo_mlflow.yaml](../../../configs/logging/d
 _target_: FRAME_FM.training.logger.create_mlflow_logger
 
 experiment_name: "frame-fm-mmmae-demo"
-tracking_uri: ${oc.env:MLFLOW_TRACKING_URI, "sqlite:///${hydra:runtime.cwd}/mlflow.db"}
+tracking_uri: ${oc.env:MLFLOW_TRACKING_URI, "sqlite:///mlflow.db"}
 run_name: "initial-demo"
 
 tags:
@@ -93,7 +93,7 @@ MLflow uses two storage components:
 - **Backend store** for experiment metadata, params, metrics
 - **Artifact store** for files generated during runs (models, plots, logs, checkpoints)
 
-FRAME-FM's example MLflow configuration ([demo_mlflow.yaml](../../../configs/logging/demo_mlflow.yaml)) sets the backend store location via the `MLFLOW_TRACKING_URI` environment variable. If this is not set, this configuration defaults to storing metadata in a SQLite database located at: `<Hydra working directory>/mlflow.db`.
+FRAME-FM's example MLflow configuration ([demo_mlflow.yaml](../../../configs/logging/demo_mlflow.yaml)) sets the backend store location via the `MLFLOW_TRACKING_URI` environment variable. If this is not set, this configuration defaults to storing metadata in a SQLite database using an `mlflow.db` database file located in the project root.
 
 The artifact store location defaults to `./mlruns/`.
 

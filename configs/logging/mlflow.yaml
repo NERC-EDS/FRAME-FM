@@ -2,7 +2,7 @@
 _target_: FRAME_FM.training.logger.create_mlflow_logger
 
 experiment_name: "frame-fm-eurosat-ae"
-tracking_uri: ${env:MLFLOW_TRACKING_URI, "sqlite:///${hydra:runtime.cwd}/mlflow.db"}
+tracking_uri: ${env:MLFLOW_TRACKING_URI, "sqlite:///mlflow.db"}
 run_name: "eurosat_autoencoder"
 
 tags:
