@@ -172,8 +172,9 @@ class CosmosUKDataset(BaseDataset):
             # make DATE_TIME the index instead of using a index number
             data_df.set_index(["DATE_TIME"]).sort_index().to_xarray()
             
-            #add to an xarray dataset
-            ds = xr.Dataset({"TDT1_TSOIL" : (("TIME_DATE"), data_df['TDT1_TSOIL'] )}, attrs={"latitude" : latitude, "longitude": longitude, "site_id": station_id}, coords = {"DATE_TIME" : data_df["DATE_TIME"]})
+            # add to an xarray dataset
+            # we're only interested in soil moisture here (TDTx_VWC)
+            ds = xr.Dataset({"TDT1_VWC" : (("TIME_DATE"), data_df['TDT1_VWC'] ), "TDT2_VWC" : (("TIME_DATE"), data_df['TDT2_VWC']), "TDT3_VWC" : (("TIME_DATE"), data_df['TDT3_VWC']), "TDT4_VWC" : (("TIME_DATE"), data_df['TDT4_VWC']), "TDT5_VWC" : (("TIME_DATE"), data_df['TDT5_VWC']), "TDT6_VWC" : (("TIME_DATE"), data_df['TDT6_VWC']), "TDT7_VWC" : (("TIME_DATE"), data_df['TDT7_VWC']), "TDT8_VWC" : (("TIME_DATE"), data_df['TDT8_VWC'])}, attrs={"latitude" : latitude, "longitude": longitude, "site_id": station_id}, coords = {"DATE_TIME" : data_df["DATE_TIME"]})
             
             
             all_data.append(ds)
