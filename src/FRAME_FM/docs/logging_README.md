@@ -146,5 +146,5 @@ Access the UI from your local browser by forwarding your local port to the JASMI
 
 You should now see the MLflow UI for the runs created on the JASMIN machine.
 
-![Screenshot of MLflow experiment overview page](mlflow_overview.png)
-![Screenshot of Mlflow experiment metrics page](mlflow_metrics.png)
+![Screenshot of MLflow experiment overview page](images/mlflow_overview.png)
+![Screenshot of Mlflow experiment metrics page](images/mlflow_metrics.png)
