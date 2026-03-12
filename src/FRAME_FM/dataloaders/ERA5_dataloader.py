@@ -120,7 +120,8 @@ class ERA5BaseDataModule(BaseDataModule):
     def _load_raw_data(self) -> xr.DataArray:
         open_kwargs = {"engine": "kerchunk"}
         if self.chunks is not None:
-            open_kwargs["chunks"] = self.chunks
+            # Hydra may pass a DictConfig; xarray expects a plain dict/int/auto/None.
+            open_kwargs["chunks"] = dict(self.chunks)
 
         ds = xr.open_dataset(self.data_root, **open_kwargs)
 
@@ -373,63 +374,8 @@ class ERA5SpatialBoundsDataModule(ERA5BaseDataModule):
 
 
 if __name__ == "__main__":
-    from FRAME_FM.models.mmmae import MultimodalMaskedAutoencoder
-
-    print("Starting ERA5 dataloader demo...")
-
-    # Demo using the pixel-coordinate version because it shows the full time/lat/lon grid.
-    data_module = ERA5SpatialPixelsDataModule(
-        data_root=(
-            "https://gws-access.jasmin.ac.uk/public/eds_ai/era5_repack/aggregations/data/"
-            "ecmwf-era5X_oper_an_sfc_2000_2020_2d_repack.kr1.0.json"
-        ),
-        variables=["d2m"],
-        time_min="2005-01-01T00",
-        time_max="2005-01-01T03",
-        time_slice_size=2,
-        tile_size_lat=64,
-        tile_size_lon=64,
-        batch_size=1,
-        chunks={"time": 1},
-        num_workers=0,
-        debug=True,
+    raise RuntimeError(
+        "ERA5_dataloader.py no longer hosts the demo entrypoint. "
+        "Run: python src/FRAME_FM/training/era5_mmmae_demo.py "
+        "data=era5_spatial_pixels_demo model=era5_demo_mmmae"
     )
-
-    data_module.setup()
-
-    train_values, train_times, train_pos = next(iter(data_module.train_dataloader()))
-    val_values, val_times, val_pos = next(iter(data_module.val_dataloader()))
-
-    print("train:", train_values.shape, train_times.shape, train_pos.shape)
-    print("val  :", val_values.shape, val_times.shape, val_pos.shape)
-
-    _, c_dim, t_dim, h_dim, w_dim = val_values.shape
-    t_min = float(val_pos[:, 0].min().item())
-    t_max = float(val_pos[:, 0].max().item())
-
-    model = MultimodalMaskedAutoencoder(
-        input_shapes=[(t_dim, h_dim, w_dim)],
-        n_channels=[c_dim],
-        patch_shapes=[(1, 16, 16)],
-        inputs_positioned="pixels",
-        position_space=((t_min, t_max), (-90.0, 90.0), (-180.0, 180.0)),
-        pos_embed_ratio=(1.0, 1.0, 1.0),
-        encoder_embed_dim=256,
-        encoder_depth=4,
-        encoder_num_heads=8,
-        decoder_embed_dim=128,
-        decoder_depth=2,
-        decoder_num_heads=4,
-    )
-
-    model.eval()
-    with torch.no_grad():
-        latent, pos_embed, mask, ids_restore = model.forward_encoder(
-            inputs=[(val_values, val_pos)],
-            mask_ratio=0.5,
-        )
-
-    print("latent:", latent.shape)
-    print("pos_embed:", pos_embed.shape)
-    print("mask:", mask.shape)
-    print("ids_restore:", ids_restore.shape)
