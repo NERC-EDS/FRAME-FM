@@ -1,5 +1,6 @@
 ### Virtual Environment
 .venv
+venv
 
 ### Python Cache
 __pycache__/
@@ -28,5 +29,17 @@ outputs/
 .mlruns/*
 
 docs/_build/
-
 src/frame_fm.egg-info/
+/src/FRAME_FM/training/mlruns
+src/FRAME_FM/training/data/eurosat/
+
+# Local items
+setup-env.sh
+
+# Slurm outputs
+*.err
+*.out
+era5_stats
+generic-data-loader/MNIST
+notebooks/logs
+DATASET_CACHE*
