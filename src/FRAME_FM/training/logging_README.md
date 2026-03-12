@@ -4,7 +4,7 @@
 FRAME-FM integrates with [MLflow](https://www.mlflow.org/docs/latest/ml/) to provide experiment observability for
 all model‑training workflows within the framework. The MLflow UI can be used to compare metrics between model variants or datasets.
 
-MLflow support is implemented via a custom MLflow logger that captures metrics, parameters, configuration, and artifacts generated during training.
+MLflow support is implemented via a custom MLflow logger that captures metrics, parameters, and metadata about the training run.
 
 By default, the FRAME‑FM's main configuration file ([config.yaml](../../../configs/config.yaml)) references a logging configuration
 ([demo_mlflow.yaml](../../../configs/logging/demo_mlflow.yaml)) located in configs/logging/. This file demonstrates how to:
@@ -95,9 +95,9 @@ MLflow uses two storage components:
 
 FRAME-FM's example MLflow configuration ([demo_mlflow.yaml](../../../configs/logging/demo_mlflow.yaml)) sets the backend store location via the `MLFLOW_TRACKING_URI` environment variable. If this is not set, this configuration defaults to storing metadata in a SQLite database using an `mlflow.db` database file located in the project root.
 
-The artifact store location defaults to `./mlruns/`.
+The artifact store location defaults to `./mlruns/` (but artifacts are not currently stored when using FRAME-FM).
 
-MLflow will create the directory structure automatically if it doesn’t exist.
+MLflow will create the directory structure automatically if it doesn't exist.
 
 When starting an MLflow server, you must point it to the same backend store and artifact directory used by FRAME‑FM in order to view your runs in the MLflow UI. If you start the server with different paths, MLflow will initialise new empty stores and your existing runs will not appear in the UI.
 
@@ -126,17 +126,15 @@ You can run the MLflow tracking server on a JASMIN host and view the UI from you
 First, start an MLflow server on JASMIN (e.g., a `sci` node), ensuring `backend-store-uri` points to the configured MLflow tracking backend.
 
 ```shell
-export MLFLOW_TRACKING_URI="sqlite:///path/to/mlflow.db"
 uv run mlflow server \
---backend-store-uri $MLFLOW_TRACKING_URI \
+--backend-store-uri sqlite:///mlflow.db \
 --default-artifact-root file:./mlruns \
 --host 127.0.0.1 \
 --port 5000
 ```
 
 To access the MLflow UI in your local browser:
-Access the UI from your local browser by forwarding your local port to the JASMIN host:
-E.g., if running FRAME-FM on the `sci` servers:
+Access the UI from your local browser by forwarding your local port to the JASMIN host, e.g., if running FRAME-FM on the `sci` servers:
 1. Ensure your JASMIN SSH access is configured correctly.
     See [JASMIN documentation](https://help.jasmin.ac.uk/docs/interactive-computing/login-servers/#connecting-to-a-sci-server-via-a-login-server) 
    for more information on connecting through the login servers to a `sci` node.
@@ -147,3 +145,6 @@ E.g., if running FRAME-FM on the `sci` servers:
 3. Open your local browser and navigate to: http://127.0.0.1:5000
 
 You should now see the MLflow UI for the runs created on the JASMIN machine.
+
+![Screenshot of MLflow experiment overview page](mlflow_overview.png)
+![Screenshot of Mlflow experiment metrics page](mlflow_metrics.png)
