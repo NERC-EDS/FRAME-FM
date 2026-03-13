@@ -16,6 +16,7 @@ from FRAME_FM.transforms import apply_preprocessors
 
 from zarr_parallel import ZarrParallelAssembler
 
+
 def safely_remove_dir(path: Path | str):
     """
     Safely remove a directory and its contents if it exists.

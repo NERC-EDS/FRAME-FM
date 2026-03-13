@@ -3,6 +3,8 @@
 
 NOTES:
 - The `ds.roll()` operation was hanging on `xarray` version 2026.2.0 but works fine on version 2025.11.0.
+  - Update: 2026-03-10: Subsequently installed xarray version 2026.2.0 in a fresh environment and the `ds.roll()` 
+    operation is now working fine.
 - These tests are designed to be run with pytest, as follows (from the root of the repository):
 
 ```
@@ -19,28 +21,42 @@ from FRAME_FM.transforms import *
 from FRAME_FM.transforms.transforms import transform_mapping
 from FRAME_FM.utils.data_utils import load_data_from_uri
 
+from tests.datasets.common import CHESS_URI, ERA5_URI
 
-kerchunk_zip = "tests/transforms/fixtures/ecmwf-era5X_oper_an_sfc_2000_2020_2d_repack.kr1.0.json.zip"
-var_id = "d2m"
 pdt = pd.to_datetime
-ds = None
+
+dsets = {
+    "era5": {
+        "uri": ERA5_URI,
+        "main_var": "d2m",
+        "ds": None,
+    },
+    "chessmet": {
+        "uri": CHESS_URI,
+        "main_var": "precip",
+        "ds": None,
+    },
+}
 
 
-def _load_data(response_type: str = "Dataset") -> xr.Dataset | xr.DataArray:
-    global ds
-    if ds is None:
-        ds = load_data_from_uri(kerchunk_zip)   # type: ignore
+def _load_data(source: str = "era5", response_type: str = "Dataset") -> xr.Dataset | xr.DataArray:
+    global dsets
+    if dsets[source]["ds"] is None:
+        dsets[source]["ds"] = load_data_from_uri(dsets[source]["uri"])   # type: ignore
 
+    var_id = dsets[source]["main_var"]
     if response_type == "DataArray":
-        return ds[var_id].isel(time=slice(0, 3))
-    
-    return ds
+        resp = dsets[source]["ds"][var_id].isel(time=slice(0, 3))
+    else:
+        resp = dsets[source]["ds"]
+
+    return resp, var_id
 
 
 # Mark this test as failing in second stage
 @pytest.mark.xfail(reason="This test is currently failing due the `.interpolate_na()` method needing investigation.")
 def test_FillMissingValueTransform():
-    ds = _load_data().isel(time=slice(0, 3))
+    ds, var_id = _load_data().isel(time=slice(0, 3))
 
     # Introduce some missing values into the dataset for testing
     ds_with_nans = ds.copy().isel(time=slice(0, 3))  # Take a small subset for testing
@@ -72,7 +88,7 @@ def test_FillNaNTransform():
 
 
 def test_NormalizeTransform():
-    da: xr.DataArray = _load_data(response_type="DataArray")  # type: ignore
+    da, var_id = _load_data(response_type="DataArray")  # type: ignore
 
     # Run the normalize transform
     normalize_transform = NormalizeTransform(mean=float(da.mean()), std=float(da.std()))
@@ -82,7 +98,7 @@ def test_NormalizeTransform():
 
 
 def test_RenameTransform():
-    ds = _load_data()
+    ds, var_id = _load_data()
 
     # Run the rename transform
     rename_transform = RenameTransform(var_id=var_id, new_name="dewpoint_temperature")
@@ -91,7 +107,7 @@ def test_RenameTransform():
 
 
 def test_ResampleTransform():
-    ds = _load_data()
+    ds, var_id = _load_data()
     start, end = "2000-01-01T00:00:00", "2000-01-01T23:00:00"
     ds = ds.sel(time=slice(start, end))
     freq = "1D" # daily frequency
@@ -106,7 +122,7 @@ def test_ResampleTransform():
 
 
 def test_ReshapeTransform():
-    da = _load_data(response_type="DataArray")
+    da, var_id = _load_data(response_type="DataArray")
 
     # Run the reshape transform
     new_shape = (3 * 721 * 1440,)
@@ -117,7 +133,7 @@ def test_ReshapeTransform():
 
 
 def test_ReverseAxisTransform():
-    ds = _load_data()
+    ds, var_id = _load_data()
 
     # Run the reverse axis transform
     reverse_axis_transform = ReverseAxisTransform(dim="latitude")
@@ -128,7 +144,7 @@ def test_ReverseAxisTransform():
 
 
 def test_RollTransform():
-    ds = _load_data()
+    ds, var_id = _load_data()
 
     # Run the roll transform with shift 720
     roll_transform = RollTransform(dim="longitude", shift=720)
@@ -149,7 +165,7 @@ def test_ScaleTransform():
 
 
 def test_SortAxisTransform():
-    ds = _load_data()
+    ds, var_id = _load_data()
 
     # Run the sort axis transform
     sort_axis_transform = SortAxisTransform(dim="latitude", ascending=True)
@@ -162,7 +178,7 @@ def test_SortAxisTransform():
 
 
 def test_SubsetTransform():
-    ds = _load_data()
+    ds, var_id = _load_data()
 
     # Run the subset transform on a Dataset
     subset_transform = SubsetTransform(variables=[var_id], time=("2000-01-01", "2000-01-10"), latitude=(-30, 60), longitude=(-40, 100))
@@ -184,9 +200,43 @@ def test_SubsetTransform():
     print(subset_da)
 
 
+def test_SubsetTransform_with_2d_coordinate_axes():
+    # In this case, we want subset to reduce the size of the "lat" and "lon" dimensions to match the spatial
+    # subset, along with the domain of the main variable. So the SubsetTransform needs to handle this case appropriately.
+    ds, var_id = _load_data(source="chessmet")
+
+    # Run the subset transform on a Dataset
+    subset_transform = SubsetTransform(**{"time": ("1961-01-01T00:00:00", "1961-01-02T00:00:00"), "y": (400500., 405500.), "x": (400500., 405500.)})
+    subset_ds = subset_transform(ds)
+    assert {"precip", "lat", "lon"}.issubset(subset_ds.data_vars), "Variable subsetting did not work as expected."
+    assert subset_ds.y.min().values >= 400500., "Y subsetting did not work as expected."
+    assert subset_ds.y.max().values <= 405500., "Y subsetting did not work as expected."
+    assert subset_ds.x.min().values >= 400500., "X subsetting did not work as expected."
+    assert subset_ds.x.max().values <= 405500., "X subsetting did not work as expected."
+
+    # Get shape of precip variable and compare last two dimensions to the shapes of the lat and lon variables to check that they have been subsetted to the same spatial domain
+    precip_shape = subset_ds[var_id].shape
+    lat_shape = subset_ds["lat"].shape
+    lon_shape = subset_ds["lon"].shape
+
+    assert precip_shape[-2:] == lat_shape == lon_shape, f"Expected the last two dimensions of the precip variable to match the shapes of the lat and lon variables after subsetting, but got {precip_shape[-2:]} for precip, {lat_shape} for lat, and {lon_shape} for lon."
+
+    # Compare the x and y values of the lat and lon versus precip variable to check that they have been subsetted to the same spatial domain
+    lat_x_values = subset_ds["lat"].x.values
+    lat_y_values = subset_ds["lat"].y.values
+    lon_x_values = subset_ds["lon"].x.values
+    lon_y_values = subset_ds["lon"].y.values
+    precip_x_values = subset_ds[var_id].x.values
+    precip_y_values = subset_ds[var_id].y.values
+    assert np.array_equal(lat_x_values, precip_x_values), "Expected the x values of the lat variable to match the x values of the precip variable after subsetting, but they do not match."
+    assert np.array_equal(lat_y_values, precip_y_values), "Expected the y values of the lat variable to match the y values of the precip variable after subsetting, but they do not match."
+    assert np.array_equal(lon_x_values, precip_x_values), "Expected the x values of the lon variable to match the x values of the precip variable after subsetting, but they do not match."
+    assert np.array_equal(lon_y_values, precip_y_values), "Expected the y values of the lon variable to match the y values of the precip variable after subsetting, but they do not match."
+
+
 @pytest.mark.xfail(reason="This test is currently failing due to a check on the last tile matching the original data.")
 def test_TilerTransform_time_series_data():
-    da = _load_data(response_type="DataArray")
+    da, var_id = _load_data(response_type="DataArray")
     step = 10
 
     # Run the tiler transform with tile sizes of step x step and "pad" boundary handling
@@ -232,7 +282,7 @@ def test_TilerTransform_time_series_data():
     "This needs further investigation before it can be implemented.")
 
 def test_ToTensorTransform():
-    da = _load_data(response_type="DataArray")
+    da, var_id = _load_data(response_type="DataArray")
 
     # Run the to_tensor transform
     to_tensor_transform = ToTensorTransform()
@@ -242,7 +292,7 @@ def test_ToTensorTransform():
 
 
 def test_TransposeTransform():
-    da = _load_data(response_type="DataArray")
+    da, var_id = _load_data(response_type="DataArray")
 
     # Run the transpose transform
     transpose_transform = TransposeTransform()
@@ -252,7 +302,7 @@ def test_TransposeTransform():
 
 
 def test_VarsToDimensionTransform():
-    ds = _load_data()
+    ds, var_id = _load_data()
 
     # Run the vars_to_dimension transform
     vars_to_dimension_transform = VarsToDimensionTransform(variables=[var_id, var_id], new_dim="variables")
@@ -269,7 +319,7 @@ def test_VarsToDimensionTransform():
 
 
 def test_multiple_transforms_1():
-    ds = _load_data()
+    ds, var_id = _load_data()
 
     # Example of using multiple transforms as a list using transform mapping codes
     transforms_to_apply = [
@@ -290,7 +340,7 @@ def test_multiple_transforms_1():
 
 
 def test_multiple_transforms_2():
-    ds = _load_data()
+    ds, var_id = _load_data()
 
     # Now let's show how the order of transforms matters by chaining them in different orders.
     # Chain three transforms as follows:
@@ -304,7 +354,7 @@ def test_multiple_transforms_2():
         {"type": "subset", "variables": [var_id], "time": ["2000-01-01 00:00:00", "2000-01-10 23:00:00"], "latitude": [-89, 89], "longitude": [-179, 179]},
     ]
 
-    ds = _load_data()
+    ds, var_id = _load_data()
     for transform in chained_transforms:
         if transform["type"] not in transform_mapping:
             raise ValueError(f"Unsupported transform type: {transform['type']}")
@@ -318,7 +368,7 @@ def test_multiple_transforms_2():
 
 def test_multiple_transforms_3():
     # Now do the same in the different order to show that the order of transforms matters:
-    ds = _load_data()
+    ds, var_id = _load_data()
     chained_transforms = [
         {"type": "reverse_axis", "dim": "latitude"},
         {"type": "subset", "variables": [var_id], "time": ["2000-01-01 00:00:00", "2000-01-10 23:00:00"], "latitude": [89, -89], "longitude": [-179, 179]},
