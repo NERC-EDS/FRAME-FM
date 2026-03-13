@@ -1,0 +1,12 @@
+numpy
+pandas
+torch
+geopandas
+rasterio
+xarray
+pyarrow
+matplotlib
+tqdm
+
+# tested with python 3.12.11
+# can add specific package versions if needed
