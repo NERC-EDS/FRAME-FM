@@ -3,6 +3,8 @@ import xarray as xr
 import cf_xarray  # noqa: F401 - We just need to register the accessor for CF-compliant operations on xarray objects
 import numpy as np
 import torch
+from dataclasses import dataclass
+import math
 
 DA = xr.DataArray
 DS = xr.Dataset
@@ -210,17 +212,85 @@ class TilerTransform(BaseTransform):
     be useful for training models on large spatial datasets by reducing memory usage and allowing for batch 
     processing of smaller chunks of data.
     """
-    def __init__(self, boundary: str = "pad", **dim_tile_sizes):
+    def __init__(
+        self,
+        boundary: str = "pad",
+        validate_axis_order: bool = False,
+        discontinuity_periods: dict[str, float] | None = None,
+        **dim_tile_sizes,
+    ):
         self.boundary = boundary
+        self.validate_axis_order = validate_axis_order
+        self.discontinuity_periods = discontinuity_periods or {"longitude": 360.0, "lon": 360.0}
         self.tile_sizes = dim_tile_sizes
+
+    def _validate_axis_order(self, sample: DA) -> None:
+        for dim in self.tile_sizes:
+            if dim not in sample.coords:
+                continue
+            coords = np.asarray(sample.coords[dim].values)
+            if coords.ndim != 1:
+                continue
+            if coords.size < 2:
+                continue
+
+            diffs = np.diff(coords)
+            if np.issubdtype(diffs.dtype, np.timedelta64):
+                ok = np.all(diffs > np.timedelta64(0, "ns"))
+            else:
+                ok = np.all(diffs > 0)
+
+            if not ok:
+                raise ValueError(
+                    f"Axis '{dim}' is not strictly ascending. "
+                    "Either sort/reverse this axis before tiling, or set "
+                    "validate_axis_order=False to bypass this guardrail."
+                )
+
+    def _validate_no_discontinuity_crossing(self, coarsened: DA, tile_dims: dict[str, tuple[str, str]]) -> None:
+        for dim, period in self.discontinuity_periods.items():
+            if dim not in tile_dims:
+                continue
+            coarse_dim, fine_dim = tile_dims[dim]
+            if dim in coarsened.coords:
+                coord = coarsened[dim]
+            elif fine_dim in coarsened.coords:
+                coord = coarsened[fine_dim]
+            else:
+                continue
+
+            if coarse_dim not in coord.dims or fine_dim not in coord.dims:
+                continue
+
+            values = np.asarray(coord.transpose(coarse_dim, fine_dim).values)
+            if values.ndim != 2 or values.shape[1] < 2:
+                continue
+            if np.issubdtype(values.dtype, np.datetime64):
+                continue
+
+            diffs = np.abs(np.diff(values.astype(np.float64), axis=1))
+            crossing = diffs > (period / 2.0)
+            if np.any(crossing):
+                bad_tiles = np.where(crossing.any(axis=1))[0].tolist()
+                raise ValueError(
+                    f"Detected tiler discontinuity crossing on axis '{dim}' "
+                    f"(period={period}). Affected coarse tile ids: {bad_tiles[:10]}"
+                )
 
     def __call__(self, sample: DA) -> DA:
         check_object_type(sample, allowed_types=DA, caller=self.__class__.__name__)
 
+        if self.validate_axis_order:
+            self._validate_axis_order(sample)
+
         # Create the dictionary to send to the ".construct()" method, using a naming convention of
         # ("{dim}_coarse", "{dim}_fine") for the new dimensions created by the tiling process.
         tile_dims = {dim: (f"{dim}_coarse", f"{dim}_fine") for dim in self.tile_sizes}
+        coarse_dims = {dim: f"{dim}_coarse" for dim in self.tile_sizes}
+        fine_dims = {dim: f"{dim}_fine" for dim in self.tile_sizes}
         coarsened = sample.coarsen(**self.tile_sizes, boundary=self.boundary).construct(**tile_dims)  # type: ignore
+
+        self._validate_no_discontinuity_crossing(coarsened, tile_dims)
 
         # Prepare a stacking regrouping of the original dimensions and the new dimensions
         batch_dims = []
@@ -240,11 +310,202 @@ class TilerTransform(BaseTransform):
         tiled.attrs.update({
             "tiler_tile_sizes": self.tile_sizes,
             "tiler_boundary": self.boundary,
+            "tiler_validate_axis_order": self.validate_axis_order,
+            "tiler_discontinuity_periods": self.discontinuity_periods,
             "tiler_original_sizes": {dim: sample.sizes[dim] for dim in self.tile_sizes},
             "tiler_original_coords": {dim: sample.coords[dim].values.tolist() 
                                     for dim in self.tile_sizes if dim in sample.coords},
+            "tiler_coarse_dims": coarse_dims,
+            "tiler_fine_dims": fine_dims,
+            "tiler_batch_dims": [coarse_dims[dim] for dim in sample.dims if dim in self.tile_sizes],
         })
         return tiled
+
+
+def _as_tiler_dict(value: dict | None, field_name: str) -> dict:
+    if value is None:
+        raise ValueError(f"Missing required tiler metadata field: '{field_name}'.")
+    if not isinstance(value, dict):
+        raise TypeError(f"Expected '{field_name}' metadata to be a dictionary, got: {type(value)}")
+    return value
+
+
+def _resolve_coord_dims(tiles: DA, coord_dims: list[str] | None = None) -> list[str]:
+    tile_sizes = _as_tiler_dict(tiles.attrs.get("tiler_tile_sizes"), "tiler_tile_sizes")
+    if coord_dims is None:
+        return list(tile_sizes.keys())
+    for dim in coord_dims:
+        if dim not in tile_sizes:
+            raise ValueError(f"Requested coordinate dim '{dim}' is not tiled. Available: {list(tile_sizes.keys())}")
+    return coord_dims
+
+
+def tiled_to_pixel_coordinates(
+    tiles: DA,
+    coord_dims: list[str] | None = None,
+    dtype: torch.dtype = torch.float32,
+) -> torch.Tensor:
+    """
+    Convert a tiled DataArray into a per-pixel coordinate tensor.
+
+    Returns:
+        torch.Tensor with shape (N, D, *fine_dims)
+        where:
+          N = number of tiles (batch_dim)
+          D = number of coordinate channels
+    """
+    check_object_type(tiles, allowed_types=DA, caller="tiled_to_pixel_coordinates")
+    dims = _resolve_coord_dims(tiles, coord_dims)
+    fine_dims = _as_tiler_dict(tiles.attrs.get("tiler_fine_dims"), "tiler_fine_dims")
+
+    coord_arrays: list[xr.DataArray] = []
+    for dim in dims:
+        if dim in tiles.coords:
+            coord = tiles[dim]
+        else:
+            fine_dim = fine_dims[dim]
+            if fine_dim not in tiles.coords:
+                raise ValueError(
+                    f"Could not find coordinate '{dim}' or fallback coordinate '{fine_dim}' in tiled array."
+                )
+            coord = tiles[fine_dim]
+
+        if "batch_dim" not in coord.dims:
+            coord = coord.expand_dims(batch_dim=tiles.sizes["batch_dim"])
+        coord_arrays.append(coord)
+
+    broadcasted = xr.broadcast(*coord_arrays)
+    ordered_fine_dims = [fine_dims[d] for d in dims]
+
+    tensors: list[torch.Tensor] = []
+    for arr in broadcasted:
+        arr_t = arr.transpose("batch_dim", *ordered_fine_dims)
+        values = np.asarray(arr_t.values)
+        if np.issubdtype(values.dtype, np.datetime64):
+            values = values.astype("datetime64[s]").astype("int64")
+        tensors.append(torch.tensor(values, dtype=dtype))
+
+    return torch.stack(tensors, dim=1)
+
+
+def tiled_to_coordinate_bounds(
+    tiles: DA,
+    coord_dims: list[str] | None = None,
+    dtype: torch.dtype = torch.float32,
+) -> torch.Tensor:
+    """
+    Convert tiled coordinates into per-tile coordinate bounds.
+
+    Returns:
+        torch.Tensor with shape (N, D, 2), where each bound is [min, max].
+    """
+    pixel_coords = tiled_to_pixel_coordinates(tiles=tiles, coord_dims=coord_dims, dtype=dtype)
+    reduce_dims = tuple(range(2, pixel_coords.ndim))
+    mins = pixel_coords.amin(dim=reduce_dims)
+    maxs = pixel_coords.amax(dim=reduce_dims)
+    return torch.stack([mins, maxs], dim=-1)
+
+
+@dataclass
+class TiledIndexMapper:
+    """
+    Reverse-lookup helper for tiled DataArray outputs created by TilerTransform.
+
+    It maps physical coordinates (e.g. time/lat/lon values) to a tile id in batch_dim,
+    and supports the inverse mapping from tile id to coarse tile indices.
+    """
+
+    tile_sizes: dict[str, int]
+    original_sizes: dict[str, int]
+    original_coords: dict[str, list]
+    batch_dims: list[str]
+
+    @classmethod
+    def from_tiled_array(cls, tiles: DA) -> "TiledIndexMapper":
+        check_object_type(tiles, allowed_types=DA, caller="TiledIndexMapper.from_tiled_array")
+        tile_sizes = _as_tiler_dict(tiles.attrs.get("tiler_tile_sizes"), "tiler_tile_sizes")
+        original_sizes = _as_tiler_dict(tiles.attrs.get("tiler_original_sizes"), "tiler_original_sizes")
+        original_coords = _as_tiler_dict(tiles.attrs.get("tiler_original_coords"), "tiler_original_coords")
+        batch_dims = tiles.attrs.get("tiler_batch_dims")
+        if not isinstance(batch_dims, list):
+            raise ValueError("Missing required tiler metadata field: 'tiler_batch_dims'.")
+        return cls(
+            tile_sizes={str(k): int(v) for k, v in tile_sizes.items()},
+            original_sizes={str(k): int(v) for k, v in original_sizes.items()},
+            original_coords={str(k): list(v) for k, v in original_coords.items()},
+            batch_dims=[str(d) for d in batch_dims],
+        )
+
+    def _original_dim_from_batch_dim(self, batch_dim: str) -> str:
+        if batch_dim.endswith("_coarse"):
+            return batch_dim[:-7]
+        raise ValueError(f"Unexpected batch dim '{batch_dim}'. Expected suffix '_coarse'.")
+
+    def _n_coarse_for_dim(self, dim: str) -> int:
+        return int(math.ceil(self.original_sizes[dim] / self.tile_sizes[dim]))
+
+    def _coarse_index_from_coord(self, dim: str, coord_value: float | int | np.datetime64) -> int:
+        coords = np.asarray(self.original_coords[dim])
+        if np.issubdtype(coords.dtype, np.datetime64):
+            target = np.datetime64(coord_value)
+            abs_diff = np.abs(coords - target)
+            idx = int(abs_diff.argmin())
+        else:
+            target = float(coord_value)
+            abs_diff = np.abs(coords.astype(np.float64) - target)
+            idx = int(abs_diff.argmin())
+
+        coarse_idx = idx // self.tile_sizes[dim]
+        max_idx = self._n_coarse_for_dim(dim) - 1
+        return int(min(max(coarse_idx, 0), max_idx))
+
+    def tile_id_from_coordinates(self, **coords: float | int | np.datetime64) -> int:
+        """
+        Map real-world coordinates to a tile id in batch_dim.
+
+        Example:
+            mapper.tile_id_from_coordinates(time=np.datetime64("2005-01-01T01"), latitude=48.0, longitude=-3.0)
+        """
+        coarse_indices: list[int] = []
+        n_coarses: list[int] = []
+
+        for batch_dim in self.batch_dims:
+            dim = self._original_dim_from_batch_dim(batch_dim)
+            if dim not in coords:
+                raise ValueError(f"Missing coordinate for '{dim}'. Provided keys: {list(coords)}")
+            coarse_indices.append(self._coarse_index_from_coord(dim, coords[dim]))
+            n_coarses.append(self._n_coarse_for_dim(dim))
+
+        tile_id = 0
+        for coarse_idx, n_coarse in zip(coarse_indices, n_coarses):
+            tile_id = tile_id * n_coarse + coarse_idx
+        return int(tile_id)
+
+    def coordinates_from_tile_id(self, tile_id: int) -> dict[str, int]:
+        """
+        Inverse mapping from tile id to coarse tile indices by original dimension.
+        """
+        n_total = 1
+        n_coarses: list[int] = []
+        dims: list[str] = []
+        for batch_dim in self.batch_dims:
+            dim = self._original_dim_from_batch_dim(batch_dim)
+            dims.append(dim)
+            n_coarse = self._n_coarse_for_dim(dim)
+            n_coarses.append(n_coarse)
+            n_total *= n_coarse
+
+        if tile_id < 0 or tile_id >= n_total:
+            raise ValueError(f"tile_id {tile_id} is out of range [0, {n_total - 1}]")
+
+        indices_reversed: list[int] = []
+        remaining = int(tile_id)
+        for n_coarse in reversed(n_coarses):
+            indices_reversed.append(remaining % n_coarse)
+            remaining //= n_coarse
+
+        coarse_indices = list(reversed(indices_reversed))
+        return {dim: idx for dim, idx in zip(dims, coarse_indices)}
 
 
 class ToDataArray(BaseTransform):

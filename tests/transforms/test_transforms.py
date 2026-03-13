@@ -231,6 +231,111 @@ def test_TilerTransform_time_series_data():
     "the original data, so the rest of the test has not been implemented yet. "
     "This needs further investigation before it can be implemented.")
 
+
+def test_tiled_coordinate_utilities_static_grid():
+    da = xr.DataArray(
+        np.arange(1 * 3 * 4, dtype=np.float32).reshape(1, 3, 4),
+        dims=("band", "y", "x"),
+        coords={
+            "band": [0],
+            "y": [10.0, 20.0, 30.0],
+            "x": [100.0, 110.0, 120.0, 130.0],
+        },
+    )
+    tiled = TilerTransform(y=2, x=2, boundary="pad")(da)
+
+    pixel_coords = tiled_to_pixel_coordinates(tiled, coord_dims=["y", "x"])
+    assert pixel_coords.shape == (4, 2, 2, 2)
+
+    first_y = pixel_coords[0, 0]
+    first_x = pixel_coords[0, 1]
+    assert torch.equal(first_y, torch.tensor([[10.0, 10.0], [20.0, 20.0]]))
+    assert torch.equal(first_x, torch.tensor([[100.0, 110.0], [100.0, 110.0]]))
+
+    bounds = tiled_to_coordinate_bounds(tiled, coord_dims=["x", "y"])
+    assert bounds.shape == (4, 2, 2)
+    assert torch.equal(bounds[0, 0], torch.tensor([100.0, 110.0]))
+    assert torch.equal(bounds[0, 1], torch.tensor([10.0, 20.0]))
+
+
+def test_tiled_index_mapper_roundtrip():
+    da = xr.DataArray(
+        np.zeros((1, 3, 4), dtype=np.float32),
+        dims=("band", "y", "x"),
+        coords={
+            "band": [0],
+            "y": [10.0, 20.0, 30.0],
+            "x": [100.0, 110.0, 120.0, 130.0],
+        },
+    )
+    tiled = TilerTransform(y=2, x=2, boundary="pad")(da)
+    mapper = TiledIndexMapper.from_tiled_array(tiled)
+
+    tile_id = mapper.tile_id_from_coordinates(y=30.0, x=120.0)
+    assert tile_id == 3
+
+    coarse_ids = mapper.coordinates_from_tile_id(tile_id)
+    assert coarse_ids == {"y": 1, "x": 1}
+
+
+def test_time_aware_tiling_positions_and_bounds():
+    times = np.array([
+        np.datetime64("2005-01-01T00:00:00"),
+        np.datetime64("2005-01-01T01:00:00"),
+        np.datetime64("2005-01-01T02:00:00"),
+    ])
+    da = xr.DataArray(
+        np.random.randn(1, 3, 3, 3).astype(np.float32),
+        dims=("channel", "time", "latitude", "longitude"),
+        coords={
+            "channel": [0],
+            "time": times,
+            "latitude": [50.0, 51.0, 52.0],
+            "longitude": [-2.0, -1.0, 0.0],
+        },
+    )
+    tiled = TilerTransform(time=2, latitude=2, longitude=2, boundary="pad")(da)
+    pixel_coords = tiled_to_pixel_coordinates(tiled, coord_dims=["time", "latitude", "longitude"])
+    bounds = tiled_to_coordinate_bounds(tiled, coord_dims=["time", "latitude", "longitude"])
+
+    assert pixel_coords.shape == (8, 3, 2, 2, 2)
+    assert bounds.shape == (8, 3, 2)
+
+    first_time_bounds = bounds[0, 0]
+    expected_t0 = torch.tensor(times[0].astype("datetime64[s]").astype("int64"), dtype=torch.float32)
+    expected_t1 = torch.tensor(times[1].astype("datetime64[s]").astype("int64"), dtype=torch.float32)
+    assert torch.equal(first_time_bounds, torch.stack([expected_t0, expected_t1]))
+
+
+def test_tiler_axis_order_guardrail_raises_on_descending_axis():
+    da = xr.DataArray(
+        np.zeros((1, 3, 4), dtype=np.float32),
+        dims=("band", "y", "x"),
+        coords={
+            "band": [0],
+            "y": [30.0, 20.0, 10.0],
+            "x": [100.0, 110.0, 120.0, 130.0],
+        },
+    )
+
+    with pytest.raises(ValueError, match="not strictly ascending"):
+        TilerTransform(y=2, x=2, validate_axis_order=True)(da)
+
+
+def test_tiler_discontinuity_guardrail_raises_for_wrapping_tile():
+    da = xr.DataArray(
+        np.zeros((1, 2, 4), dtype=np.float32),
+        dims=("band", "latitude", "longitude"),
+        coords={
+            "band": [0],
+            "latitude": [0.0, 1.0],
+            "longitude": [-179.0, -178.0, 179.0, 180.0],
+        },
+    )
+
+    with pytest.raises(ValueError, match="discontinuity crossing"):
+        TilerTransform(latitude=2, longitude=4, discontinuity_periods={"longitude": 360.0})(da)
+
 def test_ToTensorTransform():
     da = _load_data(response_type="DataArray")
 
