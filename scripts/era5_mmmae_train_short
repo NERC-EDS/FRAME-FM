@@ -1,0 +1,24 @@
+#!/bin/bash
+#SBATCH --job-name="ERA5 MMMAE short train"
+#SBATCH --time=0:10:00
+#SBATCH --mem=8G
+#SBATCH --partition=orchid
+#SBATCH --account=orchid
+#SBATCH --qos=orchid
+#SBATCH --gres=gpu:1
+#SBATCH -o %j.out
+#SBATCH -e %j.err
+
+source .venv/bin/activate
+export HYDRA_FULL_ERROR=1
+export PYTHONPATH="$PWD/src:$PYTHONPATH"
+
+python src/FRAME_FM/training/train.py \
+  data=era5_spatial_pixels_demo \
+  data.model_ready_inputs=true \
+  model=era5_demo_mmmae \
+  trainer=default \
+  trainer.max_epochs=1 \
+  +trainer.max_steps=20 \
+  +trainer.limit_train_batches=20 \
+  +trainer.limit_val_batches=5

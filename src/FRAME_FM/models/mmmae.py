@@ -326,7 +326,19 @@ class MultimodalMaskedAutoencoder(BaseModule):
         return loss, preds, mask
 
     def _sharedStep(self, inputs):
-        loss, _, _ = self(inputs, mask_ratio=self.default_mask_ratio)
+        # ERA5 dataloaders yield (values, times, positions). MMMAE positioned embedders
+        # consume (values, positions), so adapt single-input batches here.
+        if isinstance(inputs, (tuple, list)) and len(self.input_embedders) == 1:
+            if len(inputs) == 3:
+                model_inputs = [(inputs[0], inputs[2])]
+            elif len(inputs) == 2:
+                model_inputs = [tuple(inputs)]
+            else:
+                model_inputs = [inputs[0]]
+        else:
+            model_inputs = inputs
+
+        loss, _, _ = self(model_inputs, mask_ratio=self.default_mask_ratio)
         return loss, {}
 
     def training_step_body(self, batch, batch_idx):

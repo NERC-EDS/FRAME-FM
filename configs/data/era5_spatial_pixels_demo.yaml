@@ -13,6 +13,7 @@ tile_size_lat: 64
 tile_size_lon: 64
 convert_longitude_to_180: true
 chunks: {time: 1}
+model_ready_inputs: false
 
 # BaseDataModule settings
 batch_size: 1

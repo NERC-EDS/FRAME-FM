@@ -28,6 +28,7 @@ import xarray as xr
 
 from FRAME_FM.utils.LightningDataModuleWrapper import BaseDataModule
 from FRAME_FM.datasets.InputTimeCoords_Dataset import TransformedInputTimeCoordsDataset
+from FRAME_FM.datasets.InputTimeCoords_Dataset import MMMAEInputFromTimeCoordsDataset
 from FRAME_FM.transforms.transforms import (
     TilerTransform,
     tiled_to_pixel_coordinates,
@@ -75,6 +76,8 @@ class ERA5BaseDataModule(BaseDataModule):
         test_indices: Optional[Sequence[int]] = None,
         # Optional xarray / dask chunking when opening the dataset.
         chunks: Optional[dict] = None,
+        # Return model-ready batch samples for MMMAE training.
+        model_ready_inputs: bool = False,
         # Debug prints are useful while building, but noisy in training.
         debug: bool = True,
     ) -> None:
@@ -107,6 +110,7 @@ class ERA5BaseDataModule(BaseDataModule):
         self.time_slice_size = time_slice_size
         self.convert_longitude_to_180 = convert_longitude_to_180
         self.chunks = chunks
+        self.model_ready_inputs = model_ready_inputs
         self.debug = debug
 
         self._global_lat: np.ndarray | None = None
@@ -320,13 +324,13 @@ class ERA5SpatialPixelsDataModule(ERA5BaseDataModule):
         base = TensorDataset(values, times, positions)
         train_base, val_base, test_base = self._split_dataset(base)
 
-        self.train_dataset = TransformedInputTimeCoordsDataset(train_base, self.train_transforms)
-        self.val_dataset = TransformedInputTimeCoordsDataset(val_base, self.val_transforms)
-        self.test_dataset = (
-            None
-            if test_base is None
-            else TransformedInputTimeCoordsDataset(test_base, self.test_transforms)
+        wrapper_cls = (
+            MMMAEInputFromTimeCoordsDataset if self.model_ready_inputs else TransformedInputTimeCoordsDataset
         )
+
+        self.train_dataset = wrapper_cls(train_base, self.train_transforms)
+        self.val_dataset = wrapper_cls(val_base, self.val_transforms)
+        self.test_dataset = None if test_base is None else wrapper_cls(test_base, self.test_transforms)
 
     def get_tile_index_mapper(self) -> TiledIndexMapper:
         if self._tile_index_mapper is None:
@@ -359,13 +363,13 @@ class ERA5SpatialBoundsDataModule(ERA5BaseDataModule):
         base = TensorDataset(values, times, bounds)
         train_base, val_base, test_base = self._split_dataset(base)
 
-        self.train_dataset = TransformedInputTimeCoordsDataset(train_base, self.train_transforms)
-        self.val_dataset = TransformedInputTimeCoordsDataset(val_base, self.val_transforms)
-        self.test_dataset = (
-            None
-            if test_base is None
-            else TransformedInputTimeCoordsDataset(test_base, self.test_transforms)
+        wrapper_cls = (
+            MMMAEInputFromTimeCoordsDataset if self.model_ready_inputs else TransformedInputTimeCoordsDataset
         )
+
+        self.train_dataset = wrapper_cls(train_base, self.train_transforms)
+        self.val_dataset = wrapper_cls(val_base, self.val_transforms)
+        self.test_dataset = None if test_base is None else wrapper_cls(test_base, self.test_transforms)
 
     def get_tile_index_mapper(self) -> TiledIndexMapper:
         if self._tile_index_mapper is None:
