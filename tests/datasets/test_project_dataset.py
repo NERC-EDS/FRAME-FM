@@ -4,6 +4,7 @@ import glob
 # import dask
 # dask.config.set(scheduler='single-threaded')
 
+import numpy as np
 import torch
 import pytest
 
@@ -15,7 +16,7 @@ from .common import (
     COSMOSUK_DATA_URI,
 )
 
-from FRAME_FM.utils.data_utils import get_main_vars
+from FRAME_FM.utils.common_utils import get_main_vars
 
 from FRAME_FM.datasets.chessmet_dataset import CHESSMetGriddedTimeSeriesDataset
 from FRAME_FM.datasets.era5_dataset import ERA5GriddedTimeSeriesDataset
@@ -64,9 +65,8 @@ def test_chessmet_dataset_with_transforms():
     dataset = CHESSMetGriddedTimeSeriesDataset(
         data_uri=CHESS_URI,
         transforms=transforms,
-        # time_range=("2016-01-01", "2018-10-20"),
         time_stride=1,
-        chunks={"time": 64},
+        chunks={"time": 24},
     )
 
     # Preprocessing checks
@@ -83,31 +83,40 @@ def test_chessmet_dataset_with_transforms():
 # CHESSMet specific checks
 # ------------------------------------------------
 def test_chessmet_dataset_retains_2d_coordinate_variables():
-    transforms = [
+    preprocessors = [
         {
             "type": "subset",
-            "variables": ["precip"],
-            "y": (100500.0, 257500.0),
-            "x": (200500.0, 156500.0),
-            "time": ("2016-01-27", "2016-01-02"),
-        },
+            "y": (400500., 405500.),
+            "x": (400500., 405500.),
+            "time": ("1961-01-01T00:00:00", "1961-01-02T00:00:00"),
+        }
+    ]
+    transforms = [
         {"type": "vars_to_dimension", "variables": "__all__", "new_dim": "variable"},
         {"type": "to_tensor"},
     ]
 
     dataset = CHESSMetGriddedTimeSeriesDataset(
         data_uri=CHESS_URI,
+        preprocessors=preprocessors,
         transforms=transforms,
-        # time_range=("2016-01-01", "2018-10-20"),
         time_stride=1,
-        chunks={"time": 64},
+        chunks={"time": 2},
     )
 
     # Check that 2D coordinate variables are retained in the dataset
     ds = dataset.data
-    assert "lat" in ds and "lon" in ds, "Expected 'lat' and 'lon' to be ancillary 2d coordinate variables in the dataset, but they were not found in the coordinates"
+
+    assert "lat" in ds and "lon" in ds, "Expected 'lat' and 'lon' to be ancinllary 2d coordinate variables in the dataset, but they were not found in the coordinates"
     assert ds["lat"].ndim == 2 and ds["lon"].ndim == 2, f"Expected 'lat' and 'lon' to be 2D coordinate variables, but got dimensions {ds['lat'].dims} and {ds['lon'].dims} respectively"
     assert list(ds["lat"].coords.keys()) == ["x", "y"] and list(ds["lon"].coords.keys()) == ["x", "y"], f"Expected 'lat' and 'lon' to have dimensions ['x', 'y'], but got: {ds['lat'].coords.keys()} and {ds['lon'].coords.keys()}"
+
+    sample = dataset[0]
+    assert isinstance(sample, torch.Tensor)
+
+    # Assert that the subset has some valid data points (i.e. not all NaN) - this is to check that the spatial subset is working correctly and not resulting in an empty dataset
+    assert not np.isnan(sample.numpy()).all(), "Expected subsetted dataset to contain some valid data points, but all values were NaN - this may indicate an issue with the spatial subset transform resulting in an empty dataset"
+
 
 # ------------------------------------------------
 # ERA5 specific checks
