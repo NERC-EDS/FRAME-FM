@@ -35,18 +35,10 @@ Feature ideas are welcome! Please open an issue using the [Feature Request](.git
    ```bash
    git checkout -b feature/your-feature-name
    ```
-3. **Set up the development environment**:
-   ```bash
-   pip install uv
-   uv venv
-   uv sync
-   ```
+3. **Set up the development environment** (instructions can be found below).
 4. **Make your changes**, following the coding standards below.
 5. **Write or update tests** to cover your changes.
-6. **Run the test suite** to make sure everything passes:
-   ```bash
-   pytest
-   ```
+6. **Run the test suite** to make sure everything passes (instructions can be found below).
 7. **Commit your changes** with a clear, descriptive commit message (see [Commit Messages](#commit-messages)).
 8. **Push to your fork** and open a Pull Request against the `main` branch.
 
@@ -62,6 +54,7 @@ Documentation improvements are always appreciated. This includes:
 
 ### Prerequisites
 
+- FRAME-FM fork
 - Python >= 3.11, < 3.13
 - [uv](https://github.com/astral-sh/uv) for dependency management
 
@@ -90,13 +83,13 @@ uv sync --extra data
 
 ```bash
 # Run all tests
-pytest
+uv run pytest
 
 # Run tests with coverage
-pytest --cov
+uv run pytest --cov
 
 # Run a specific test file
-pytest tests/datasets/test_base_dataset.py
+uv run pytest tests/datasets/test_base_dataset.py
 ```
 
 ## Coding Standards
