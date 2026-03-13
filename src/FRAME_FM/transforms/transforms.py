@@ -11,8 +11,7 @@ DS = xr.Dataset
 TT = torch.Tensor
 
 
-from FRAME_FM.utils.transform_utils import check_object_type
-from FRAME_FM.utils.data_utils import convert_subset_selectors_to_slices
+from FRAME_FM.utils.common_utils import convert_subset_selectors_to_slices, check_object_type
 
 
 class BaseTransform:
@@ -189,10 +188,23 @@ class SubsetTransform(BaseTransform):
         ds.attrs.update(sample.attrs)
 
         for var_id in self.variables:
-            # Use common subset selectors unless overridden by variable-specific selectors
+            # If subset selectors exist, then apply, but accept subsetting over some
+            # variables that may have reduced dimensions (e.g. no time dimension).
+            # E.g. "lon" and "lat" may be 2D coordinate variables that do not have a time dimension, 
+            # so we should allow for subsetting over the time dimension for the main variable(s) of 
+            # interest, but still subset in space for time-invariant variables.
             if self.subset_selectors:
-                ds[var_id] = sample[var_id].sel(**self.subset_selectors)
+                subset_selectors = self.subset_selectors.copy()
+
+                # Prepare a subset dictionary per variable by checking available dimensions.
+                var_dims = sample[var_id].dims
+                for dim in self.subset_selectors:
+                    if dim not in var_dims:
+                        subset_selectors.pop(dim)
+
+                ds[var_id] = sample[var_id].sel(**subset_selectors)
             else:
+                # If no subset selectors, just copy the variable over as is.
                 ds[var_id] = sample[var_id]
 
         return ds
