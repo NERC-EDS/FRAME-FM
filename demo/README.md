@@ -51,7 +51,7 @@ ingest_environmental_tokens.py
 build_store.py
 framefm_core.py
 train_mini_foundation.py
-finetune_cosmos_foundation_focused.py
+finetune_cosmos.py
 requirements.txt
 ```
 
@@ -196,14 +196,12 @@ Things that may need adjustment depending on where this is run:
 * grid resolution / dataset size
 * training hyperparameters
 
-Paths are currently set directly inside the scripts rather than via config. 
-TODO: change this. 
+Paths are currently set directly inside the scripts rather than via config.
+TODO: change this.
 
 ---
 
-# Future improvements 
-
-Improvements to still make:
+# TODOs
 
 * move configuration to a config file
 * add CLI arguments to scripts
@@ -211,8 +209,10 @@ Improvements to still make:
 * add small example dataset [??]
 * add more learning objectives to FM training
 * show two downstream tasks to demonstrate multiple use cases from one FM
-* add notebook for exploring outputs - might be nice
-* fix warnings from different scripts
+* add notebook for exploring outputs - might be nice [??]
+* fix various warnings from different scripts
 * automate reading parameter dependencies between scripts
+* get running on JASMIN using data store there
+* train larger model on IsambardAI
 
 ---
