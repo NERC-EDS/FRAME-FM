@@ -227,7 +227,7 @@ class TilerTransform(BaseTransform):
     def __init__(
         self,
         boundary: str = "pad",
-        validate_axis_order: bool = False,
+        validate_axis_order: bool = True,
         discontinuity_periods: dict[str, float] | None = None,
         **dim_tile_sizes,
     ):
