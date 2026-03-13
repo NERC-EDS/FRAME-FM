@@ -133,7 +133,7 @@ class CosmosUKDataset(BaseDataset):
 
         drop_qc_flags is a list of which flags to drop, possible values are M=missing, U=unchecked, I=infilled, E=estimated
 
-        Returns an xarray dataset containing all the data with QC'ed values filtered out
+        Returns a list containing xarray datasets with a single site each. These will have QC'ed values filtered out. Latitude/longitude (WGS84) and OS easting/northings (OSGB36) are added to each dataset as attributes.
         """
 
         files = glob.glob(data_path + "/cosmos-uk_?????_hydrosoil_sh_????-????.csv")
@@ -213,6 +213,8 @@ class CosmosUKDataset(BaseDataset):
                     "TDT8_VWC": (("TIME_DATE"), data_df["TDT8_VWC"]),
                 },
                 attrs={
+                    "easting": metadata_df.EASTING[station_id],
+                    "northing": metadata_df.NORTHING[station_id],
                     "latitude": latitude,
                     "longitude": longitude,
                     "site_id": station_id,
