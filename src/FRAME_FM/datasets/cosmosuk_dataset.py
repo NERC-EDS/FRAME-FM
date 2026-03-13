@@ -11,26 +11,48 @@ class CosmosUKDataset(BaseDataset):
     """
     Loads the CosmosUK Dataset
 
-    This expects a directory with a series of files named cosmos-uk_?????_hydrosoil_sh_????-????.csv (where ????? is a 5 characeter site ID, the two ???? are years) plus QC files cosmos-uk_?????_hydrosoil_sh_????-????_qc_flags.csv and cosmos-uk_?????_hydrosoil_sh_????-????_flags.csv. In the parent directory to these there should be a file cosmos-uk_sitemetadata_2013-2024.csv which lists the sites and their precise locations.
+    This expects a directory with a series of files named cosmos-uk_?????_hydrosoil_sh_????-????.csv 
+    (where ????? is a 5 characeter site ID, the two ???? are years) plus 
+    QC files cosmos-uk_?????_hydrosoil_sh_????-????_qc_flags.csv and cosmos-uk_?????_hydrosoil_sh_????-????_flags.csv. 
+    
+    In the parent directory to these there should be a file cosmos-uk_sitemetadata_2013-2024.csv which lists 
+    the sites and their precise locations.
 
-    Descriptions of the data format are in cosmos-uk_supportinginformation_2013-2024.docx from https://data-package.ceh.ac.uk/sd/2dce161d-2fab-47bb-9fe6-38e7ed1ae18a.zip
+    Descriptions of the data format are in cosmos-uk_supportinginformation_2013-2024.docx 
+    from https://data-package.ceh.ac.uk/sd/2dce161d-2fab-47bb-9fe6-38e7ed1ae18a.zip
     """
+    _transforms = []
 
-    def __init__(
-        self,
-        data_uri: str | Path | list | tuple,
-        qc_bitmask: int = 0b11111111111,
-        drop_qc_flags: list = ["M", "U", "I", "E"],
-    ):
-        self.data_uri = data_uri
-        self._setup_dataset(qc_bitmask, drop_qc_flags)
+    def __init__(self, 
+                 data_uri: str | Path | list | tuple,
+                 preprocessors: list | None = None,
+                 transforms: list | None = None,
+                 chunks: dict | None = None,
+                 override_transforms: bool = False,
+                 cache_dir: None | Path | str = None,
+                 generate_stats: bool = True,
+                 force_recache: bool = False,
+                 qc_bitmask: int = 0b11111111111,
+                 drop_qc_flags: list = ["M", "U", "I", "E"],
+                 ):
+        # Save the QC content so it can be used in the _setup_dataset method to filter the data as it's loaded.
+        # This is necessary because the QC flags are stored in separate files and need to be applied at load time.
+        self.qc_bitmask = qc_bitmask
+        self.drop_qc_flags = drop_qc_flags
 
-    def _setup_dataset(
-        self,
-        qc_bitmask: int = 0b11111111111,
-        drop_qc_flags: list = ["M", "U", "I", "E"],
-    ):
-        self.data = self._csv_to_xarray(self.data_uri, qc_bitmask, drop_qc_flags)
+        super().__init__(
+             data_uri=data_uri,
+             preprocessors=preprocessors,
+             transforms=transforms,
+             chunks=chunks,
+             override_transforms=override_transforms,
+             cache_dir=cache_dir,
+             generate_stats=generate_stats,
+             force_recache=force_recache
+        )
+
+    def _setup_dataset(self):
+        self.data = self._csv_to_xarray(self.data_uri, self.qc_bitmask, self.drop_qc_flags)
 
     def __len__(self):
         return len(self.data)
@@ -219,7 +241,7 @@ class CosmosUKDataset(BaseDataset):
                     "longitude": longitude,
                     "site_id": station_id,
                 },
-                coords={"DATE_TIME": data_df["DATE_TIME"]},
+                coords={"time": data_df["DATE_TIME"]},
             )
 
             all_data.append(ds)

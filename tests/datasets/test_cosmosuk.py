@@ -1,8 +1,11 @@
-import pytest
-import FRAME_FM.datasets.cosmosuk_dataset as cosmosuk
-
 import math
 import numpy as np
+
+import pytest
+
+import FRAME_FM.datasets.cosmosuk_dataset as cosmosuk
+from tests.datasets.common import COSMOSUK_DATA_URI
+
 
 # set to 0b111111111111 to drop all data with a QC flag
 # possible QC bit fields: 0=passed, 1=missing, 2=zero data, 4=too few samples
@@ -10,12 +13,12 @@ import numpy as np
 # 128=secondary variable, 256=midnight soil heat flux calibration, 512=spike
 # 1024=error code stored as value
 
+
+
 # test QC masks
-
-
 def test_qc_mask_all_flags():
     ds = cosmosuk.CosmosUKDataset(
-        data_uri="FRAME-FM/tests/datasets/fixtures/cosmos-uk/",
+        data_uri=COSMOSUK_DATA_URI,
         qc_bitmask=0b11111111111,
         drop_qc_flags=[],
     ).data
@@ -28,7 +31,7 @@ def test_qc_mask_all_flags():
 
 def test_qc_mask_missing():
     ds = cosmosuk.CosmosUKDataset(
-        data_uri="FRAME-FM/tests/datasets/fixtures/cosmos-uk/",
+        data_uri=COSMOSUK_DATA_URI,
         qc_bitmask=0b0000000001,
         drop_qc_flags=[],
     ).data
@@ -41,7 +44,7 @@ def test_qc_mask_missing():
 
 def test_qc_mask_no_flags():
     ds = cosmosuk.CosmosUKDataset(
-        data_uri="FRAME-FM/tests/datasets/fixtures/cosmos-uk/",
+        data_uri=COSMOSUK_DATA_URI,
         qc_bitmask=0b0000000000,
         drop_qc_flags=[],
     ).data
@@ -55,7 +58,7 @@ def test_qc_mask_no_flags():
 # test flags
 def test_flags_none():
     ds = cosmosuk.CosmosUKDataset(
-        data_uri="FRAME-FM/tests/datasets/fixtures/cosmos-uk/",
+        data_uri=COSMOSUK_DATA_URI,
         qc_bitmask=0b0000000000,
         drop_qc_flags=[],
     ).data
@@ -68,7 +71,7 @@ def test_flags_none():
 
 def test_flags_all():
     ds = cosmosuk.CosmosUKDataset(
-        data_uri="FRAME-FM/tests/datasets/fixtures/cosmos-uk/",
+        data_uri=COSMOSUK_DATA_URI,
         qc_bitmask=0b0000000000,
         drop_qc_flags=["I", "M", "E", "U"],
     ).data
@@ -81,7 +84,7 @@ def test_flags_all():
 
 def test_flags_u():
     ds = cosmosuk.CosmosUKDataset(
-        data_uri="FRAME-FM/tests/datasets/fixtures/cosmos-uk/",
+        data_uri=COSMOSUK_DATA_URI,
         qc_bitmask=0b0000000000,
         drop_qc_flags=["U"],
     ).data
@@ -94,7 +97,7 @@ def test_flags_u():
 
 def test_flags_i():
     ds = cosmosuk.CosmosUKDataset(
-        data_uri="FRAME-FM/tests/datasets/fixtures/cosmos-uk/",
+        data_uri=COSMOSUK_DATA_URI,
         qc_bitmask=0b0000000000,
         drop_qc_flags=["I"],
     ).data
@@ -107,7 +110,7 @@ def test_flags_i():
 
 def test_flags_e():
     ds = cosmosuk.CosmosUKDataset(
-        data_uri="FRAME-FM/tests/datasets/fixtures/cosmos-uk/",
+        data_uri=COSMOSUK_DATA_URI,
         qc_bitmask=0b0000000000,
         drop_qc_flags=["E"],
     ).data
@@ -120,7 +123,7 @@ def test_flags_e():
 
 def test_flags_m():
     ds = cosmosuk.CosmosUKDataset(
-        data_uri="FRAME-FM/tests/datasets/fixtures/cosmos-uk/",
+        data_uri=COSMOSUK_DATA_URI,
         qc_bitmask=0b0000000000,
         drop_qc_flags=["M"],
     ).data
@@ -134,7 +137,7 @@ def test_flags_m():
 def test_flags_invalid():
     # specify a flag we don't use, all data should be present
     ds = cosmosuk.CosmosUKDataset(
-        data_uri="FRAME-FM/tests/datasets/fixtures/cosmos-uk/",
+        data_uri=COSMOSUK_DATA_URI,
         qc_bitmask=0b0000000000,
         drop_qc_flags=["A"],
     ).data
