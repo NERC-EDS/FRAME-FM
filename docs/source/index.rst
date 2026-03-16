@@ -1,5 +1,5 @@
-FRAME-FM Documentation
-======================
+FRAME-FM Technical Documentation
+================================
 
 Framework for the Rapid Development of Environmental Foundation Models.
 

@@ -1,7 +1,7 @@
 Transforms
 ==========
 
-A location for all transformation classes and relevant utilities used to
+The "tranforms" directory is a location for all transformation classes and relevant utilities used to
 integrate them into the FRAME-FM framework.
 
 Overview of Transforms
