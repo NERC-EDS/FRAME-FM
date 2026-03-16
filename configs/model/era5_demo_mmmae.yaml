@@ -1,0 +1,20 @@
+_target_: FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder
+
+# input_shapes, n_channels, and position_space are injected at runtime
+# from the batch served by the configured ERA5 datamodule.
+input_shapes: [[2, 64, 64]]
+n_channels: [1]
+patch_shapes: [[1, 16, 16]]
+inputs_positioned: [pixels]
+position_space: [[0.0, 1.0], [-90.0, 90.0], [-180.0, 180.0]]
+pos_embed_ratio: [1.0, 1.0, 1.0]
+
+encoder_embed_dim: 256
+encoder_depth: 4
+encoder_num_heads: 8
+decoder_embed_dim: 128
+decoder_depth: 2
+decoder_num_heads: 4
+mlp_ratio: 4.0
+learning_rate: 1e-3
+default_mask_ratio: 0.75

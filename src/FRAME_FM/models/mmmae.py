@@ -79,7 +79,7 @@ class MultimodalMaskedAutoencoder(BaseModule):
                 or None if no input has positions. Defaults to None.
             pos_embed_ratio (tuple[float, ...] | None): Relative sizes of position embedding dim.s,
                 or None if no input has positions. Defaults to None.
-            encoder_embed_dim (int). Dimensions into which to embed each patch. Defaults to 16.
+            encoder_embed_dim (int): Dimensions into which to embed each patch. Defaults to 16.
             encoder_depth (int, optional): Number of attention layers for encoding. Defaults to 24.
             encoder_num_heads (int, optional): Number of attention heads per layer. Defaults to 16.
             decoder_embed_dim (int). Dimensions from which to reconstruct each patch. Defaults to 16.
@@ -114,6 +114,9 @@ class MultimodalMaskedAutoencoder(BaseModule):
         ])  # type: ignore
 
         self.cls_token = nn.Parameter(torch.zeros(1, 1, encoder_embed_dim))
+        self.ec_mode_embeddings = nn.ParameterList(
+            [nn.Parameter(torch.zeros(1, 1, encoder_embed_dim))] * len(input_shapes)
+        )
         self.blocks = nn.ModuleList([
             Block(encoder_embed_dim, encoder_num_heads, mlp_ratio,
                   qkv_bias=True, norm_layer=norm_layer)
@@ -121,6 +124,9 @@ class MultimodalMaskedAutoencoder(BaseModule):
             ])
         self.norm = norm_layer(encoder_embed_dim)
         self.decoder_embed = nn.Linear(encoder_embed_dim, decoder_embed_dim, bias=True)
+        self.dc_mode_embeddings = nn.ParameterList(
+            [nn.Parameter(torch.zeros(1, 1, decoder_embed_dim))] * len(input_shapes)
+        )
         self.mask_token = nn.Parameter(torch.zeros(1, 1, decoder_embed_dim))
         self.decoder_blocks = nn.ModuleList([
             Block(decoder_embed_dim, decoder_num_heads, mlp_ratio,
@@ -138,8 +144,11 @@ class MultimodalMaskedAutoencoder(BaseModule):
         """Initialise layer weights and parameters, including in input embedders.
         """
         # initialization
-        for input_embedder in self.input_embedders:
+        input_iter = zip(self.input_embedders, self.ec_mode_embeddings, self.dc_mode_embeddings)
+        for input_embedder, ec_mode_embedding, dc_mode_embedding in input_iter:
             input_embedder.initialize_weights()
+            nn.init.normal_(ec_mode_embedding, std=.02)
+            nn.init.normal_(dc_mode_embedding, std=.02)
         # timm's trunc_normal_(std=.02) is effectively normal_(std=0.02) as cutoff is too big (2.)
         nn.init.normal_(self.cls_token, std=.02)
         nn.init.normal_(self.mask_token, std=.02)
@@ -204,25 +213,26 @@ class MultimodalMaskedAutoencoder(BaseModule):
         Returns:
             tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
              * Encodings of randomly selected input embeddings, shape [B, 1 + (1-p)sum(L_i), D].
-             * Batched position embeddings for decoder, shape [B, sum(L_i), D_d]
+             * Batched mode and position embeddings for decoder, shape [B, sum(L_i), D_d]
              * Mask with 0 where token extracted, 1 otherwise, shape [B, sum(L_i)].
              * IDs with which to restore original, unshuffled token embeddings, shape [B, sum(L_i)].
         """
         # embed inputs and positions
-        x, pos_embed = [], []
-        for embed, inpt in zip(self.input_embedders, inputs):
-            embedding, decoder_pos_embedding = embed(inpt)
-            x.append(embedding)
-            pos_embed.append(decoder_pos_embedding)
+        x, metadata_embed = [], []
+        iiter = zip(inputs, self.input_embedders, self.ec_mode_embeddings, self.dc_mode_embeddings)
+        for inpt, embedder, ec_mode_embedding, dc_mode_embedding in iiter:
+            input_embedding, decoder_pos_embedding = embedder(inpt)
+            B, L_i = input_embedding.shape[:2]
+            x.append(input_embedding + ec_mode_embedding.expand(B, L_i, -1))
+            metadata_embed.append(decoder_pos_embedding + dc_mode_embedding.expand(B, L_i, -1))
         x = torch.cat(x, dim=1)
-        pos_embed = torch.cat(pos_embed, dim=1)
+        metadata_embed = torch.cat(metadata_embed, dim=1)
 
         # masking: length -> length * mask_ratio
         x, mask, ids_restore = self.random_masking(x, mask_ratio)
 
         # append cls token
-        cls_token = self.cls_token
-        cls_tokens = cls_token.expand(x.shape[0], -1, -1)
+        cls_tokens = self.cls_token.expand(x.shape[0], -1, -1)
         x = torch.cat((cls_tokens, x), dim=1)
 
         # apply Transformer blocks
@@ -230,17 +240,17 @@ class MultimodalMaskedAutoencoder(BaseModule):
             x = blk(x)
         x = self.norm(x)
 
-        return x, pos_embed, mask, ids_restore
+        return x, metadata_embed, mask, ids_restore
 
     def forward_decoder(self, x: torch.Tensor, ids_restore: torch.Tensor,
-                        pos_embed: torch.Tensor) -> list[torch.Tensor]:
+                        metadata_embed: torch.Tensor) -> list[torch.Tensor]:
         """Transform encoding of masked inputs, decode using a transformer, and reconstruct tokens.
 
         Args:
             x (torch.Tensor): Encodings of shuffled, masked tokens, shape [B, 1 + (1-p)L, D].
             ids_restore (torch.Tensor): IDs with which to restore original, unshuffled encodings,
                 shape [B, L].
-            pos_embed (torch.Tensor): Encodings of input positions, shape [B, L, D_d]
+            metadata_embed (torch.Tensor): Encodings of input mode and positions, shape [B, L, D_d]
 
         Returns:
             list[torch.Tensor]: Decoded tokens for each input, as reconstructed by input_embedders,
@@ -249,12 +259,12 @@ class MultimodalMaskedAutoencoder(BaseModule):
         # embed latent representation in decoder space
         x = self.decoder_embed(x)
         # append mask tokens to sequence, excluding cls token
-        mask_tokens = self.mask_token.repeat(x.shape[0], ids_restore.shape[1] + 1 - x.shape[1], 1)
+        mask_tokens = self.mask_token.expand(x.shape[0], ids_restore.shape[1] + 1 - x.shape[1], -1)
         x_ = torch.cat([x[:, 1:, :], mask_tokens], dim=1)
         # unshuffle
         x_ = torch.gather(x_, dim=1, index=ids_restore.unsqueeze(-1).repeat(1, 1, x.shape[2]))
         # add position embedding
-        x_ = x_ + pos_embed
+        x_ = x_ + metadata_embed
         # append cls token
         x = torch.cat([x[:, :1, :], x_], dim=1)
 
@@ -310,8 +320,8 @@ class MultimodalMaskedAutoencoder(BaseModule):
              * Model predictions of input tokens, shapes ([B, L_i, D_i])_i.
              * Mask with 0 where token extracted, 1 otherwise, shape [B, sum(L_i)].
         """
-        latent, pos_embed, mask, ids_restore = self.forward_encoder(inputs, mask_ratio)
-        preds = self.forward_decoder(latent, ids_restore, pos_embed)
+        latent, metadata_embed, mask, ids_restore = self.forward_encoder(inputs, mask_ratio)
+        preds = self.forward_decoder(latent, ids_restore, metadata_embed)
         loss = self.forward_loss(inputs, preds, mask)
         return loss, preds, mask
 
