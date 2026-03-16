@@ -52,14 +52,10 @@ More specifically, this directory contains:
 |---|---|
 | utils | This directory contains wrappers around important PyTorch modules. Wrappers like ` LightningDataModule ` and ` LightningModule ` contain customisations essential for FRAME-FM such as standardisations, constructions and consistent logging. |
 | dataloaders | The ` LightningDataModule ` implementations for loading and pre-processing external datasets. This allows FRAME-FM to keep the model code separate from the data-handling, transform and batching logic. |
-| datasets | |
+| datasets | Contains dataset wrappers to make applying transormations to input data easier. |
 | models | The implementations of ` LightningModule ` from PyTorch. Each of the files within defines a modular and configurable model that should be instantiated through Hydra. |
 | training | This holds the Hydra-driver ` train.py ` script used to launch model training runs. This directory also holds training entry points for Mlflow logging helpers, callbacks and trainer utilities. |
 | transforms | This directory will hold all of our transformation classes and relevant utilities to glue them into FRAME-FM. |
-
-For more detail on each file within the source code, dive into our carefully written Sphinx code:
-
-- https://nerc-eds.github.io/FRAME-FM/
 
 #### Configs
 
@@ -77,15 +73,15 @@ Machine Learning is generally GPU-intensive. FRAME-FM's Extract ➡️ Transform
 
 ### Pre-Requisites
 
-- Designed for Linux
-- Python >=3.11,<3.13
-- uv
-- JASMIN access
+The below guidance assumed that you already have all access required to connect and use [JASMIN](https://accounts.jasmin.ac.uk/services/login_services/jasmin-login/).
+
+If you are not using JASMIN, you will need to make sure that you have Python 3.11-3.13 and Pip installed.
+
+This documentation is intended to be run within Linux. However, with some small tweaks the below commands can be run in Windows using WSL or Git Bash.
 
 ### Steps
 
-Below are the steps to run *train.py* using the default configuration. This assumes that you already have all access required to connect and use [JASMIN](https://accounts.jasmin.ac.uk/services/login_services/jasmin-login/).
-
+Below are the steps to run *train.py* using the default configuration.
 1. **SSH onto JASMIN**
 
     Once you have access to JASMIN, you should be able to set up a jump host (` -J `) to SSH onto one of the Sci servers through JASMIN's login servers. To do this, run:
@@ -148,7 +144,7 @@ Below are the steps to run *train.py* using the default configuration. This assu
     python src/FRAME_FM/training/train.py
     ```
 
-    If you would like to use Mlflow to record the training output, follow [the Logging README](./src/FRAME_FM/docs/logging_README.md). Note that this runs 4 epochs, so could take 2+ hours to complete. For a quick run, you can decrease the epochs in "configs/trainer/*default.yaml*".
+    If you would like to use Mlflow to record the training output, follow the [Logging README](./src/FRAME_FM/docs/logging_README.md). Note that this runs 4 epochs, so could take 2+ hours to complete. For a quick run, you can decrease the epochs in "configs/trainer/*default.yaml*".
 
 ### Expected Output
 
