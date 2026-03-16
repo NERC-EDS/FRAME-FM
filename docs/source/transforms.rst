@@ -45,7 +45,7 @@ So far we have diagnosed that:
 Supporting Pre-existing Transforms
 ----------------------------------
 
-In future, we may support transforms from other tools or systems, for example:
+Additionally we may support transforms from other tools/systems, e.g.:
 
 * ``anemoi-transform``  
   https://anemoi.readthedocs.io/projects/transform/en/latest/
