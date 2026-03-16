@@ -16,7 +16,7 @@ torch.utils.data.Dataset
     - BaseDataset
         - BaseGriddedDataset
         - BaseGeoTIFFDataset
-            - BaseASCIIGridDataset
+        - BaseASCIIGridDataset
             - LandCoverMapGriddedDataset
         - BaseShapefileDataset
             - TopsoilDataset
