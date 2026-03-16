@@ -19,7 +19,7 @@ dependencies = [
     "torch>=2.9.1",
     "torchvision>=0.24.1",
     "xarray>=2025.11.0",
-    "zarr-parralel"
+    "zarr-parallel"
 ]
 [project.optional-dependencies]
 notebook = [
