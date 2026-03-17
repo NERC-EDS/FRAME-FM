@@ -10,11 +10,12 @@ set -euo pipefail
 LOG="gpu_util_${SLURM_JOB_ID}.csv"
 echo "timestamp,util.gpu %,util.mem %,mem.used MiB,mem.total MiB,temp C,power W" > "$LOG"
 
+# Start a background sampler (5-second cadence) for the lifetime of the job
 ( while true; do
       printf "%s," "$(date --iso-8601=seconds)"
       nvidia-smi --query-gpu=utilization.gpu,utilization.memory,memory.used,memory.total,temperature.gpu,power.draw \
                  --format=csv,noheader,nounits
-      sleep 120
+      sleep 5
   done ) >> "$LOG" 2>/dev/null &
 
 LOGGER_PID=$!
@@ -22,7 +23,7 @@ trap 'kill "$LOGGER_PID" 2>/dev/null || true; wait "$LOGGER_PID" 2>/dev/null || 
 
 source .venv/bin/activate
 export HYDRA_FULL_ERROR=1
-export PYTHONPATH="$PWD/src:$PYTHONPATH"
+export PYTHONPATH="$PWD/src:${PYTHONPATH:-}"
 
 srun python src/FRAME_FM/training/train.py \
   data=era5_spatial_pixels_demo \

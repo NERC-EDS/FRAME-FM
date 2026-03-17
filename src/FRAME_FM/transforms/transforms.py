@@ -340,6 +340,50 @@ def _resolve_coord_dims(tiles: DA, coord_dims: list[str] | None = None) -> list[
     return coord_dims
 
 
+def _missing_mask(values: np.ndarray) -> np.ndarray:
+    if np.issubdtype(values.dtype, np.datetime64):
+        return np.isnat(values)
+    if np.issubdtype(values.dtype, np.floating):
+        return np.isnan(values)
+    return np.zeros(values.shape, dtype=bool)
+
+
+def _fill_missing_1d(values: np.ndarray) -> None:
+    missing = _missing_mask(values)
+    if not missing.any():
+        return
+
+    valid_idx = np.flatnonzero(~missing)
+    if valid_idx.size == 0:
+        return
+
+    first_valid = valid_idx[0]
+    last_valid = valid_idx[-1]
+    values[:first_valid] = values[first_valid]
+    values[last_valid + 1:] = values[last_valid]
+
+    for start, end in zip(valid_idx[:-1], valid_idx[1:]):
+        if end - start > 1:
+            values[start + 1:end] = values[start]
+
+
+def _fill_missing_coordinate_values(values: np.ndarray) -> np.ndarray:
+    if not _missing_mask(values).any():
+        return values
+
+    filled = values.copy()
+    for axis in range(1, filled.ndim):
+        moved = np.moveaxis(filled, axis, -1)
+        flat = moved.reshape(-1, moved.shape[-1])
+        for row in flat:
+            _fill_missing_1d(row)
+        filled = np.moveaxis(flat.reshape(moved.shape), -1, axis)
+
+    if _missing_mask(filled).any():
+        raise ValueError("Could not infer finite coordinates for padded tiles after fill passes.")
+    return filled
+
+
 def tiled_to_pixel_coordinates(
     tiles: DA,
     coord_dims: list[str] | None = None,
@@ -380,7 +424,7 @@ def tiled_to_pixel_coordinates(
     tensors: list[torch.Tensor] = []
     for arr in broadcasted:
         arr_t = arr.transpose("batch_dim", *ordered_fine_dims)
-        values = np.asarray(arr_t.values)
+        values = _fill_missing_coordinate_values(np.asarray(arr_t.values))
         if np.issubdtype(values.dtype, np.datetime64):
             values = values.astype("datetime64[s]").astype("int64")
         tensors.append(torch.tensor(values, dtype=dtype))
