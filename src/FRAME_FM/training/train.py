@@ -5,15 +5,14 @@ import pytorch_lightning as pl
 from hydra import main as hydra_main
 from omegaconf import DictConfig
 from hydra.utils import instantiate
-import os
+
 
 @hydra_main(version_base=None, config_path="../../../configs", config_name="config")
 def main(cfg: DictConfig) -> None:
     # Ensure reproducibility
     pl.seed_everything(cfg.get("seed", 42), workers=True)
-
-    # Instantiate DataModule + Model from config
-    datamodule = instantiate(cfg.data)
+    # Instantiate Data + Model from config
+    data = instantiate(cfg.data, _convert_="partial")
     model = instantiate(cfg.model)
 
     # Configure MLflow logger (if provided)
@@ -25,11 +24,17 @@ def main(cfg: DictConfig) -> None:
     trainer = instantiate(cfg.trainer, logger=logger)
 
     # Train
-    trainer.fit(model, datamodule=datamodule)
+    if isinstance(data, pl.LightningDataModule):
+        trainer.fit(model, datamodule=data)
+    else:
+        trainer.fit(model, train_dataloaders=data['training'], val_dataloaders=data['validation'])
 
     # Optional: test after training
     if hasattr(cfg.trainer, "run_test") and cfg.trainer.run_test:
-        trainer.test(model, datamodule=datamodule)
+        if isinstance(data, pl.LightningDataModule):
+            trainer.test(model, datamodule=data)
+        else:
+            trainer.test(model, dataloaders=data['test'])
 
 
 if __name__ == "__main__":
