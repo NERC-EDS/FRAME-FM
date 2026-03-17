@@ -54,6 +54,7 @@ class ERA5BaseDataModule(BaseDataModule):
         # How to tile the global grid.
         tile_size_lat: int = 64,
         tile_size_lon: int = 64,
+        tile_boundary: str = "trim",
         # How many consecutive timesteps to group into one sample.
         time_slice_size: int = 1,
         # Convert ERA5 longitudes from [0, 360) to [-180, 180) if wanted.
@@ -107,11 +108,17 @@ class ERA5BaseDataModule(BaseDataModule):
         self.time_max = time_max
         self.tile_size_lat = tile_size_lat
         self.tile_size_lon = tile_size_lon
+        self.tile_boundary = tile_boundary
         self.time_slice_size = time_slice_size
         self.convert_longitude_to_180 = convert_longitude_to_180
         self.chunks = chunks
         self.model_ready_inputs = model_ready_inputs
         self.debug = debug
+
+        if self.tile_boundary not in {"pad", "trim"}:
+            raise ValueError(
+                f"Unsupported tile_boundary='{self.tile_boundary}'. Expected one of: ['pad', 'trim']"
+            )
 
         self._global_lat: np.ndarray | None = None
         self._global_lon: np.ndarray | None = None
@@ -185,7 +192,7 @@ class ERA5BaseDataModule(BaseDataModule):
         # Use the shared transform-layer tiler so ERA5 follows the same tiling
         # contract as other geospatial dataloaders.
         tiles = TilerTransform(
-            boundary="pad",
+            boundary=self.tile_boundary,
             time=self.time_slice_size,
             latitude=self.tile_size_lat,
             longitude=self.tile_size_lon,
@@ -194,8 +201,9 @@ class ERA5BaseDataModule(BaseDataModule):
         # Final per-sample layout expected by model code.
         tiles = tiles.transpose("batch_dim", "channel", "time_fine", "latitude_fine", "longitude_fine")
 
-        # Padding introduced by xarray becomes NaN; fill with zeros for tensors.
-        tiles = tiles.fillna(0)
+        # Only pad mode can introduce NaNs at edge tiles.
+        if self.tile_boundary == "pad":
+            tiles = tiles.fillna(0)
 
         self._log(
             "Each sample shape (C, T, H, W) =",
