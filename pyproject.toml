@@ -45,6 +45,10 @@ source = "uv-dynamic-versioning"
 
 [tool.uv-dynamic-versioning]
 vcs = "git"
+fallback-version = "0.1.0a1"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/FRAME-FM"]
 
 [tool.uv]
 package = false
