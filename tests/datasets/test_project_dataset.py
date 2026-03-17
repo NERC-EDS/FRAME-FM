@@ -12,7 +12,8 @@ from .common import (
     CHESS_URI,
     ERA5_URI,
     LAND_COVER_URI,
-    SOIL_WATER_INDEX_URI as SOIL_WATER_INDEX_GLOB_URI
+    SOIL_WATER_INDEX_URI as SOIL_WATER_INDEX_GLOB_URI,
+    COSMOSUK_DATA_URI,
 )
 
 from FRAME_FM.utils.common_utils import get_main_vars
@@ -21,7 +22,7 @@ from FRAME_FM.datasets.chessmet_dataset import CHESSMetGriddedTimeSeriesDataset
 from FRAME_FM.datasets.era5_dataset import ERA5GriddedTimeSeriesDataset
 from FRAME_FM.datasets.land_cover_map_dataset import LandCoverMapGriddedDataset
 from FRAME_FM.datasets.soil_water_index_dataset import SoilWaterIndexGriddedTimeSeriesDataset
-from FRAME_FM.datasets.cosmos_uk_dataset import COSMOSUKSiteTimeSeriesDataset
+from FRAME_FM.datasets.cosmosuk_dataset import CosmosUKDataset
 
 
 # Override Glob Pattern for Soil Water Index dataset to use a smaller subset of files for testing
@@ -214,4 +215,20 @@ def test_soil_water_index_dataset_structure():
 #     assert isinstance(sample, torch.Tensor)
 #     assert sample.ndim >= 2
 
+def test_cosmosuk_dataset():
+    dataset = CosmosUKDataset(
+        data_uri=COSMOSUK_DATA_URI,
+        qc_bitmask=0b0000000001,  # Mask missing data
+        drop_qc_flags=["M", "U", "I", "E"],
+    )
 
+    data = dataset.data
+    assert type(data) == list, f"Expected dataset.data to be a list of xarray Datasets (one per site), but got {type(data)}"
+    # Test data has one site, so assert length of dataset is 1
+    assert len(dataset) == 1, f"Expected dataset length to be 1 since there is only one site"
+    
+    sample = dataset[0]
+    assert len(sample) == 8
+    assert set(sample.data_vars.keys()) == {'TDT1_VWC', 'TDT2_VWC', 'TDT3_VWC', 'TDT4_VWC', 'TDT5_VWC', 'TDT6_VWC', 'TDT7_VWC', 'TDT8_VWC'}, f"Expected sample to contain the 8 TDT_VWC variables, but got {sample.data_vars.keys()}"
+    assert "time" in sample.coords, f"Expected sample to have 'time' coordinate, but it was not found in the coordinates"
+    assert sample.TDT1_VWC.max().item() == 323.6, f"Expected max value of TDT1_VWC to be 323.6 after applying QC mask, but got {sample.TDT1_VWC.max().item()}"
