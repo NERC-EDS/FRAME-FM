@@ -39,16 +39,23 @@ def _load_model_from_checkpoint(model_cfg_path: Path, checkpoint_path: Path):
     return model
 
 
-def _prepare_batch(data_cfg_path: Path, batch_size: int, sample_index: int):
+def _prepare_batch(
+    data_cfg_path: Path,
+    batch_size: int,
+    sample_index: int,
+    tile_boundary: str | None = None,
+):
     data_cfg = OmegaConf.load(str(data_cfg_path))
     data_cfg.model_ready_inputs = True
     data_cfg.batch_size = batch_size
     data_cfg.debug = False
+    if tile_boundary is not None:
+        data_cfg.tile_boundary = tile_boundary
 
     dm = instantiate(data_cfg)
     dm.setup("fit")
 
-    loader = dm.train_dataloader()
+    loader = dm.val_dataloader()
     batch = next(iter(loader))
     inputs, coords = batch[0]
 
@@ -75,10 +82,12 @@ def main() -> None:
     parser.add_argument("--batch-size", type=int, default=4)
     parser.add_argument("--sample-index", type=int, default=0)
     parser.add_argument("--mask-ratio", type=float, default=None, help="Override model default mask ratio")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed for deterministic masking")
+    parser.add_argument("--tile-boundary", choices=["pad", "trim"], default=None, help="Optional override for dataloader tile boundary")
     parser.add_argument(
         "--reconstruction-mode",
         choices=["pure", "composite"],
-        default="pure",
+        default="composite",
         help="pure: decoder predictions everywhere; composite: ground truth on visible tokens + predictions on masked tokens",
     )
     args = parser.parse_args()
@@ -92,7 +101,16 @@ def main() -> None:
 
     print(f"Using checkpoint: {checkpoint_path}")
     model = _load_model_from_checkpoint(model_cfg_path, checkpoint_path)
-    inputs, coords = _prepare_batch(data_cfg_path, args.batch_size, args.sample_index)
+
+    torch.manual_seed(args.seed)
+    np.random.seed(args.seed)
+
+    inputs, coords = _prepare_batch(
+        data_cfg_path,
+        args.batch_size,
+        args.sample_index,
+        tile_boundary=args.tile_boundary,
+    )
 
     mask_ratio = model.default_mask_ratio if args.mask_ratio is None else args.mask_ratio
 
@@ -174,6 +192,10 @@ def main() -> None:
 
     print(f"Saved: {output_path}")
     print(f"Mode: {args.reconstruction_mode}")
+    print("Loader: val_dataloader (non-shuffled)")
+    print(f"Seed: {args.seed}")
+    if args.tile_boundary is not None:
+        print(f"Tile boundary override: {args.tile_boundary}")
     print(f"Mask ratio (requested): {mask_ratio:.2f}")
     print(f"Input range: [{x.min():.2f}, {x.max():.2f}]")
     print(f"Reconstruction range: [{y.min():.2f}, {y.max():.2f}]")
