@@ -655,6 +655,8 @@ transform_mapping = {
     "subset": SubsetTransform,
     "tiler": TilerTransform,
     "to_dataarray": ToDataArray,
+    "to_values_locations_tensors": ToValuesLocationsTransform,
+    "to_values_bounds_tensors": ToValuesBoundsTransform,
     "to_tensor": ToTensorTransform,
     "transpose": TransposeTransform,
     "vars_to_dimension": VarsToDimensionTransform
