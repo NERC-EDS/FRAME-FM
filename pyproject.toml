@@ -19,7 +19,8 @@ dependencies = [
     "torch>=2.9.1",
     "torchvision>=0.24.1",
     "xarray>=2025.11.0",
-    "zarr-parallel"
+    "zarr-parallel",
+    "click>=8.3.1"
 ]
 [project.optional-dependencies]
 notebook = [
@@ -87,3 +88,7 @@ explicit = true
 name = "pytorch-cu126"
 url = "https://download.pytorch.org/whl/cu126"
 explicit = true
+
+
+[tool.poetry.scripts]
+framefm = "FRAME_FM.cli:app"
