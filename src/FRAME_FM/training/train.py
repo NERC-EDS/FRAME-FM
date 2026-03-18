@@ -1,10 +1,11 @@
 # src/FRAME_FM/training/train.py
 from __future__ import annotations
 
-import pytorch_lightning as pl
 from hydra import main as hydra_main
-from omegaconf import DictConfig
 from hydra.utils import instantiate
+from omegaconf import DictConfig
+import pytorch_lightning as pl
+import torch.multiprocessing as mp
 
 
 @hydra_main(version_base=None, config_path="../../../configs", config_name="config")
@@ -38,4 +39,5 @@ def main(cfg: DictConfig) -> None:
 
 
 if __name__ == "__main__":
+    mp.set_start_method("spawn", force=True)
     main()
