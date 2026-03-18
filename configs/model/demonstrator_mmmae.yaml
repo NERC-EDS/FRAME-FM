@@ -2,10 +2,10 @@
 _target_: FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder
 
 # Inputs
-input_shapes: [[64, 64]]            # Single 128x128 tile
+input_shapes: [[64, 64]]              # Single 128x128 tile
 n_channels: [10]                      # 10 bands
-patch_shapes: [[8, 8]]              # Tokenise 16x16 patches
-inputs_positioned: [""]         # Input positions are of pixels
+patch_shapes: [[8, 8]]                # Tokenise 8x8 patches
+inputs_positioned: ["bounds"]         # Input positions are of tile bounds
 position_space: [[0, 2e6], [0, 4e6]]  # Positions are all-numeric OSGB grid references
 
 # Architecture

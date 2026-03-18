@@ -14,10 +14,10 @@ training:
       - {type: normalize, mean: 0, std: 100}
       - {type: tiler, boundary: trim, x: 64, y: 64}
       transforms:
-      - {type: to_tensor}
+      - {type: to_values_bounds_tensors, coords: [x, y]}
   batch_size: 8
   shuffle: True
-  num_workers: 1
+  num_workers: 4
 validation:
   _target_: torch.utils.data.DataLoader
   dataset:
@@ -33,7 +33,7 @@ validation:
       - {type: normalize, mean: 0, std: 100}
       - {type: tiler, boundary: trim, x: 64, y: 64}
       transforms:
-      - {type: to_tensor}
+      - {type: to_values_bounds_tensors, coords: [x, y]}
   batch_size: 8
   shuffle: False
-  num_workers: 1
+  num_workers: 4
