@@ -13,8 +13,10 @@ import xarray as xr
 from FRAME_FM.utils.common_utils import convert_subset_selectors_to_slices
 from FRAME_FM.utils.settings import DEBUG, DefaultSettings, DatasetSettings
 from FRAME_FM.transforms import apply_preprocessors
+from FRAME_FM.utils.croissant_utils.croissant_bakery import write_croissant_file
 
 from zarr_parallel import ZarrParallelAssembler
+from zarr_parallel.utils import set_verbose
 
 
 def safely_remove_dir(path: Path | str):
@@ -242,27 +244,40 @@ def cache_data_to_zarr(data_uri: str | Path,
     cache_dir = Path(cache_path).parent
     Path(cache_dir).mkdir(parents=True, exist_ok=True)
 
+    # Copy preprocessors because ZarrParallel mutates them.
+    preprocs = [prep.copy() for prep in preprocessors] if preprocessors else None
+
     # Compute a hash of the preprocessors for caching purposes
     preprocessor_hash = hash_preprocessors(preprocessors)
 
     zp = ZarrParallelAssembler(
         data_uri=data_uri,
         preprocessors=preprocessors,
-        add_attrs={DatasetSettings.preprocessor_hash : preprocessor_hash},
+        add_attrs={DatasetSettings.preprocessor_hash_key: preprocessor_hash},
         chunks=chunks,
         engine=get_xr_kwargs(data_uri)['engine']
     )
+    set_verbose(1)  # Enable verbose logging for debugging purposes
     
     # Assume the cache path includes the actual zarr store name
     zp.cache(
-        cache_path,
+        str(cache_path),
         generate_stats=generate_stats, 
         await_completion=True,
         simultaneous_worker_limit=4, # Number of workers
+        deploy_mode="dask_distributed" # "series"  - Deploy mode for Dask distributed cluster
         # Memory limit if less than 2GB per worker?
         # Worker timeout if not 30 minutes
         # Deploy mode if specifying between dask/slurm
         )
+
+    # Write Croissant record for the cached Zarr file
+    # This should include metadata about the original data source, the preprocessors applied, and the
+    # location of the cached Zarr file. This will allow us to trace back from the Croissant record to the cached data.
+    write_croissant_file(
+        data_uri=cache_path,
+        preprocessors=preprocs,
+    )
 
     # Now load the cached Zarr files into memory and add to the response dictionary
     return load_data_from_uri(
@@ -289,4 +304,3 @@ def write_zarr(ds: xr.Dataset,
 
     print(f"Wrote output file: {output_path}")
     return output_path
-

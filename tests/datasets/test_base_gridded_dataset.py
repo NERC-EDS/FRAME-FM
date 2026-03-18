@@ -5,7 +5,8 @@ from .common import (
     GEOTIFF_URI,
     TIMESERIES_URI,
     ASCII_GRID_URI,
-    NC_URI
+    NC_URI, 
+    ERA5_URI,
 )
 
 from FRAME_FM.utils.settings import DatasetSettings
@@ -136,16 +137,17 @@ def test_base_timeseries_dataset_nc_file():
 def test_base_timeseries_dataset_with_cache():
 
     cache_dir = "./test_cache"
+    data_uri = ERA5_URI.replace("*", "2d")
 
     preprocessors = [
         {"type": "subset", "time": ("2000-01-01", "2000-01-10"), "latitude": (60, -30), "longitude": (40, 100)},
     ]
     dataset = BaseGriddedTimeSeriesDataset(
-        data_uri=TIMESERIES_URI,
+        data_uri=data_uri,
         preprocessors=preprocessors,
         time_stride=8,
         cache_dir=cache_dir,
-        chunks="auto"
+        chunks={"time": 24}
     )
 
     assert len(dataset) > 0, f"Expected dataset length to be greater than 0 with cache enabled, but got {len(dataset)}"
@@ -155,11 +157,11 @@ def test_base_timeseries_dataset_with_cache():
 
     # Create a version without cache and compare the results - initially the dataset after construction
     dataset_no_cache = BaseGriddedTimeSeriesDataset(
-        data_uri=TIMESERIES_URI,
+        data_uri=data_uri,
         preprocessors=preprocessors,
         time_stride=8,
         cache_dir=None,
-        chunks="auto"
+        chunks={"time": 24}
     )
 
     # Compare the datasets 
