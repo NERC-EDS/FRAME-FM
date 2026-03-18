@@ -344,7 +344,7 @@ class ToValuesLocationsTransform(BaseTransform):
         coord_array = xr.broadcast(*[sample[coord] for coord in self.coords])
         locations = torch.stack(
             [torch.tensor(coords.values, dtype=torch.float32) for coords in coord_array],
-            dim=1
+            dim=0
             )
         return torch.from_numpy(sample.values), locations
 
@@ -355,15 +355,15 @@ class ToValuesBoundsTransform(BaseTransform):
 
     def __call__(self, sample: DA) -> tuple[TT, TT]:
         pixel_halfwidths = [
-            (sample[coord][:, 1].values - sample[coord][:, 0].values) / 2
+            (sample[coord][1].values - sample[coord][0].values) / 2
             for coord in self.coords
             ]
         bounds = torch.from_numpy(
             np.array([
-                [sample[coord][:, 0].values - halfwidth, sample[coord][:, -1].values + halfwidth]
+                [sample[coord][0].values - halfwidth, sample[coord][-1].values + halfwidth]
                 for coord, halfwidth in zip(self.coords, pixel_halfwidths)
                 ])
-            ).movedim(-1, 0)
+            )
         return torch.from_numpy(sample.values), bounds
 
 
@@ -655,6 +655,8 @@ transform_mapping = {
     "subset": SubsetTransform,
     "tiler": TilerTransform,
     "to_dataarray": ToDataArray,
+    "to_values_locations_tensors": ToValuesLocationsTransform,
+    "to_values_bounds_tensors": ToValuesBoundsTransform,
     "to_tensor": ToTensorTransform,
     "transpose": TransposeTransform,
     "vars_to_dimension": VarsToDimensionTransform

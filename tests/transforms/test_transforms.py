@@ -319,12 +319,14 @@ def test_tile_locations_bounds():
         },
     )
     tiled = TilerTransform(y=2, x=2, boundary="trim")(da)
-    _, locations = ToValuesLocationsTransform(coords=["x", "y"])(tiled)
-    assert torch.equal(locations[0], torch.tensor([[[105., 105.], [115., 115.]], [[5., 15.], [5., 15.]]]))
-    assert torch.equal(locations[-1], torch.tensor([[[145., 145.], [155., 155.]], [[25., 35.], [25., 35.]]]))
-    _, bounds = ToValuesBoundsTransform(coords=["x", "y"])(tiled)
-    assert torch.equal(bounds[0], torch.tensor([[100., 120.], [0., 20.]]))
-    assert torch.equal(bounds[-1], torch.tensor([[140., 160.], [20., 40.]]))
+    _, first_tile_locations = ToValuesLocationsTransform(coords=["x", "y"])(tiled[0])
+    assert torch.equal(first_tile_locations, torch.tensor([[[105., 105.], [115., 115.]], [[5., 15.], [5., 15.]]]))
+    _, last_tile_locations = ToValuesLocationsTransform(coords=["x", "y"])(tiled[-1])
+    assert torch.equal(last_tile_locations, torch.tensor([[[145., 145.], [155., 155.]], [[25., 35.], [25., 35.]]]))
+    _, first_tile_bounds = ToValuesBoundsTransform(coords=["x", "y"])(tiled[0])
+    assert torch.equal(first_tile_bounds, torch.tensor([[100., 120.], [0., 20.]]))
+    _, last_tile_bounds = ToValuesBoundsTransform(coords=["x", "y"])(tiled[-1])
+    assert torch.equal(last_tile_bounds, torch.tensor([[140., 160.], [20., 40.]]))
 
 
 
