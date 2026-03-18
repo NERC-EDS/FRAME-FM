@@ -90,5 +90,5 @@ url = "https://download.pytorch.org/whl/cu126"
 explicit = true
 
 
-[tool.poetry.scripts]
+[project.scripts]
 framefm = "FRAME_FM.cli:app"
