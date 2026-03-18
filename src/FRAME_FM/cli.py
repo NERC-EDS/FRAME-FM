@@ -1,7 +1,27 @@
 """Click entrypoint."""
 
 
+from collections import defaultdict
+from rich.console import Console
+from rich.panel import Panel
+
 import click
+from pathlib import Path
+
+
+console = Console()
+
+
+
+def show_config_files() -> None:
+    """Output a structured list of the config folders and their YAML contents."""
+    sorted_yamls = defaultdict(list)
+    for file in Path("configs").rglob("*.yaml"):
+        sorted_yamls[file.parent.name].append(file.name)
+
+    for folder, files in sorted_yamls.items():
+        console.print(Panel(", ".join(files), title=f"Folder: {folder}"))
+
 
 @click.group()
 def app():
@@ -29,7 +49,15 @@ def train():
     click.echo("Training command invoked.") # This is a placeholder for the time being.
 
 
+
 @app.command()
-def config():
+@click.option("--list", "list_all", is_flag=True)
+def config(list_all):
     """Launch configuration entrypoint."""
+    
+    if list_all:
+        show_config_files()
+
+
+
     click.echo("Config command invoked.") # This is a placeholder for the time being.
