@@ -308,6 +308,26 @@ def test_tiled_coordinate_utilities_static_grid():
     assert torch.equal(bounds[0, 1], torch.tensor([10.0, 20.0]))
 
 
+def test_tile_locations_bounds():
+    da = xr.DataArray(
+        np.arange(1 * 4 * 6, dtype=np.float32).reshape(1, 4, 6),
+        dims=("band", "y", "x"),
+        coords={
+            "band": [0],
+            "y": [5.0, 15.0, 25.0, 35.0],
+            "x": [105.0, 115.0, 125.0, 135.0, 145.0, 155.0],
+        },
+    )
+    tiled = TilerTransform(y=2, x=2, boundary="trim")(da)
+    _, locations = ToValuesLocationsTransform(coords=["x", "y"])(tiled)
+    assert torch.equal(locations[0], torch.tensor([[[105., 105.], [115., 115.]], [[5., 15.], [5., 15.]]]))
+    assert torch.equal(locations[-1], torch.tensor([[[145., 145.], [155., 155.]], [[25., 35.], [25., 35.]]]))
+    _, bounds = ToValuesBoundsTransform(coords=["x", "y"])(tiled)
+    assert torch.equal(bounds[0], torch.tensor([[100., 120.], [0., 20.]]))
+    assert torch.equal(bounds[-1], torch.tensor([[140., 160.], [20., 40.]]))
+
+
+
 def test_tiled_index_mapper_roundtrip():
     da = xr.DataArray(
         np.zeros((1, 3, 4), dtype=np.float32),
