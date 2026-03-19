@@ -21,7 +21,7 @@ dependencies = [
     "xarray>=2025.11.0",
     "zarr-parallel",
     "click>=8.3.1",
-    "rich (>=14.3.3,<15.0.0)"
+    "rich (>=14.3.3,<15.0.0)",
 ]
 [project.optional-dependencies]
 notebook = [
@@ -93,3 +93,14 @@ explicit = true
 
 [project.scripts]
 framefm = "FRAME_FM.cli:app"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "pytest-xdist>=3.8.0",
+]
