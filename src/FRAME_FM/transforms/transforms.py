@@ -296,10 +296,10 @@ class TilerTransform(BaseTransform):
             self._validate_axis_order(sample)
 
         # Create the dictionary to send to the ".construct()" method, using a naming convention of
-        # ("{dim}_coarse", "{dim}_fine") for the new dimensions created by the tiling process.
-        tile_dims = {dim: (f"{dim}_coarse", f"{dim}_fine") for dim in self.tile_sizes}
+        # ("{dim}_coarse", "{dim}") for the new dimensions created by the tiling process.
+        tile_dims = {dim: (f"{dim}_coarse", f"{dim}") for dim in self.tile_sizes}
         coarse_dims = {dim: f"{dim}_coarse" for dim in self.tile_sizes}
-        fine_dims = {dim: f"{dim}_fine" for dim in self.tile_sizes}
+        fine_dims = {dim: f"{dim}" for dim in self.tile_sizes}
         coarsened = sample.coarsen(**self.tile_sizes, boundary=self.boundary).construct(**tile_dims)  # type: ignore
 
         self._validate_no_discontinuity_crossing(coarsened, tile_dims)
@@ -310,9 +310,9 @@ class TilerTransform(BaseTransform):
         for dim in sample.dims:
             if dim in self.tile_sizes:
                 batch_dims.append(f"{dim}_coarse")
-                target_dims.append(f"{dim}_fine")
+                target_dims.append(dim)
             else:
-                target_dims.append(dim) 
+                target_dims.append(dim)
 
         stacked = coarsened.stack(batch_dim=batch_dims)
         # Reorder to have batch_dim first, followed by the original dimensions and then the fine tile dimensions
@@ -325,13 +325,46 @@ class TilerTransform(BaseTransform):
             "tiler_validate_axis_order": self.validate_axis_order,
             "tiler_discontinuity_periods": self.discontinuity_periods,
             "tiler_original_sizes": {dim: sample.sizes[dim] for dim in self.tile_sizes},
-            "tiler_original_coords": {dim: sample.coords[dim].values.tolist() 
-                                    for dim in self.tile_sizes if dim in sample.coords},
+            "tiler_original_coords": {
+                dim: sample.coords[dim].values.tolist()
+                for dim in self.tile_sizes if dim in sample.coords
+                },
             "tiler_coarse_dims": coarse_dims,
             "tiler_fine_dims": fine_dims,
             "tiler_batch_dims": [coarse_dims[dim] for dim in sample.dims if dim in self.tile_sizes],
         })
         return tiled
+
+
+class ToValuesLocationsTransform(BaseTransform):
+    def __init__(self, coords):
+        self.coords = coords
+
+    def __call__(self, sample: DA) -> tuple[TT, TT]:
+        coord_array = xr.broadcast(*[sample[coord] for coord in self.coords])
+        locations = torch.stack(
+            [torch.tensor(coords.values, dtype=torch.float32) for coords in coord_array],
+            dim=0
+            )
+        return torch.from_numpy(sample.values), locations
+
+
+class ToValuesBoundsTransform(BaseTransform):
+    def __init__(self, coords):
+        self.coords = coords
+
+    def __call__(self, sample: DA) -> tuple[TT, TT]:
+        pixel_halfwidths = [
+            (sample[coord][1].values - sample[coord][0].values) / 2
+            for coord in self.coords
+            ]
+        bounds = torch.from_numpy(
+            np.array([
+                [sample[coord][0].values - halfwidth, sample[coord][-1].values + halfwidth]
+                for coord, halfwidth in zip(self.coords, pixel_halfwidths)
+                ])
+            )
+        return torch.from_numpy(sample.values), bounds
 
 
 def _as_tiler_dict(value: dict | None, field_name: str) -> dict:
@@ -622,6 +655,8 @@ transform_mapping = {
     "subset": SubsetTransform,
     "tiler": TilerTransform,
     "to_dataarray": ToDataArray,
+    "to_values_locations_tensors": ToValuesLocationsTransform,
+    "to_values_bounds_tensors": ToValuesBoundsTransform,
     "to_tensor": ToTensorTransform,
     "transpose": TransposeTransform,
     "vars_to_dimension": VarsToDimensionTransform
