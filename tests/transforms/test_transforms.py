@@ -12,12 +12,32 @@ PYTHONPATH=src python -m pytest tests/test_transforms.py
 ```
 """
 
-from pathlib import Path
-
+import numpy as np
 import pytest
 import pandas as pd
+import torch
+import xarray as xr
 
-from FRAME_FM.transforms import *
+from FRAME_FM.transforms import (
+    FillMissingValueTransform,
+    NormalizeTransform,
+    RenameTransform,
+    ResampleTransform,
+    ReshapeTransform,
+    ReverseAxisTransform,
+    RollTransform,
+    SortAxisTransform,
+    SubsetTransform,
+    TiledIndexMapper,
+    TilerTransform,
+    ToTensorTransform,
+    ToValuesBoundsTransform,
+    ToValuesLocationsTransform,
+    TransposeTransform,
+    VarsToDimensionTransform,
+    tiled_to_coordinate_bounds,
+    tiled_to_pixel_coordinates,
+)
 from FRAME_FM.transforms.transforms import transform_mapping
 from FRAME_FM.utils.data_utils import load_data_from_uri
 
@@ -110,7 +130,7 @@ def test_ResampleTransform():
     ds, var_id = _load_data()
     start, end = "2000-01-01T00:00:00", "2000-01-01T23:00:00"
     ds = ds.sel(time=slice(start, end))
-    freq = "1D" # daily frequency
+    freq = "1D"  # daily frequency
 
     # Run the resample transform to resample from hourly to daily data
     resample_transform = ResampleTransform(dim="time", freq=freq)
@@ -319,15 +339,14 @@ def test_tile_locations_bounds():
         },
     )
     tiled = TilerTransform(y=2, x=2, boundary="trim")(da)
-    _, first_tile_locations = ToValuesLocationsTransform(coords=["x", "y"])(tiled[0])
+    _, first_tile_locations = ToValuesLocationsTransform(dims=["x", "y"])(tiled[0])
     assert torch.equal(first_tile_locations, torch.tensor([[[105., 105.], [115., 115.]], [[5., 15.], [5., 15.]]]))
-    _, last_tile_locations = ToValuesLocationsTransform(coords=["x", "y"])(tiled[-1])
+    _, last_tile_locations = ToValuesLocationsTransform(dims=["x", "y"])(tiled[-1])
     assert torch.equal(last_tile_locations, torch.tensor([[[145., 145.], [155., 155.]], [[25., 35.], [25., 35.]]]))
     _, first_tile_bounds = ToValuesBoundsTransform(coords=["x", "y"])(tiled[0])
     assert torch.equal(first_tile_bounds, torch.tensor([[100., 120.], [0., 20.]]))
     _, last_tile_bounds = ToValuesBoundsTransform(coords=["x", "y"])(tiled[-1])
     assert torch.equal(last_tile_bounds, torch.tensor([[140., 160.], [20., 40.]]))
-
 
 
 def test_tiled_index_mapper_roundtrip():
@@ -408,6 +427,7 @@ def test_tiler_discontinuity_guardrail_raises_for_wrapping_tile():
     with pytest.raises(ValueError, match="discontinuity crossing"):
         TilerTransform(latitude=2, longitude=4, discontinuity_periods={"longitude": 360.0})(da)
 
+
 def test_ToTensorTransform():
     da, var_id = _load_data(response_type="DataArray")
 
@@ -456,11 +476,11 @@ def test_multiple_transforms_1():
 
     print("\nApplying multiple transforms using transform mapping codes:")
     for transform in transforms_to_apply:
-         if transform["type"] not in transform_mapping:
-             raise ValueError(f"Unsupported transform type: {transform['type']}")
-         transform_class = transform_mapping[transform["type"]]
-         transform = transform_class(**{k: v for k, v in transform.items() if k != "type"})
-         ds = transform(ds)
+        if transform["type"] not in transform_mapping:
+            raise ValueError(f"Unsupported transform type: {transform['type']}")
+        transform_class = transform_mapping[transform["type"]]
+        transform = transform_class(**{k: v for k, v in transform.items() if k != "type"})
+        ds = transform(ds)
 
     assert "dewpoint_temperature" in ds.data_vars, "Rename transform did not work as expected."
     assert ds.longitude[0] == -180.0 and ds.longitude[-1] == 179.75, "Roll transform did not work as expected." + str(ds.longitude.values)
@@ -513,4 +533,3 @@ def test_multiple_transforms_3():
 
     print("\nWhat we actually learnt here: _rolling_ the dataset before or after subset STILL WORKS!")
     print("But reversing the axis before/after DOES have an impact!")
-
