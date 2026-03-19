@@ -30,6 +30,8 @@ Feature ideas are welcome! Please open an issue using the [Feature Request](.git
 
 ### Contributing Code
 
+All code contributions must be made by human contributors who fully understand the code they are submitting. While AI/LLM tools may be used to assist with writing code, contributors are expected to review, understand, and take full responsibility for every line of code in their contribution. Automated or bot-generated pull requests without meaningful human oversight will not be accepted.
+
 1. **Fork the repository** and clone your fork locally.
 2. **Create a branch** for your changes:
    ```bash
