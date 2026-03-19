@@ -346,7 +346,7 @@ def test_tile_locations_bounds():
     assert torch.equal(last_tile_locations, torch.tensor([[[145., 145.], [155., 155.]], [[25., 35.], [25., 35.]]]))
     _, first_tile_locations = ToValuesLocationsTransform(
         dims=["x", "y"],
-        crs_conversion_spec=CRS_conversion_spec((4326, {'Lat': 'y', 'Lon': 'x'}), (32649, {'E': 'x', 'N': 'y'}))
+        crs_conversion_spec=((4326, {'Lat': 'y', 'Lon': 'x'}), (32649, {'E': 'x', 'N': 'y'}))
         )(tiled[0])
     assert torch.equal(
         first_tile_locations,

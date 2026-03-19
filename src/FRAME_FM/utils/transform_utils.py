@@ -16,11 +16,26 @@ class CRS_spec:
     dim_mapping: dict[str, str]
 
 
+def _parse_CRS_spec(spec: CRS_spec | tuple[int, dict[str, str]] | list):
+    if isinstance(spec, CRS_spec):
+        return spec
+    elif isinstance(spec, tuple | list):
+        if len(spec) != 2:
+            raise ValueError(
+                f"If a tuple or list, CRS spec {spec} must be of form (EPSG, dim_mapping_dict)."
+                )
+        return CRS_spec(spec[0], spec[1])
+    else:
+        raise TypeError(f"CRS spec {spec} must be a CRS_spec, tuple, or list.")
+
+
 class CRS_conversion_spec:
     """Dataclass specifying an xarray CRS transformation, from source to target."""
-    def __init__(self, source: tuple[int, dict[str, str]], target: tuple[int, dict[str, str]]):
-        self.source = CRS_spec(source[0], source[1])
-        self.target = CRS_spec(target[0], target[1])
+    def __init__(self,
+                 source: CRS_spec | tuple[int, dict[str, str]] | list,
+                 target: CRS_spec | tuple[int, dict[str, str]] | list):
+        self.source = _parse_CRS_spec(source)
+        self.target = _parse_CRS_spec(target)
 
 
 def _implement_crs_spec(crs_spec: CRS_spec) -> tuple[CRS, list[str]]:
@@ -53,7 +68,18 @@ class CRS_convertor:
         crs_transformer (pyproj.Transformer): Class to map coords from source to target CRS.
         axis_id_mapping (dict[str, str]): Mapping from target xarray dims to CRS axis indices.
     """
-    def __init__(self, conversion_spec: CRS_conversion_spec):
+    def __init__(self, conversion_spec: CRS_conversion_spec | tuple | list):
+        if isinstance(conversion_spec, tuple | list):
+            if len(conversion_spec) != 2:
+                raise ValueError(
+                    f"If a list/tuple, conversion_spec {conversion_spec} must be of form"
+                    " (source CRS_spec, target CRS_spec)."
+                    )
+            conversion_spec = CRS_conversion_spec(conversion_spec[0], conversion_spec[1])
+        elif not isinstance(conversion_spec, CRS_conversion_spec):
+            raise TypeError(
+                f"conversion_spec {conversion_spec} must be a list, tuple, or CRS_conversion_spec."
+                )
         source_crs, self.source_axis_abbrvs = _implement_crs_spec(conversion_spec.source)
         self.source_dims = [
             conversion_spec.source.dim_mapping[abbrv] for abbrv in self.source_axis_abbrvs

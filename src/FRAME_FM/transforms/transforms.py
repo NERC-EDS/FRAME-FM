@@ -337,7 +337,9 @@ class TilerTransform(BaseTransform):
 
 
 class ToValuesLocationsTransform(BaseTransform):
-    def __init__(self, dims: list[str], crs_conversion_spec: CRS_conversion_spec | None = None):
+    def __init__(self,
+                 dims: list[str],
+                 crs_conversion_spec: CRS_conversion_spec | tuple | list | None = None):
         self.dims = dims
         self.crs_conversion = (
             None if crs_conversion_spec is None else CRS_convertor(crs_conversion_spec)
