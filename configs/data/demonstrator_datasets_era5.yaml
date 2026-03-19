@@ -1,0 +1,41 @@
+# configs/data/demonstrator_datasets.yml
+training:
+  _target_: torch.utils.data.DataLoader
+  dataset:
+    _target_: torch.utils.data.StackDataset
+    _args_:
+    - _target_: FRAME_FM.datasets.base_dataset.BaseDataset
+      data_uri: /gws/ssde/j25b/eds_ai/public/era5_repack/aggregations/data/ecmwf-era5X_oper_an_sfc_2000_2020_2d_repack.kr1.0.json
+      preprocessors:
+      - {type: reverse_axis, dim: latitude}
+      - {type: roll, dim: longitude, shift: 720}
+      - {type: to_dataarray, var_id: d2m}
+      - {type: subset, time: ["2000-01-01", "2018-12-31"]}
+      - {type: fill_missing, fill_value: 0}
+      - {type: normalize, mean: 0, std: 100}
+      - {type: tiler, boundary: trim, time: 4, latitude: 64, longitude: 64}
+      transforms:
+      - {type: to_values_bounds_tensors, coords: []}
+  batch_size: 8
+  shuffle: True
+  num_workers: 4
+validation:
+  _target_: torch.utils.data.DataLoader
+  dataset:
+    _target_: torch.utils.data.StackDataset
+    _args_:
+    - _target_: FRAME_FM.datasets.base_dataset.BaseDataset
+      data_uri: /gws/ssde/j25b/eds_ai/public/era5_repack/aggregations/data/ecmwf-era5X_oper_an_sfc_2000_2020_2d_repack.kr1.0.json
+      preprocessors:
+      - {type: reverse_axis, dim: latitude}
+      - {type: roll, dim: longitude, shift: 720}
+      - {type: to_dataarray, var_id: d2m}
+      - {type: subset, time: ["2019-01-01", "2020-12-31"]}
+      - {type: fill_missing, fill_value: 0}
+      - {type: normalize, mean: 0, std: 100}
+      - {type: tiler, boundary: trim, time: 4, latitude: 64, longitude: 64}
+      transforms:
+      - {type: to_values_bounds_tensors, coords: []}
+  batch_size: 8
+  shuffle: False
+  num_workers: 4

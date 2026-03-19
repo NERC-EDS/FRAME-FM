@@ -1,0 +1,26 @@
+# configs/model/demo_mmmae.yaml
+_target_: FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder
+
+# Inputs
+input_shapes: [[64, 64]]           # 4 time x 64 latitudes x 64 longitudes per tile
+n_channels: [4]                       # 1 channel (d2m initially, but could be more in future)
+patch_shapes: [[1, 8, 8]]             # Tokenise 8x8 patches
+inputs_positioned: ["bounds"]         # Input positions are of tile bounds
+position_space: [[9.466848e+17, 1.6094556e+18], [-90, 90], [-180, 180]]
+                                      # Positions are time, latitude, longitude
+                                      # Time float64s are: [9.466848e+17, 1.6094556e+18]
+                                      # Time is represented as floats in the range [0, 2e6], (np.datetime64('2000-01-01T00:00:00.000000000'), np.datetime64('2020-12-31T23:00:00.000000000'))
+                                      
+# Architecture
+pos_embed_ratio: [1, 1]               # Use equi-dimensional coordinate embeddings
+encoder_embed_dim: 32                 # Embed inputs in 32D space
+encoder_depth: 8                      # Encode with 8 attention layers
+encoder_num_heads: 4                  # Encode with 4 attention heads per layer
+decoder_embed_dim: 32                 # Embed predictions in 32D space
+decoder_depth: 4                      # Decode with 4 attention layers
+decoder_num_heads: 4                  # Decode with 4 attention heads per layer
+mlp_ratio: 4.                         # Use MLP layers 4x larger than embeddings
+
+# Optimisation hyperparameters
+learning_rate: 1e-3                   # Learning rate
+default_mask_ratio: 0.75              # Train to reconstruct from 25% of token embeddings

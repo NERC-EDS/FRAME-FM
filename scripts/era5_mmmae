@@ -13,5 +13,4 @@
 [ ! "$VIRTUAL_ENV" ] &&  "source .venv/bin/activate"
 export HYDRA_FULL_ERROR=1
 export PYTHONPATH="$PWD/src:$PYTHONPATH" # this is necessary at the moment because baseline modules are in src/
-# python src/FRAME_FM/training/train.py model=demo_mmmae data=spatial_land_cover trainer=default logging=mlflow_mmmae_demo
-python src/FRAME_FM/training/train.py model=demonstrator_mmmae data=demonstrator_datasets trainer=default logging=mlflow_mmmae_demo
+python src/FRAME_FM/training/train.py model=demonstrator_mmmae_era5 data=demonstrator_datasets_era5 trainer=default logging=mlflow_mmmae_era5
