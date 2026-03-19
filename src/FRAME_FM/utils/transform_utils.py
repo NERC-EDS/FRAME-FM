@@ -1,0 +1,85 @@
+from dataclasses import dataclass
+from pyproj import CRS, Transformer
+from xarray import broadcast, DataArray
+
+
+@dataclass
+class CRS_spec:
+    """Dataclass specifying a coordinate reference system for an xarray with general axis names.
+    Examples:
+    * for an xarray in OS National Grid with Easting and Northing axes 'x' and 'y'
+        `CRS_spec(27700, {'E': 'x', 'N': 'y'})`
+    * for an xarray with latitude and longitude specified in axes 'latitude' and 'longitude'
+        `CRS_spec(4326, {'Lat': 'latitude', 'Lon': 'longitude'})`
+    """
+    EPSG: int
+    dim_mapping: dict[str, str]
+
+
+class CRS_conversion_spec:
+    """Dataclass specifying an xarray CRS transformation, from source to target."""
+    def __init__(self, source: tuple[int, dict[str, str]], target: tuple[int, dict[str, str]]):
+        self.source = CRS_spec(source[0], source[1])
+        self.target = CRS_spec(target[0], target[1])
+
+
+def _implement_crs_spec(crs_spec: CRS_spec) -> tuple[CRS, list[str]]:
+    crs = CRS.from_epsg(crs_spec.EPSG)
+    axis_abbrvs = []
+    for axis in crs.axis_info:
+        if axis.abbrev not in crs_spec.dim_mapping.keys():
+            raise ValueError(
+                f"CRS {crs_spec.EPSG} requires axis with abbreviation {axis.abbrev}."
+                f" with no corresponding xarray dim specified in mapping {crs_spec.dim_mapping}."
+                )
+        axis_abbrvs.append(axis.abbrev)
+    if len(crs_spec.dim_mapping) != len(set(crs_spec.dim_mapping.values())):
+        raise ValueError("xarray dims must be unique.")
+    missing_keys = set(crs_spec.dim_mapping.keys()) - set(axis_abbrvs)
+    if len(missing_keys) > 0:
+        raise ValueError(f"Mapping keys {missing_keys} are not in CRS axes.")
+    return crs, axis_abbrvs
+
+
+class CRS_convertor:
+    """Class to apply CRS conversion to xarrays.
+
+    Args:
+        conversion_spec (CRS_conversion_spec): Specifications of source and target CRSs.
+
+    Attributes:
+        self.source_axis_abbrvs (list[str]): Abbreviations of axes in source CRS.
+        source_dim_mapping (dict[str, str]): Mapping from source CRS axis names to xarray dims.
+        crs_transformer (pyproj.Transformer): Class to map coords from source to target CRS.
+        axis_id_mapping (dict[str, str]): Mapping from target xarray dims to CRS axis indices.
+    """
+    def __init__(self, conversion_spec: CRS_conversion_spec):
+        source_crs, self.source_axis_abbrvs = _implement_crs_spec(conversion_spec.source)
+        self.source_dims = [
+            conversion_spec.source.dim_mapping[abbrv] for abbrv in self.source_axis_abbrvs
+            ]
+        target_crs, target_abbrvs = _implement_crs_spec(conversion_spec.target)
+        self.crs_transformer = Transformer.from_crs(source_crs, target_crs)
+        self.axis_id_mapping = {
+            dim: target_abbrvs.index(abbrv)
+            for abbrv, dim in conversion_spec.target.dim_mapping.items()
+            }
+
+    def add_converted_coords(self, sample: DataArray, dims: list[str]) -> DataArray:
+        """Add coordinates in target CRS to a DataArray, based on source CRS coordinates.
+
+        Args:
+            sample (xarray.DataArray): Data array with coordinates to convert between CRSs.
+            dims (list[str]): xarray dims to add to data array.
+
+        Returns:
+            xarray.DataArray: Data array with additional coordinates in target CRS.
+            """
+        sample = sample.copy()
+        coord_arrays = broadcast(*[sample[source_dim] for source_dim in self.source_dims])
+        coord_arrays = self.crs_transformer.transform(
+            *[coords.values for coords in coord_arrays]  # type: ignore
+            )
+        return sample.assign_coords(
+            {dim: (self.source_dims, coord_arrays[self.axis_id_mapping[dim]]) for dim in dims}
+            )

@@ -6,12 +6,12 @@ import torch
 from dataclasses import dataclass
 import math
 
+from FRAME_FM.utils.common_utils import convert_subset_selectors_to_slices, check_object_type
+from FRAME_FM.utils.transform_utils import CRS_conversion_spec, CRS_convertor
+
 DA = xr.DataArray
 DS = xr.Dataset
 TT = torch.Tensor
-
-
-from FRAME_FM.utils.common_utils import convert_subset_selectors_to_slices, check_object_type
 
 
 class BaseTransform:
@@ -337,11 +337,16 @@ class TilerTransform(BaseTransform):
 
 
 class ToValuesLocationsTransform(BaseTransform):
-    def __init__(self, coords):
-        self.coords = coords
+    def __init__(self, dims: list[str], crs_conversion_spec: CRS_conversion_spec | None = None):
+        self.dims = dims
+        self.crs_conversion = (
+            None if crs_conversion_spec is None else CRS_convertor(crs_conversion_spec)
+            )
 
     def __call__(self, sample: DA) -> tuple[TT, TT]:
-        coord_array = xr.broadcast(*[sample[coord] for coord in self.coords])
+        if self.crs_conversion is not None:
+            sample = self.crs_conversion.add_converted_coords(sample, self.dims)
+        coord_array = xr.broadcast(*[sample[dim] for dim in self.dims])
         locations = torch.stack(
             [torch.tensor(coords.values, dtype=torch.float32) for coords in coord_array],
             dim=0

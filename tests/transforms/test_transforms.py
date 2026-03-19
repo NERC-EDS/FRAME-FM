@@ -40,6 +40,7 @@ from FRAME_FM.transforms import (
 )
 from FRAME_FM.transforms.transforms import transform_mapping
 from FRAME_FM.utils.data_utils import load_data_from_uri
+from FRAME_FM.utils.transform_utils import CRS_conversion_spec
 
 from tests.datasets.common import CHESS_URI, ERA5_URI
 
@@ -343,6 +344,17 @@ def test_tile_locations_bounds():
     assert torch.equal(first_tile_locations, torch.tensor([[[105., 105.], [115., 115.]], [[5., 15.], [5., 15.]]]))
     _, last_tile_locations = ToValuesLocationsTransform(dims=["x", "y"])(tiled[-1])
     assert torch.equal(last_tile_locations, torch.tensor([[[145., 145.], [155., 155.]], [[25., 35.], [25., 35.]]]))
+    _, first_tile_locations = ToValuesLocationsTransform(
+        dims=["x", "y"],
+        crs_conversion_spec=CRS_conversion_spec((4326, {'Lat': 'y', 'Lon': 'x'}), (32649, {'E': 'x', 'N': 'y'}))
+        )(tiled[0])
+    assert torch.equal(
+        first_tile_locations,
+        torch.tensor([
+            [[-166334.5938,  943774.9375], [-146074.8594,  930334.7500]],
+            [[555713.5625,  554016.0625], [1667104.7500, 1662218.5000]]
+            ])
+        )
     _, first_tile_bounds = ToValuesBoundsTransform(coords=["x", "y"])(tiled[0])
     assert torch.equal(first_tile_bounds, torch.tensor([[100., 120.], [0., 20.]]))
     _, last_tile_bounds = ToValuesBoundsTransform(coords=["x", "y"])(tiled[-1])
