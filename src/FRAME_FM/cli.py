@@ -4,6 +4,7 @@
 from collections import defaultdict
 from rich.console import Console
 from rich.panel import Panel
+from rich.syntax import Syntax
 
 import click
 from pathlib import Path
@@ -21,6 +22,18 @@ def show_config_files() -> None:
 
     for folder, files in sorted_yamls.items():
         console.print(Panel(", ".join(files), title=f"Folder: {folder}"))
+
+
+def display_contents_of_config_file(config_file: str) -> None:
+    """Display the contents of a config file."""
+
+    files = list(Path("configs").rglob(config_file))
+    if not files:
+        click.secho(f"No matching config found for file: {config_file}.", fg="red")
+    
+    for file in files:
+        console.print(f"File: {file}")
+        console.print(Syntax(file.open().read(), "yaml", theme="monokai", line_numbers=True))
 
 
 @click.group()
@@ -52,12 +65,12 @@ def train():
 
 @app.command()
 @click.option("--list", "list_all", is_flag=True)
-def config(list_all):
+@click.option("--display", "display_config", help="Pass either the filename in the form of 'file.yaml', or 'folder/file.yaml'.")
+def config(list_all, display_config):
     """Launch configuration entrypoint."""
     
     if list_all:
         show_config_files()
 
-
-
-    click.echo("Config command invoked.") # This is a placeholder for the time being.
+    if display_config:
+        display_contents_of_config_file(display_config)
