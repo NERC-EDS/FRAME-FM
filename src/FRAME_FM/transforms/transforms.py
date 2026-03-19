@@ -23,7 +23,7 @@ class BaseTransform:
 
 
 class FillMissingValueTransform(BaseTransform):
-    def __init__(self, strategy: str = "constant", fill_value: None | float = None, 
+    def __init__(self, strategy: str = "constant", fill_value: None | float = None,
                  method: None | str = "linear"):
         self.strategy = strategy
         self.fill_value = fill_value
@@ -63,7 +63,7 @@ class NormalizeTransform(BaseTransform):
         return (sample - self.mean) / self.std
 
 
-class ScaleTransform(NormalizeTransform): 
+class ScaleTransform(NormalizeTransform):
     pass
 
 
@@ -80,7 +80,7 @@ class RenameTransform(BaseTransform):
 
 
 class ResampleTransform(BaseTransform):
-    def __init__(self, dim: str, freq: str | int , method: str = "mean"):
+    def __init__(self, dim: str, freq: str | int, method: str = "mean"):
         self.dim = dim
         self.freq = freq
         self.method = method
@@ -90,7 +90,7 @@ class ResampleTransform(BaseTransform):
         check_object_type(sample, allowed_types=(DS, DA), caller=self.__class__.__name__)
         if self.method not in ["mean", "sum", "max", "min", "median"]:
             raise ValueError(f"Unsupported resampling method: {self.method}")
-        
+
         # Choose resample if we have a time dimension, otherwise use coarsen for spatial dimensions
         if self.dim == "time":
             resampled = sample.resample({self.dim: self.freq})
@@ -115,7 +115,7 @@ class ReshapeTransform(BaseTransform):
 
 
 class RollTransform(BaseTransform):
-    def __init__(self, dim: str, shift: None|int):
+    def __init__(self, dim: str, shift: None | int):
         self.dim = dim
         self.shift = shift
 
@@ -123,7 +123,7 @@ class RollTransform(BaseTransform):
         # Implement rolling logic here
         check_object_type(sample, allowed_types=DS, caller=self.__class__.__name__)
         shift = self.shift
-        
+
         if shift is None:
             # Check if we need to roll
             if float(sample[self.dim].max()) > 350 and float(sample[self.dim].min()) < 10:
@@ -178,11 +178,11 @@ class SubsetTransform(BaseTransform):
         check_object_type(sample, allowed_types=(DS, DA), caller=self.__class__.__name__)
 
         if self.variables is None:
-            # If no specific variables are provided, apply the subset to all variables in 
+            # If no specific variables are provided, apply the subset to all variables in
             # the Dataset or the single DataArray
             return sample.sel(**self.subset_selectors)
-        
-        # If we have variables then we need to create a new Dataset with only those 
+
+        # If we have variables then we need to create a new Dataset with only those
         # variables and apply the subset selectors to each variable
         ds = xr.Dataset()
         ds.attrs.update(sample.attrs)
@@ -190,8 +190,8 @@ class SubsetTransform(BaseTransform):
         for var_id in self.variables:
             # If subset selectors exist, then apply, but accept subsetting over some
             # variables that may have reduced dimensions (e.g. no time dimension).
-            # E.g. "lon" and "lat" may be 2D coordinate variables that do not have a time dimension, 
-            # so we should allow for subsetting over the time dimension for the main variable(s) of 
+            # E.g. "lon" and "lat" may be 2D coordinate variables that do not have a time dimension,
+            # so we should allow for subsetting over the time dimension for the main variable(s) of
             # interest, but still subset in space for time-invariant variables.
             if self.subset_selectors:
                 subset_selectors = self.subset_selectors.copy()
@@ -220,8 +220,8 @@ class SqueezeTransform(BaseTransform):
 class TilerTransform(BaseTransform):
     """
     A transform that takes a Dataset or DataArray and breaks it into smaller tiles along specified dimensions.
-    This uses the xarray `coarsen` + `construct` pattern to create non-overlapping tiles of the data, which can 
-    be useful for training models on large spatial datasets by reducing memory usage and allowing for batch 
+    This uses the xarray `coarsen` + `construct` pattern to create non-overlapping tiles of the data, which can
+    be useful for training models on large spatial datasets by reducing memory usage and allowing for batch
     processing of smaller chunks of data.
     """
     def __init__(
@@ -571,7 +571,7 @@ class ToDataArray(BaseTransform):
                 raise ValueError("ToDataArrayTransform can only be applied to Datasets with a single variable.")
             return sample[self.var_id]
         return sample
-    
+
 
 class ToTensorTransform(BaseTransform):
     def __call__(self, sample: DA | np.ndarray) -> torch.Tensor:
@@ -581,29 +581,29 @@ class ToTensorTransform(BaseTransform):
             sample = sample.values
 
         return torch.from_numpy(sample)
-    
+
 
 class TransposeTransform(BaseTransform):
     def __call__(self, sample):
         # Implement transposing logic here
         check_object_type(sample, allowed_types=(DA, TT), caller=self.__class__.__name__)
-        return sample.transpose() 
+        return sample.transpose()
 
 
 class VarsToDimensionTransform(BaseTransform):
     """
-    A transform that takes a list of variables from a Dataset and stacks them into a 
-    new dimension, effectively converting the variable dimension into a coordinate 
-    dimension. This is useful for models that expect a single multi-channel input 
+    A transform that takes a list of variables from a Dataset and stacks them into a
+    new dimension, effectively converting the variable dimension into a coordinate
+    dimension. This is useful for models that expect a single multi-channel input
     rather than separate variables.
 
-    Since the purpose is to prepare the data for conversion to a Tensor, we assume 
+    Since the purpose is to prepare the data for conversion to a Tensor, we assume
     that ancillary variables that are not genuine coordinates can be dropped.
     """
-    exclusion_vars = ["time_bounds", "lat_bounds", "lon_bounds", 
-                       "time_bnds", "lat_bnds", "lon_bnds",
-                       "crs", "spatial_ref", "bounds", "bnds"]
-    
+    exclusion_vars = ["time_bounds", "lat_bounds", "lon_bounds",
+                      "time_bnds", "lat_bnds", "lon_bnds",
+                      "crs", "spatial_ref", "bounds", "bnds"]
+
     def __init__(self, variables: list, new_dim: str, only_vars_with_time: bool = True):
         self.variables = variables
         self.new_dim = new_dim
@@ -620,7 +620,7 @@ class VarsToDimensionTransform(BaseTransform):
             bounds_vars = set([b_list[0] for b_list in sample.cf.bounds.values()])
 
             if self.only_vars_with_time:
-                vars_without_time = set([var_id for var_id in sample.data_vars 
+                vars_without_time = set([var_id for var_id in sample.data_vars
                                         if not hasattr(sample[var_id], "time")])
             else:
                 vars_without_time = set()
@@ -679,11 +679,11 @@ def resolve_transform(transform_config: dict) -> BaseTransform:
     """
     if isinstance(transform_config, BaseTransform):
         return transform_config
-    
+
     transform_type = transform_config.get("type")
     if transform_type not in transform_mapping:
         raise ValueError(f"Unsupported transform type: {transform_type}")
-    
+
     transform_class = transform_mapping[transform_type]
     return transform_class(**{k: v for k, v in transform_config.items() if k != "type"})
 
@@ -705,6 +705,6 @@ def apply_transforms(data: xr.Dataset | xr.DataArray, preprocessors: list) -> xr
     return data
 
 
-# Create `apply_preprocessors` as an alias for `apply_transforms` to allow for more intuitive naming when used 
+# Create `apply_preprocessors` as an alias for `apply_transforms` to allow for more intuitive naming when used
 # in the context of preprocessing steps.
 apply_preprocessors = apply_transforms
