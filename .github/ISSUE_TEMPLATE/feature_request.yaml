@@ -51,6 +51,7 @@ body:
         - Documentation
         - Testing
         - Other
+      multiple: true
     validations:
       required: true
 
