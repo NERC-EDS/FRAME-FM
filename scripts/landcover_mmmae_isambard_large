@@ -1,0 +1,42 @@
+#!/bin/bash
+#SBATCH --job-name=landcover_mmmae_large
+#SBATCH --output=landcover_mmmae_large_%j.out
+#SBATCH --nodes=100
+#SBATCH --ntasks-per-node=4
+#SBATCH --gpus-per-node=4
+#SBATCH --time=00:30:00
+
+set -euo pipefail
+
+# Log GPU utilization while the Python job runs.
+LOG="gpu_util_${SLURM_JOB_ID}.csv"
+echo "timestamp,util.gpu %,util.mem %,mem.used MiB,mem.total MiB,temp C,power W" > "$LOG"
+
+# Start a background sampler (5-second cadence) for the lifetime of the job.
+( while true; do
+      printf "%s," "$(date --iso-8601=seconds)"
+      nvidia-smi --query-gpu=utilization.gpu,utilization.memory,memory.used,memory.total,temperature.gpu,power.draw \
+                 --format=csv,noheader,nounits
+      sleep 5
+  done ) >> "$LOG" 2>/dev/null &
+
+LOGGER_PID=$!
+trap 'kill "$LOGGER_PID" 2>/dev/null || true; wait "$LOGGER_PID" 2>/dev/null || true' EXIT
+
+source .venv/bin/activate
+export HYDRA_FULL_ERROR=1
+export PYTHONPATH="$PWD/src:${PYTHONPATH:-}"
+
+# 100 nodes × 4 GPUs/node = 400 GPUs total
+# 10x larger model scaled with compute to maintain ~similar per-epoch time
+# 100 epochs target in 30-minute window (may timeout, capturing metrics up to that point)
+srun python src/FRAME_FM/training/train.py \
+  data=demonstrator_datasets \
+  model=demonstrator_mmmae_large \
+  trainer=default \
+  logging=csv_lightweight \
+  trainer.accelerator=gpu \
+  trainer.devices=4 \
+  trainer.max_epochs=100 \
+  +trainer.num_nodes=100 \
+  +trainer.strategy=ddp
