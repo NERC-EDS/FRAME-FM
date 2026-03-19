@@ -77,7 +77,7 @@ class MultimodalMaskedAutoencoder(BaseModule):
                 Any single string is taken to apply to all inputs. Defaults to "".
             position_space (tuple[tuple[float, float], ...] | None): Space in which positions lie,
                 or None if no input has positions. Defaults to None.
-            pos_embed_ratio (tuple[float, ...] | None): Relative sizes of position embedding dim.s,
+            pos_embed_ratio (tuple[float, ...] | None): Relative sizes of position embedding dims,
                 or None if no input has positions. Defaults to None.
             encoder_embed_dim (int): Dimensions into which to embed each patch. Defaults to 16.
             encoder_depth (int, optional): Number of attention layers for encoding. Defaults to 24.
