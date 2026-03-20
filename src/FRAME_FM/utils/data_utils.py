@@ -11,12 +11,16 @@ import dask
 import xarray as xr
 
 from FRAME_FM.utils.common_utils import convert_subset_selectors_to_slices
-from FRAME_FM.utils.settings import DEBUG, DefaultSettings, DatasetSettings
+from FRAME_FM.utils.settings import DEBUG, DatasetSettings
 from FRAME_FM.transforms import apply_preprocessors
 from FRAME_FM.utils.croissant_utils.croissant_bakery import write_croissant_file
 
-from zarr_parallel import ZarrParallelAssembler
-from zarr_parallel.utils import set_verbose
+if DatasetSettings.caching_backend != "basic":
+    from zarr_parallel import ZarrParallelAssembler
+    from zarr_parallel.utils import set_verbose as zp_set_verbose
+else:
+    ZarrParallelAssembler = None  # Placeholder to avoid import errors when not using zarr_parallel
+    zp_set_verbose = None  # Placeholder to avoid import errors when not using zarr_parallel
 
 
 def safely_remove_dir(path: Path | str):
@@ -250,26 +254,38 @@ def cache_data_to_zarr(data_uri: str | Path,
     # Compute a hash of the preprocessors for caching purposes
     preprocessor_hash = hash_preprocessors(preprocessors)
 
-    zp = ZarrParallelAssembler(
-        data_uri=data_uri,
-        preprocessors=preprocessors,
-        add_attrs={DatasetSettings.preprocessor_hash_key: preprocessor_hash},
-        chunks=chunks,
-        engine=get_xr_kwargs(data_uri)['engine']
-    )
-    set_verbose(1)  # Enable verbose logging for debugging purposes
+    # If backend is "basic", we will use the simple caching implementation that loads the data
+    # into memory, applies preprocessors, and writes to Zarr format. If the backend is "series" 
+    # or "dask_distributed", we will use the ZarrParallelAssembler to handle the caching in a more distributed manner.
+    if DatasetSettings.caching_backend == "basic":
+        ds = load_data_from_uri(
+            uri=data_uri,
+            chunks=chunks)
+        ds.attrs[DatasetSettings.preprocessor_hash_key] = preprocessor_hash
+        ds = apply_preprocessors(ds, preprocs) if preprocs else ds
+        write_zarr(ds, cache_path, chunks=chunks)
     
-    # Assume the cache path includes the actual zarr store name
-    zp.cache(
-        str(cache_path),
-        generate_stats=generate_stats, 
-        await_completion=True,
-        simultaneous_worker_limit=4, # Number of workers
-        deploy_mode="dask_distributed" # "series"  - Deploy mode for Dask distributed cluster
-        # Memory limit if less than 2GB per worker?
-        # Worker timeout if not 30 minutes
-        # Deploy mode if specifying between dask/slurm
+    else:
+        zp = ZarrParallelAssembler(
+            data_uri=data_uri,
+            preprocessors=preprocessors,
+            add_attrs={DatasetSettings.preprocessor_hash_key: preprocessor_hash},
+            chunks=chunks,
+            engine=get_xr_kwargs(data_uri)['engine']
         )
+        set_verbose(1)  # Enable verbose logging for debugging purposes
+        
+        # Assume the cache path includes the actual zarr store name
+        zp.cache(
+            str(cache_path),
+            generate_stats=generate_stats, 
+            await_completion=True,
+            simultaneous_worker_limit=4, # Number of workers
+            deploy_mode="dask_distributed" # "series"  - Deploy mode for Dask distributed cluster
+            # Memory limit if less than 2GB per worker?
+            # Worker timeout if not 30 minutes
+            # Deploy mode if specifying between dask/slurm
+            )
 
     # Write Croissant record for the cached Zarr file
     # This should include metadata about the original data source, the preprocessors applied, and the
@@ -282,7 +298,7 @@ def cache_data_to_zarr(data_uri: str | Path,
     # Now load the cached Zarr files into memory and add to the response dictionary
     return load_data_from_uri(
                 uri=cache_path,
-                zarr_format=DefaultSettings.zarr_format
+                zarr_format=DatasetSettings.zarr_format
             )
 
 
@@ -299,7 +315,7 @@ def write_zarr(ds: xr.Dataset,
     #  - https://github.com/roocs/rook/issues/55
     #  - https://docs.dask.org/en/latest/scheduling.html
     with dask.config.set(scheduler="synchronous"):
-        delayed_obj = chunked_ds.to_zarr(output_path, zarr_format=DefaultSettings.zarr_format, compute=False)
+        delayed_obj = chunked_ds.to_zarr(output_path, zarr_format=DatasetSettings.zarr_format, compute=False)
         delayed_obj.compute()
 
     print(f"Wrote output file: {output_path}")
