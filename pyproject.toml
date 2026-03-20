@@ -3,6 +3,8 @@ name = "frame-fm"
 dynamic = ["version"]
 description = "A package for the simplification of training deep learning models for environmental data"
 readme = "README.md"
+license = "Apache-2.0"
+license-files = ["licenses/*.txt", "AUTHORS.md"]
 requires-python = ">=3.11,<3.13"
 dependencies = [
     "cf-xarray>=0.10.11",
