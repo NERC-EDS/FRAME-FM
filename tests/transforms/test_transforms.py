@@ -380,6 +380,7 @@ def test_time_aware_tiling_positions_and_bounds():
 
 
 def test_tiler_axis_order_guardrail_raises_on_descending_axis():
+    # Test on a hand-crafted DataArray
     da = xr.DataArray(
         np.zeros((1, 3, 4), dtype=np.float32),
         dims=("band", "y", "x"),
@@ -393,6 +394,21 @@ def test_tiler_axis_order_guardrail_raises_on_descending_axis():
     with pytest.raises(ValueError, match="not strictly ascending"):
         TilerTransform(y=2, x=2, validate_axis_order=True)(da)
 
+    # Test on the ERA5 example, which has a descending latitude axis
+    da, var_id = _load_data(response_type="DataArray")
+    with pytest.raises(ValueError, match="not strictly ascending"):
+        TilerTransform(latitude=45, longitude=45, validate_axis_order=True)(da)
+
+    # Reverse the latitude axis and check that the guardrail does not raise an error when validate_axis_order=False
+    da_reversed = da.isel(latitude=slice(None, None, -1))
+    try:
+        TilerTransform(latitude=45, longitude=45, validate_axis_order=False)(da_reversed)
+    except ValueError:
+        assert False, "TilerTransform raised an error when validate_axis_order=False, but it should not have."
+
+    # And test that the guardrail does not raise an error when validate_axis_order=True but the axis is in ascending order
+    result = TilerTransform(latitude=45, longitude=45, validate_axis_order=True)(da_reversed)
+    assert isinstance(result, xr.DataArray), "TilerTransform did not return a DataArray when validate_axis_order=True and the axis is in ascending order."
 
 def test_tiler_discontinuity_guardrail_raises_for_wrapping_tile():
     da = xr.DataArray(
@@ -406,7 +422,23 @@ def test_tiler_discontinuity_guardrail_raises_for_wrapping_tile():
     )
 
     with pytest.raises(ValueError, match="discontinuity crossing"):
-        TilerTransform(latitude=2, longitude=4, discontinuity_periods={"longitude": 360.0})(da)
+        TilerTransform(latitude=2, longitude=4, discontinuity_periods={"longitude": 360.0}, validate_axis_order=False)(da)
+
+    da = xr.DataArray(
+        np.zeros((1, 2, 4), dtype=np.float32),
+        dims=("band", "latitude", "longitude"),
+        coords={
+            "band": [0],
+            "latitude": [0.0, 1.0],
+            "longitude": [178.0, 179.0, 180.0, -179.0],
+        },
+    )
+
+    with pytest.raises(ValueError, match="discontinuity crossing"):
+        TilerTransform(latitude=2, longitude=4, discontinuity_periods={"longitude": 180.0}, validate_axis_order=False)(da)
+
+    # TODO: Do we need to test on a real dataset with a longitude axis that wraps around, to check 
+    # that the guardrail is working as expected in that case?
 
 def test_ToTensorTransform():
     da, var_id = _load_data(response_type="DataArray")

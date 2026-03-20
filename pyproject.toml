@@ -3,6 +3,8 @@ name = "frame-fm"
 dynamic = ["version"]
 description = "A package for the simplification of training deep learning models for environmental data"
 readme = "README.md"
+license = "Apache-2.0"
+license-files = ["licenses/*.txt", "AUTHORS.md"]
 requires-python = ">=3.11,<3.13"
 dependencies = [
     "cf-xarray>=0.10.11",
@@ -20,7 +22,10 @@ dependencies = [
     "torchvision>=0.24.1",
     "xarray>=2025.11.0",
     "zarr-parallel",
-    "click>=8.3.1"
+    "click>=8.3.1",
+    "rich (>=14.3.3,<15.0.0)",
+    "pyyaml (>=6.0.3,<7.0.0)",
+    "toml (>=0.10.2,<0.11.0)"
 ]
 [project.optional-dependencies]
 notebook = [
@@ -45,6 +50,7 @@ docs = [
     "IPython",
     "sphinx-autoapi",
     "sphinx_rtd_dark_mode",
+    "furo>=2025.12.19",
 ]
 data = [
     "torchgeo>=0.8.1",
@@ -69,6 +75,13 @@ packages = ["src/FRAME_FM"]
 source = "vcs"
 fallback-version = "0.1.0"
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+pythonpath = ["src"]
+
 [tool.uv.sources]
 torch = [
   { index = "pytorch-cpu", marker = "sys_platform != 'linux'" },
@@ -88,7 +101,6 @@ explicit = true
 name = "pytorch-cu126"
 url = "https://download.pytorch.org/whl/cu126"
 explicit = true
-
 
 [project.scripts]
 framefm = "FRAME_FM.cli:app"
