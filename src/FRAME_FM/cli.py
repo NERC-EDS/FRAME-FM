@@ -47,7 +47,7 @@ def app():
     """
     pass
 
-@app.group()
+@click.group()
 def train():
     """Launch a model training run."""
     click.echo("Training command invoked.") # This is a placeholder for the time being.
@@ -102,3 +102,5 @@ def config(list_all):
 
 
     click.echo("Config command invoked.") # This is a placeholder for the time being.
+app.add_command(config)
+app.add_command(train)
