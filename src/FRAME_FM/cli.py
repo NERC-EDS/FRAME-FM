@@ -139,6 +139,7 @@ def view_defaults():
         "Edit values in a config file.\n\n"
         "Pass the full path to the config file followed by key-value pairs "
         "in the format key:new_value.\n\n"
+        "Please note that this does remove any comments, and changes the formatting.\n"
         "Examples:\n"
         "\nframefm config edit /path/to/file.yaml batch_size:32\n"
         "\nframefm config edit configs/data/eurosat.yaml num_workers:4,test_split:0.1"
