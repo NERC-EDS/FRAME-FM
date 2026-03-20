@@ -31,26 +31,36 @@ Within the ``FRAME_FM`` package, transforms are all children of the
        std=float(da.std())
    )
 
-Current Issue (Feb 2026) with ``ds.roll`` on ``xarray.Dataset``
----------------------------------------------------------------
+Using pre-existing Transforms
+-----------------------------
 
-The ``ds.roll()`` operation on an ``xarray.Dataset`` object can cause the system
-to hang on some installations.
-
-So far we have diagnosed that:
-
-* Works correctly on ``xarray==2025.11.0``
-* Fails (hangs) on ``xarray==2026.2.0``
-
-Supporting Pre-existing Transforms
-----------------------------------
-
-Additionally we may support transforms from other tools/systems, e.g.:
-
-* ``anemoi-transform``  
-  https://anemoi.readthedocs.io/projects/transform/en/latest/
+Other types of PyTorch transforms, such as those in the ``torchvision`` library, 
+can be included in a sequence of transforms:
 
 * ``torchvision.transforms``  
   https://docs.pytorch.org/vision/main/transforms.html
 
-At present these are not supported.
+Defining your own Transforms
+----------------------------
+
+You can create your own transforms, by ensuring they inherit the ``BaseTransform`` 
+class and follow the following structure::
+
+   import xarray as xr
+   DS = xr.Dataset
+   from FRAME_FM.transforms import BaseTransform
+
+   class Add1Transform(BaseTransform):
+       """
+       Adds 1 to the data array.
+       """
+       def __init__(self, var_id: str):
+           # You can define your own input parameters
+           self.var_id = var_id
+   
+       def __call__(self, sample: DS) -> DS:
+           # This must receive a data object, such as an xarray Dataset/DataArray
+           check_object_type(sample, allowed_types=DS, caller=self.__class__.__name__)
+
+           sample = sample[self.var_id] += 1
+           return sample
