@@ -19,7 +19,7 @@ import os
 
 
 console = Console()
-DEFAULT_CONFIG_DIR = str(Path(__file__).parent.parent.parent / "configs")
+DEFAULT_CONFIG_DIR = str(Path(__file__).parents[2] / "configs")
 CONFIG_DIR = os.getenv("CONFIG_DIR", DEFAULT_CONFIG_DIR)
 
 def show_config_files() -> None:
@@ -82,7 +82,7 @@ def edit_config_file(config_file: str, key_value_pairs: str) -> None:
         edited_file.write(yaml.dump(file))
         
 def train_run_with_options(verbose: bool, overrides: tuple[str, ...]) -> None:
-    with initialize_config_dir(config_dir=str(CONFIG_DIR), version_base=None):
+    with initialize_config_dir(config_dir=CONFIG_DIR, version_base=None):
             cfg = compose(config_name="config", overrides=list(overrides),return_hydra_config=True)
             HydraConfig.instance().set_config(cfg)
             if verbose:
