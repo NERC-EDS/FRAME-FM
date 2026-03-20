@@ -2,6 +2,7 @@
 import xarray as xr
 import cf_xarray  # noqa: F401 - We just need to register the accessor for CF-compliant operations on xarray objects
 import numpy as np
+import pandas as pd
 import torch
 from dataclasses import dataclass
 import math
@@ -20,6 +21,19 @@ class BaseTransform:
 
     def __call__(self, sample):
         raise NotImplementedError("Transform must implement the __call__ method.")
+
+
+def _parse_coordinate(coord):
+    return pd.to_datetime(coord) if isinstance(coord, str) else coord
+
+
+class AddFixedCoordinates(BaseTransform):
+    def __init__(self, coords: dict[str, float]):
+        self.coords = {dim: _parse_coordinate(coord) for dim, coord in coords.items()}
+
+    def __call__(self, sample: DS | DA):
+        check_object_type(sample, allowed_types=(DS, DA), caller=self.__class__.__name__)
+        return sample.assign_coords(self.coords)
 
 
 class FillMissingValueTransform(BaseTransform):
@@ -547,11 +561,21 @@ class ToTensorTransform(BaseTransform):
         return torch.from_numpy(sample)
 
 
+def datetime_coords_to_float(da: DA) -> DA:
+    datetime_coords = {
+        name: (coord.dims, coord.values.astype("datetime64[ns]").astype("float64"))
+        for name, coord in da.coords.items()
+        if pd.api.types.is_datetime64_any_dtype(coord)
+    }
+    return da.assign_coords(datetime_coords)
+
+
 class ToValuesBoundsTransform(BaseTransform):
     def __init__(self, dims):
         self.dims = dims
 
     def __call__(self, sample: DA) -> tuple[TT, TT]:
+        sample = datetime_coords_to_float(sample)
         pixel_halfwidths = [
             (sample[dim][1].values - sample[dim][0].values) / 2 for dim in self.dims
             ]
@@ -576,6 +600,7 @@ class ToValuesLocationsTransform(BaseTransform):
     def __call__(self, sample: DA) -> tuple[TT, TT]:
         if self.crs_conversion is not None:
             sample = self.crs_conversion.add_converted_coords(sample, self.dims)
+        sample = datetime_coords_to_float(sample)
         coord_array = xr.broadcast(*[sample[dim] for dim in self.dims])
         locations = torch.stack(
             [torch.tensor(coords.values, dtype=torch.float32) for coords in coord_array],
@@ -647,6 +672,7 @@ class VarsToDimensionTransform(BaseTransform):
 
 
 transform_mapping = {
+    "add_fixed_coordinates": AddFixedCoordinates,
     "fill_missing": FillMissingValueTransform,
     "fill_nan": FillNaNTransform,
     "normalize": NormalizeTransform,
@@ -661,9 +687,9 @@ transform_mapping = {
     "subset": SubsetTransform,
     "tiler": TilerTransform,
     "to_dataarray": ToDataArray,
-    "to_values_locations_tensors": ToValuesLocationsTransform,
-    "to_values_bounds_tensors": ToValuesBoundsTransform,
     "to_tensor": ToTensorTransform,
+    "to_values_bounds_tensors": ToValuesBoundsTransform,
+    "to_values_locations_tensors": ToValuesLocationsTransform,
     "transpose": TransposeTransform,
     "vars_to_dimension": VarsToDimensionTransform
 }
