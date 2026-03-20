@@ -36,8 +36,20 @@ def show_config_files(torchx_only: bool) -> None:
         console.print(Panel(", ".join(files), title=f"Folder: {folder}"))
 
 
-def display_contents_of_config_file(config_file: str) -> None:
-    """Display the contents of a config file."""
+def display_contents_of_config_file(torchx_only: bool, config_file: str) -> None:
+    """Display the contents of a config file.
+    
+    Args:
+        torchx_only: If True, only display the contents of the torchx config.
+        config_file: The file to search for within the config directory.
+    """
+    if torchx_only:
+        torchx_file = Path(torchx_config)
+        console.print(
+            Syntax(torchx_file.open().read(), "yaml", theme="monokai", line_numbers=True)
+        )
+        return
+
     files = list(Path(config_directory).rglob(config_file))
     if not files:
         click.secho(f"No matching config found for file: {config_file}.", fg="red")
@@ -131,12 +143,32 @@ def list_configs(torchx):
 
 
 @config.command(
-    "display", help="Pass the full path to the config file to display its contents."
+    "display",
+    help=(
+        "Display the contents of a config file. "
+        "Pass the full path to a config file, or use the --torchx flag to display only the torchx config."
+    )
 )
-@click.argument("config_file", type=click.Path(dir_okay=False))
-def display(config_file):
-    """Display the contents of a config file."""
-    display_contents_of_config_file(config_file)
+@click.option(
+    "--torchx",
+    is_flag=True,
+    help="Display only the contents of the torchx config file."
+)
+@click.argument(
+    "config_file",
+    type=click.Path(dir_okay=False),
+    required=False
+)
+def display(torchx, config_file):
+    """
+    Display the contents of either the torchx config file, or a specific config file provided by the user.
+    """
+
+    # Require a config file if not using the torchx flag
+    if not torchx and config_file is None:
+        raise click.ClickException(message="No config file passed!")
+
+    display_contents_of_config_file(torchx_only=torchx, config_file=config_file)
 
 
 @config.command("view-defaults")
