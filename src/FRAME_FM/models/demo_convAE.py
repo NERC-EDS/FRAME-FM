@@ -120,16 +120,13 @@ class ConvAutoencoder(BaseModule):
         self.loss_fn = nn.MSELoss()
 
     def forward(self, x):
-        print("Input shape:", len(x))
-        if isinstance(x, (list, tuple)):
-            # x[0] is the Image Tensor, x[1] is the Label (which we ignore)
-            x = x[0]
+        # print("Input shape:", x.shape)
         encoded = self.encoder(x)
-        print("After Encoding: ", x.shape)
+        # print("After Encoding: ", x.shape)
         z = self.to_latent(encoded)
-        print("Latent Vis Output: ", z.shape)
+        # print("Latent Vis Output: ", z.shape)
         reconstructed = self.decoder(self.from_latent(z))
-        print("Reconstructed Output: ", reconstructed.shape)
+        # print("Reconstructed Output: ", reconstructed.shape)
         return reconstructed, z
 
     #What happens in each trainning step
