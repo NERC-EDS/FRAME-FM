@@ -21,7 +21,10 @@ dependencies = [
     "torch>=2.9.1",
     "torchvision>=0.24.1",
     "xarray>=2025.11.0",
-    "zarr-parallel"
+    "zarr-parallel",
+    "click>=8.3.1",
+    "rich (>=14.3.3,<15.0.0)",
+    "pyyaml (>=6.0.3,<7.0.0)"
 ]
 [project.optional-dependencies]
 notebook = [
@@ -70,6 +73,12 @@ packages = ["src/FRAME_FM"]
 source = "vcs"
 fallback-version = "0.1.0"
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
 [tool.uv.sources]
 torch = [
   { index = "pytorch-cpu", marker = "sys_platform != 'linux'" },
@@ -89,3 +98,6 @@ explicit = true
 name = "pytorch-cu126"
 url = "https://download.pytorch.org/whl/cu126"
 explicit = true
+
+[project.scripts]
+framefm = "FRAME_FM.cli:app"
