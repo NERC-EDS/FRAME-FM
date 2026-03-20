@@ -3,6 +3,7 @@
 
 from collections import defaultdict
 from hydra import initialize_config_dir, compose
+from hydra.core.hydra_config import HydraConfig
 from omegaconf import OmegaConf
 
 from FRAME_FM.training.train import main as train_main
@@ -79,6 +80,14 @@ def edit_config_file(config_file: str, key_value_pairs: str) -> None:
 
     with open(config_file, mode="w") as edited_file:
         edited_file.write(yaml.dump(file))
+        
+def train_run_with_options(verbose: bool, overrides: tuple[str, ...]) -> None:
+    with initialize_config_dir(config_dir=str(CONFIG_DIR), version_base=None):
+            cfg = compose(config_name="config", overrides=list(overrides),return_hydra_config=True)
+            HydraConfig.instance().set_config(cfg)
+            if verbose:
+                console.print(Panel(OmegaConf.to_yaml(cfg), title="Resolved config"))
+            train_main(cfg)
 
 @click.group()
 def app():
@@ -136,13 +145,8 @@ def train_run(verbose: bool, overrides: tuple[str, ...]):
       framefm train run +experiment=baseline --- tells Hydra to append a new key called experiment to the config with the value baseline.
       framefm train run --verbose model=convAE
     """
-
-    with initialize_config_dir(config_dir=str(CONFIG_DIR), version_base=None):
-        cfg = compose(config_name="config", overrides=list(overrides))
-        if verbose:
-            console.print(Panel(OmegaConf.to_yaml(cfg), title="Resolved config"))
-        train_main(cfg)
-
+    train_run_with_options(verbose, overrides)
+    
     
 @click.group()
 def config():

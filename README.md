@@ -143,18 +143,18 @@ framefm train run
 
 **Override a config group**
 ```bash
-framefm train run model=convAE
+framefm train run --verbose model=demo_autoencoder
 framefm train run data=land_cover_map
 ```
 
 **Override multiple values**
 ```bash
-framefm train run model=convAE data=land_cover_map seed=99
+framefm train run model=demo_autoencoder data=land_cover_map seed=99
 ```
 
 **Override a nested value**
 ```bash
-framefm train run model=convAE model.lr=1e-4
+framefm train run model=demo_autoencoder model.lr=1e-4
 ```
 
 **Append a new experiment config**
@@ -169,7 +169,7 @@ framefm train run ~logging=demo_mlflow
 
 **Print the resolved config before training**
 ```bash
-framefm train run --verbose model=convAE
+framefm train run --verbose model=demo_autoencoder
 ```
 
 ## Default config
