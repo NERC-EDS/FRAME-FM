@@ -125,16 +125,12 @@ def edit_config_file(config_file: str, key_value_pairs: str) -> None:
         key, value = pair.split(":")
         if key not in data:
             raise click.BadParameter(f"Key '{key}' not found in config.")
-
+   
         data[key] = _type_checker_and_conversion(data=data[key], value=value)
-
+    
     with open(config_file, mode="w") as edited_file:
         edited_file.write(yaml.dump(data, sort_keys=False))
 
-        data[key] = _type_checker_and_conversion(data=data[key], value=value)
-
-    with open(config_file, mode="w") as edited_file:
-        edited_file.write(yaml.dump(data, sort_keys=False))
 
 
 def train_run_with_options(verbose: bool, overrides: tuple[str, ...]) -> None:
