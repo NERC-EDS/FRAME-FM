@@ -13,10 +13,21 @@ from rich.syntax import Syntax
 
 console = Console()
 config_directory = os.getenv("CONFIG_DIR", "configs")
+torchx_config = os.getenv("TORCHX_CONFIG", ".torchxconfig")
 
 
-def show_config_files() -> None:
-    """Output a structured list of the config folders and their YAML contents."""
+def show_config_files(torchx_only: bool) -> None:
+    """Output a structured list of the config folders and their YAML contents.
+    
+    Args:
+        torchx_only: If True, only locate and show the full path to the torchx config.
+    """
+    if torchx_only:
+        if not (config_location := Path(torchx_config)).is_file():
+            click.secho(f"Torchx config not located: {torchx_config}", fg="red")
+        click.secho(f"torchx config successfully located at {config_location.resolve()}", fg="green")
+        return
+    
     sorted_yamls = defaultdict(list)
     for file in Path(config_directory).rglob("*.yaml"):
         sorted_yamls[file.parent.name].append(file.name)
@@ -113,9 +124,10 @@ def config():
 @config.command(
     "list", help="This will recursively list all config files in the configs directory."
 )
-def list_configs():
+@click.option("--torchx", is_flag=True, help="Only show and verify the location for the torchx config.")
+def list_configs(torchx):
     """List available config files."""
-    show_config_files()
+    show_config_files(torchx_only=torchx)
 
 
 @config.command(
