@@ -1,8 +1,8 @@
 """Click entrypoint."""
 
-
 from collections import defaultdict
 from pathlib import Path
+import os
 
 import click
 import yaml
@@ -11,15 +11,14 @@ from rich.panel import Panel
 from rich.pretty import Pretty
 from rich.syntax import Syntax
 
-
 console = Console()
-
+config_directory = os.getenv("CONFIG_DIR", "configs")
 
 
 def show_config_files() -> None:
     """Output a structured list of the config folders and their YAML contents."""
     sorted_yamls = defaultdict(list)
-    for file in Path("configs").rglob("*.yaml"):
+    for file in Path(config_directory).rglob("*.yaml"):
         sorted_yamls[file.parent.name].append(file.name)
 
     for folder, files in sorted_yamls.items():
@@ -28,29 +27,29 @@ def show_config_files() -> None:
 
 def display_contents_of_config_file(config_file: str) -> None:
     """Display the contents of a config file."""
-    files = list(Path("configs").rglob(config_file))
+    files = list(Path(config_directory).rglob(config_file))
     if not files:
         click.secho(f"No matching config found for file: {config_file}.", fg="red")
         return
-    
+
     for file in files:
         console.print(f"File: {file}")
-        console.print(Syntax(file.open().read(), "yaml", theme="monokai", line_numbers=True))
+        console.print(
+            Syntax(file.open().read(), "yaml", theme="monokai", line_numbers=True)
+        )
+
 
 def view_hydra_defaults() -> None:
     """Display the Hydra default values from the config."""
     with Path("configs/config.yaml").open() as f:
         contents = yaml.safe_load(f.read())
 
-    
-
     if (defaults := contents.get("defaults")) is not None:
         console.print(
-    Panel(Pretty(defaults), title="Hydra Defaults", expand=False)
-)
+            Panel(Pretty(defaults), title="Hydra Defaults", expand=False)
+        )
     else:
         click.secho("Unable to find Hydra config file: configs/config.yaml", fg="red")
-        
 
 
 def edit_config_file(config_file: str, key_value_pairs: str) -> None:
@@ -62,12 +61,11 @@ def edit_config_file(config_file: str, key_value_pairs: str) -> None:
         # Verify that the format is correct.
         if ":" not in pair or len(pair.split(":")) != 2:
             raise click.BadParameter("Expected format -> key:value")
-        
 
         key, value = pair.split(":")
         if key not in file:
             raise click.BadParameter(f"Key '{key}' not found in config.")
-        
+
         if isinstance(file[key], float):
             file[key] = float(value)
         elif isinstance(file[key], int):
@@ -78,7 +76,6 @@ def edit_config_file(config_file: str, key_value_pairs: str) -> None:
     with open(config_file, mode="w") as edited_file:
         edited_file.write(yaml.dump(file))
 
-        
 
 @click.group()
 def app():
@@ -104,8 +101,7 @@ def app():
 @click.command()
 def train():
     """Launch a model training run."""
-    click.echo("Training command invoked.") # This is a placeholder for the time being.
-
+    click.echo("Training command invoked.")  # This is a placeholder for the time being.
 
 
 @click.group()
@@ -114,13 +110,17 @@ def config():
     pass
 
 
-@config.command("list", help="This will recursively list all config files in the configs directory.")
+@config.command(
+    "list", help="This will recursively list all config files in the configs directory."
+)
 def list_configs():
     """List available config files."""
     show_config_files()
 
 
-@config.command("display", help="Pass the full path to the config file to display its contents.")
+@config.command(
+    "display", help="Pass the full path to the config file to display its contents."
+)
 @click.argument("config_file", type=click.Path(dir_okay=False))
 def display(config_file):
     """Display the contents of a config file."""
@@ -149,6 +149,7 @@ def view_defaults():
 def edit(config_file, key_value_pairs):
     """Edit values within a specified config file."""
     edit_config_file(config_file=config_file, key_value_pairs=key_value_pairs)
+
 
 app.add_command(config)
 app.add_command(train)
