@@ -70,6 +70,13 @@ packages = ["src/FRAME_FM"]
 source = "vcs"
 fallback-version = "0.1.0"
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+pythonpath = ["src"]
+
 [tool.uv.sources]
 torch = [
   { index = "pytorch-cpu", marker = "sys_platform != 'linux'" },
@@ -90,13 +97,8 @@ name = "pytorch-cu126"
 url = "https://download.pytorch.org/whl/cu126"
 explicit = true
 
-
 [project.scripts]
 framefm = "FRAME_FM.cli:app"
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-pythonpath = ["src"]
 
 [dependency-groups]
 dev = [
