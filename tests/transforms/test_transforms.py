@@ -355,9 +355,9 @@ def test_tile_locations_bounds():
             [[555713.5625,  554016.0625], [1667104.7500, 1662218.5000]]
             ])
         )
-    _, first_tile_bounds = ToValuesBoundsTransform(coords=["x", "y"])(tiled[0])
+    _, first_tile_bounds = ToValuesBoundsTransform(dims=["x", "y"])(tiled[0])
     assert torch.equal(first_tile_bounds, torch.tensor([[100., 120.], [0., 20.]]))
-    _, last_tile_bounds = ToValuesBoundsTransform(coords=["x", "y"])(tiled[-1])
+    _, last_tile_bounds = ToValuesBoundsTransform(dims=["x", "y"])(tiled[-1])
     assert torch.equal(last_tile_bounds, torch.tensor([[140., 160.], [20., 40.]]))
 
 

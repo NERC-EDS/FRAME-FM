@@ -336,44 +336,6 @@ class TilerTransform(BaseTransform):
         return tiled
 
 
-class ToValuesLocationsTransform(BaseTransform):
-    def __init__(self,
-                 dims: list[str],
-                 crs_conversion_spec: CRS_conversion_spec | tuple | list | None = None):
-        self.dims = dims
-        self.crs_conversion = (
-            None if crs_conversion_spec is None else CRS_convertor(crs_conversion_spec)
-            )
-
-    def __call__(self, sample: DA) -> tuple[TT, TT]:
-        if self.crs_conversion is not None:
-            sample = self.crs_conversion.add_converted_coords(sample, self.dims)
-        coord_array = xr.broadcast(*[sample[dim] for dim in self.dims])
-        locations = torch.stack(
-            [torch.tensor(coords.values, dtype=torch.float32) for coords in coord_array],
-            dim=0
-            )
-        return torch.from_numpy(sample.values), locations
-
-
-class ToValuesBoundsTransform(BaseTransform):
-    def __init__(self, coords):
-        self.coords = coords
-
-    def __call__(self, sample: DA) -> tuple[TT, TT]:
-        pixel_halfwidths = [
-            (sample[coord][1].values - sample[coord][0].values) / 2
-            for coord in self.coords
-            ]
-        bounds = torch.from_numpy(
-            np.array([
-                [sample[coord][0].values - halfwidth, sample[coord][-1].values + halfwidth]
-                for coord, halfwidth in zip(self.coords, pixel_halfwidths)
-                ])
-            )
-        return torch.from_numpy(sample.values), bounds
-
-
 def _as_tiler_dict(value: dict | None, field_name: str) -> dict:
     if value is None:
         raise ValueError(f"Missing required tiler metadata field: '{field_name}'.")
@@ -583,6 +545,43 @@ class ToTensorTransform(BaseTransform):
             sample = sample.values
 
         return torch.from_numpy(sample)
+
+
+class ToValuesBoundsTransform(BaseTransform):
+    def __init__(self, dims):
+        self.dims = dims
+
+    def __call__(self, sample: DA) -> tuple[TT, TT]:
+        pixel_halfwidths = [
+            (sample[dim][1].values - sample[dim][0].values) / 2 for dim in self.dims
+            ]
+        bounds = torch.from_numpy(
+            np.array([
+                [sample[dim][0].values - halfwidth, sample[dim][-1].values + halfwidth]
+                for dim, halfwidth in zip(self.dims, pixel_halfwidths)
+                ])
+            )
+        return torch.from_numpy(sample.values), bounds
+
+
+class ToValuesLocationsTransform(BaseTransform):
+    def __init__(self,
+                 dims: list[str],
+                 crs_conversion_spec: CRS_conversion_spec | tuple | list | None = None):
+        self.dims = dims
+        self.crs_conversion = (
+            None if crs_conversion_spec is None else CRS_convertor(crs_conversion_spec)
+            )
+
+    def __call__(self, sample: DA) -> tuple[TT, TT]:
+        if self.crs_conversion is not None:
+            sample = self.crs_conversion.add_converted_coords(sample, self.dims)
+        coord_array = xr.broadcast(*[sample[dim] for dim in self.dims])
+        locations = torch.stack(
+            [torch.tensor(coords.values, dtype=torch.float32) for coords in coord_array],
+            dim=0
+            )
+        return torch.from_numpy(sample.values), locations
 
 
 class TransposeTransform(BaseTransform):
