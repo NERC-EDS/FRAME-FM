@@ -114,13 +114,13 @@ def config():
     pass
 
 
-@config.command("list")
+@config.command("list", help="This will recursively list all config files in the configs directory.")
 def list_configs():
     """List available config files."""
     show_config_files()
 
 
-@config.command("display")
+@config.command("display", help="Pass the full path to the config file to display its contents.")
 @click.argument("config_file", type=click.Path(dir_okay=False))
 def display(config_file):
     """Display the contents of a config file."""
@@ -133,13 +133,22 @@ def view_defaults():
     view_hydra_defaults()
 
 
-@config.command("edit")
+@config.command(
+    "edit",
+    help=(
+        "Edit values in a config file.\n\n"
+        "Pass the full path to the config file followed by key-value pairs "
+        "in the format key:new_value.\n\n"
+        "Examples:\n"
+        "\nframefm config edit /path/to/file.yaml batch_size:32\n"
+        "\nframefm config edit configs/data/eurosat.yaml num_workers:4,test_split:0.1"
+    ),
+)
 @click.argument("config_file", type=click.Path(exists=True, dir_okay=False))
 @click.argument("key_value_pairs")
 def edit(config_file, key_value_pairs):
     """Edit values within a specified config file."""
     edit_config_file(config_file=config_file, key_value_pairs=key_value_pairs)
-
 
 app.add_command(config)
 app.add_command(train)
