@@ -11,7 +11,7 @@ The project addresses a critical gap: while environmental data archives are vast
 
 ### 🔧 Core Documentation
 - [Environment Setup](#environment-setup-from-pyprojecttoml)
-- [Hydra Configuration System](./configs/configs_README.md)
+- [Hydra Configuration System](./src/FRAME_FM/configs/configs_README.md)
 
 ### 🧠 Code Structure
 - [Model Code](./src/FRAME_FM/model_code/models_README.md)
@@ -20,8 +20,8 @@ The project addresses a critical gap: while environmental data archives are vast
 - [Utilities](./src/FRAME_FM/utils/utils_README.md)
 
 ### 📊 Experiments & Logging
-- [Experiment Configuration](./configs/experiment/experiment_README.md)
-- [Logging (MLflow)](./configs/logging/logging_README.md)
+- [Experiment Configuration](./src/FRAME_FM/configs/experiment/experiment_README.md)
+- [Logging (MLflow)](./src/FRAME_FM/configs/logging/logging_README.md)
 
 ### 📒 Notebooks
 - [Jupyter Notebooks](./notebooks/notebooks_README.md)

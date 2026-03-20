@@ -15,12 +15,10 @@ from rich.panel import Panel
 from rich.pretty import Pretty
 from rich.syntax import Syntax
 from pathlib import Path
-import os
 
 
 console = Console()
-DEFAULT_CONFIG_DIR = str(Path(__file__).parent.parent.parent / "configs")
-CONFIG_DIR = os.getenv("CONFIG_DIR", DEFAULT_CONFIG_DIR)
+CONFIG_DIR = str(Path(__file__).parent / "configs")
 
 def show_config_files() -> None:
     """Output a structured list of the config folders and their YAML contents."""
@@ -46,7 +44,8 @@ def display_contents_of_config_file(config_file: str) -> None:
 
 def view_hydra_defaults() -> None:
     """Display the Hydra default values from the config."""
-    with Path("configs/config.yaml").open() as f:
+    config_path = Path(CONFIG_DIR) / "config.yaml"
+    with config_path.open() as f:
         contents = yaml.safe_load(f.read())
 
     if (defaults := contents.get("defaults")) is not None:
@@ -54,7 +53,7 @@ def view_hydra_defaults() -> None:
             Panel(Pretty(defaults), title="Hydra Defaults", expand=False)
         )
     else:
-        click.secho("Unable to find Hydra config file: configs/config.yaml", fg="red")
+        click.secho(f"Unable to find Hydra config file: {config_path}", fg="red")
 
 
 def edit_config_file(config_file: str, key_value_pairs: str) -> None:
@@ -186,7 +185,7 @@ def view_defaults():
         "Please note that this does remove any comments, and changes the formatting.\n"
         "Examples:\n"
         "\nframefm config edit /path/to/file.yaml batch_size:32\n"
-        "\nframefm config edit configs/data/eurosat.yaml num_workers:4,test_split:0.1"
+        "\nframefm config edit src/FRAME_FM/configs/data/eurosat.yaml num_workers:4,test_split:0.1"
     ),
 )
 @click.argument("config_file", type=click.Path(exists=True, dir_okay=False))

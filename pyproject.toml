@@ -65,6 +65,7 @@ package = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/FRAME_FM"]
+include = ["src/FRAME_FM/configs/**/*.yaml"]
 
 [tool.hatch.version]
 source = "vcs"
