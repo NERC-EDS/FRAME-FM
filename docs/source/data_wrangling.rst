@@ -39,11 +39,10 @@ sent to the constructor:
       call.
     - These are run whenever a ``DataLoader`` needs to access single items or batches
       of items with a ``Dataset`` object.
-    - These are typically run like this:
-      ```python
-      for transform in transforms:
-          sample = transform(sample)
-      ```
+    - These are typically run like this::
+
+          for transform in transforms:
+              sample = transform(sample)
 
 Note that the ``FRAME_FM.transforms.transforms`` module contains all the transform 
 classes that can be in either/both of the ``preprocessors`` and ``transforms`` lists.
