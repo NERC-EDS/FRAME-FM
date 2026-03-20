@@ -1,6 +1,12 @@
 """Click entrypoint."""
 
+
 from collections import defaultdict
+from hydra import initialize_config_dir, compose
+from hydra.core.hydra_config import HydraConfig
+from omegaconf import OmegaConf
+
+from FRAME_FM.training.train import main as train_main
 from pathlib import Path
 import os
 from typing import Any
@@ -12,19 +18,22 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.pretty import Pretty
 from rich.syntax import Syntax
+from pathlib import Path
+import os
+
 
 console = Console()
-config_directory = os.getenv("CONFIG_DIR", "configs")
+DEFAULT_CONFIG_DIR = str(Path(__file__).parents[2] / "configs")
+CONFIG_DIR = os.getenv("CONFIG_DIR", DEFAULT_CONFIG_DIR)
 torchx_config = os.getenv("TORCHX_CONFIG", ".torchxconfig")
-
 
 def _type_checker_and_conversion(data: Any, value: Any) -> Any:
     """Utility to check value against its source, and convert if necessary.
-    
+
     Args:
         data: the source data in the TOML or YAML.
         value: The value to check for in the data.
-    
+
     Returns:
         The value, with a potential conversion to match the source.
     """
@@ -35,11 +44,11 @@ def _type_checker_and_conversion(data: Any, value: Any) -> Any:
     elif isinstance(data, bool):
         value = value.lower() in ("true", "1", "yes")
     return value
-        
+
 
 def show_config_files(torchx_only: bool) -> None:
     """Output a structured list of configuration folders and their YAML contents.
-    
+
     Args:
         torchx_only: If True, only locate and show the full path to the torchx config.
     """
@@ -47,12 +56,12 @@ def show_config_files(torchx_only: bool) -> None:
         if not (config_location := Path(torchx_config)).is_file():
             click.secho(f"Torchx config not located: {torchx_config}", fg="red")
             return
-        
+
         click.secho(f"torchx config successfully located at {config_location.resolve()}", fg="green")
         return
-    
+
     sorted_yamls = defaultdict(list)
-    for file in Path(config_directory).rglob("*.yaml"):
+    for file in Path(CONFIG_DIR).rglob("*.yaml"):
         sorted_yamls[file.parent.name].append(file.name)
 
     for folder, files in sorted_yamls.items():
@@ -61,7 +70,7 @@ def show_config_files(torchx_only: bool) -> None:
 
 def display_contents_of_config_file(torchx_only: bool, config_file: str) -> None:
     """Display the contents of a config file.
-    
+
     Args:
         torchx_only: If True, only display the contents of the torchx config.
         config_file: The file to search for within the config directory.
@@ -76,7 +85,7 @@ def display_contents_of_config_file(torchx_only: bool, config_file: str) -> None
             Syntax(torchx_contents, "ini", theme="monokai", line_numbers=True))
         return
 
-    files = list(Path(config_directory).rglob(config_file))
+    files = list(Path(CONFIG_DIR).rglob(config_file))
     if not files:
         click.secho(f"No matching config found for file: {config_file}.", fg="red")
         return
@@ -123,13 +132,21 @@ def edit_config_file(config_file: str, key_value_pairs: str) -> None:
         edited_file.write(yaml.dump(data, sort_keys=False))
 
 
+
+def train_run_with_options(verbose: bool, overrides: tuple[str, ...]) -> None:
+    with initialize_config_dir(config_dir=CONFIG_DIR, version_base=None):
+            cfg = compose(config_name="config", overrides=list(overrides),return_hydra_config=True)
+            HydraConfig.instance().set_config(cfg)
+            if verbose:
+                console.print(Panel(OmegaConf.to_yaml(cfg), title="Resolved config"))
+            train_main(cfg)
 def edit_torch_config_file(key_value_pairs: str) -> None:
     """Edit the key-value pairs within the torchxconfig TOML.
-    
+
     Args:
         key_value_pairs: String representations of keys and their new values to be edited.
     """
-    
+
     split_items = key_value_pairs.split(",")
 
     if not Path(torchx_config).is_file():
@@ -178,11 +195,43 @@ def app():
     """
     pass
 
-
-@click.command()
+@click.group()
 def train():
     """Launch a model training run."""
-    click.echo("Training command invoked.")  # This is a placeholder for the time being.
+    click.echo("Training command invoked.") # This is a placeholder for the time being.
+
+@train.command(
+    "run",
+    context_settings=dict(ignore_unknown_options=True),
+) # Registers train_run as a subcommand of the train group. Names it "run" so the CLI sees it as frame-fm train run
+
+@click.option(
+    "--verbose", "-v",
+    is_flag=True,
+    default=False,
+    help="Print the resolved Hydra config to screen before training starts.",
+)
+@click.argument("overrides", nargs=-1, type=click.UNPROCESSED)
+def train_run(verbose: bool, overrides: tuple[str, ...]):
+    """
+    Start a training run.
+    Pass any positional arguments to Hydra to override the config.
+    This will not modify the YAML files directly, but can modify the configs.
+    \b
+    Hydra override syntax:
+      key=value   overrides an existing value. Raises an error if the key does not exist.
+      +key=value  Append new key. Raises an error if the key already exists.
+      ++key=value Override or append.
+      ~key=value  Remove a key from the config.
+    \b
+    Examples:
+      framefm train run
+      framefm train run model=convAE --- overrides an existing value in config.yaml. will swap demo_autoencoder to convAE
+      framefm train run data=land_cover_map --- tells Hydra to override the existing key called data with a value 'land_cover_map'.
+      framefm train run +experiment=baseline --- tells Hydra to append a new key called experiment to the config with the value baseline.
+      framefm train run --verbose model=convAE
+    """
+    train_run_with_options(verbose, overrides)
 
 
 @click.group()
@@ -275,4 +324,3 @@ def edit_torch(kv):
 
 app.add_command(config)
 app.add_command(train)
-
