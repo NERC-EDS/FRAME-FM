@@ -25,11 +25,7 @@ import os
 console = Console()
 DEFAULT_CONFIG_DIR = str(Path(__file__).parents[2] / "configs")
 CONFIG_DIR = os.getenv("CONFIG_DIR", DEFAULT_CONFIG_DIR)
-
-def show_config_files() -> None:
-    """Output a structured list of the config folders and their YAML contents."""
 torchx_config = os.getenv("TORCHX_CONFIG", ".torchxconfig")
-
 
 def _type_checker_and_conversion(data: Any, value: Any) -> Any:
     """Utility to check value against its source, and convert if necessary.
@@ -129,6 +125,11 @@ def edit_config_file(config_file: str, key_value_pairs: str) -> None:
         key, value = pair.split(":")
         if key not in data:
             raise click.BadParameter(f"Key '{key}' not found in config.")
+
+        data[key] = _type_checker_and_conversion(data=data[key], value=value)
+
+    with open(config_file, mode="w") as edited_file:
+        edited_file.write(yaml.dump(data, sort_keys=False))
 
         data[key] = _type_checker_and_conversion(data=data[key], value=value)
 
