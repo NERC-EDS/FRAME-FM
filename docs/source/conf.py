@@ -18,8 +18,8 @@ sys.path.insert(0, os.path.abspath('../../src'))
 # -- Project information -----------------------------------------------------
 
 project = 'FRAME-FM'
-copyright = '2026, Ag Stephens'
-author = 'Ag Stephens'
+copyright = '2026, NERC Environmental Data Service'
+author = 'NERC Environmental Data Service'
 
 
 # -- General configuration ---------------------------------------------------
