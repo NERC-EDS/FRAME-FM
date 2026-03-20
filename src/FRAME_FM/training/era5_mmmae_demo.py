@@ -7,7 +7,7 @@ from hydra.utils import instantiate
 from omegaconf import DictConfig, OmegaConf
 
 
-@hydra_main(version_base=None, config_path="../../../configs", config_name="config")
+@hydra_main(version_base=None, config_path="../configs", config_name="config")
 def main(cfg: DictConfig) -> None:
     """Hydra-driven ERA5 dataloader + MMMAE encoder smoke test.
 

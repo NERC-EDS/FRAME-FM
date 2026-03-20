@@ -168,7 +168,7 @@ Below are the steps to run *train.py* using the default configuration:
 
     If you would like to use Mlflow to record the training output, follow the
     [Logging README](./src/FRAME_FM/docs/logging_README.md). Note that this runs 4 epochs, so could
-    take 2+ hours to complete. For a quick run, you can decrease the epochs in "configs/trainer/*default.yaml*".
+    take 2+ hours to complete. For a quick run, you can decrease the epochs in "src/FRAME_FM/configs/trainer/*default.yaml*".
 
 ---
 

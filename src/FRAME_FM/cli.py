@@ -12,7 +12,7 @@ from rich.pretty import Pretty
 from rich.syntax import Syntax
 
 console = Console()
-config_directory = os.getenv("CONFIG_DIR", "configs")
+config_directory = os.getenv("CONFIG_DIR", str(Path(__file__).parent / "configs"))
 
 
 def show_config_files() -> None:
@@ -41,7 +41,8 @@ def display_contents_of_config_file(config_file: str) -> None:
 
 def view_hydra_defaults() -> None:
     """Display the Hydra default values from the config."""
-    with Path("configs/config.yaml").open() as f:
+    config_yaml = Path(__file__).parent / "configs" / "config.yaml"
+    with config_yaml.open() as f:
         contents = yaml.safe_load(f.read())
 
     if (defaults := contents.get("defaults")) is not None:
