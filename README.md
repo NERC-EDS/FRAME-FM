@@ -81,9 +81,10 @@ to be run on Linux. Although any computer can run FRAME-FM, it is intended to be
 platforms like EDS' JASMIN or the University of Bristol's Isembard. FRAME-FM is also intended for
 x86 machines, but has successfully run in ARM-based machines.
 
-Machine Learning is generally GPU-intensive. FRAME-FM's Extract ➡️ Transform ➡️ Load (ETL) pipeline
-allows for data caching to minimise CPU, IO and memory usage. This minimises unnecessary pauses in
-the GPU's execution.
+Machine Learning is generally GPU-intensive and GPUs are typically more costly than CPUs. The 
+FRAME-FM Extract ➡️ Transform ➡️ Load (ETL) pipeline is built to enable pre-processing and caching 
+(which are IO and/or CPU-intensive) to happen before training/inference happens on GPUs. This approach 
+is intended to optimise the use of GPUs when actual machines learning is taking place.
 
 ### Pre-Requisites
 
