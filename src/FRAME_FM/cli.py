@@ -20,7 +20,8 @@ from rich.pretty import Pretty
 from rich.syntax import Syntax
 from pathlib import Path
 import os
-
+import torchx.specs as specs
+from torchx.runner import get_runner
 
 console = Console()
 DEFAULT_CONFIG_DIR = str(Path(__file__).parents[2] / "configs")
@@ -131,15 +132,6 @@ def edit_config_file(config_file: str, key_value_pairs: str) -> None:
     with open(config_file, mode="w") as edited_file:
         edited_file.write(yaml.dump(data, sort_keys=False))
 
-
-
-def train_run_with_options(verbose: bool, overrides: tuple[str, ...]) -> None:
-    with initialize_config_dir(config_dir=CONFIG_DIR, version_base=None):
-            cfg = compose(config_name="config", overrides=list(overrides),return_hydra_config=True)
-            HydraConfig.instance().set_config(cfg)
-            if verbose:
-                console.print(Panel(OmegaConf.to_yaml(cfg), title="Resolved config"))
-            train_main(cfg)
 def edit_torch_config_file(key_value_pairs: str) -> None:
     """Edit the key-value pairs within the torchxconfig TOML.
 
@@ -174,6 +166,84 @@ def edit_torch_config_file(key_value_pairs: str) -> None:
         toml.dump(toml_file, file)
 
 
+def check_torchx_config():
+    """Ensure .torchxconfig exists to avoid TorchX initialization errors."""
+    if not Path(torchx_config).exists():
+        console.print("[yellow]Creating default .torchxconfig...[/yellow]")
+        with open(torchx_config, "w") as f:
+            f.write("[no_warn]\n")
+        click.secho("Created default .torchxconfig", fg="yellow")
+
+def train_run_with_local_hydra(verbose: bool, overrides: tuple[str, ...]) -> None:
+    with initialize_config_dir(config_dir=CONFIG_DIR, version_base=None):
+            cfg = compose(config_name="config", overrides=list(overrides),return_hydra_config=True)
+            HydraConfig.instance().set_config(cfg)
+            if verbose:
+                console.print(Panel(OmegaConf.to_yaml(cfg), title="Resolved config"))
+            train_main(cfg)
+
+def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
+    """Dispatches the command to TorchX."""
+    #1. Load defaults from .torchxconfig
+    # This reads the [defaults] section
+    torchx_defaults = torchx_config.get_configs().get("defaults", {})
+    default_image = torchx_defaults.get("image", "pytorch/pytorch:latest")
+    default_cpu = int(torchx_defaults.get("cpu", 2))
+    default_gpu = int(torchx_defaults.get("gpu", 0))
+    
+    # 2. Resolve Hydra config to find the Docker image or resource requirements
+    # We do this so we can pass metadata (like image name) to TorchX
+    with initialize_config_dir(config_dir=CONFIG_DIR, version_base=None):
+        cfg = compose(config_name="config", overrides=list(overrides))
+
+    # 2. Extract Image and Resource info (falling back to defaults if not in YAML)
+    # This can be ovveriden as follows: framefm train run torchx.image=any-repo/image:tag
+    image = cfg.get("torchx", {}).get("image", default_image)
+
+    # Docker and K8s REQUIRE an image
+    if scheduler in ["local_docker", "kubernetes"] and not image:
+        raise click.UsageError(
+            f"Scheduler '{scheduler}' requires a Docker image.\n"
+            "Please provide one in your config or via CLI: 'torchx.image=your_image_name'"
+        )
+
+    # 3. Define the TorchX App
+    # The entrypoint is 'framefm'
+    # We pass '--scheduler local_cwd' to the remote worker so it actually executes.
+    job_args = ["train", "run", "--scheduler", "local_cwd"] + list(overrides)
+
+    app = specs.AppDef(
+        name="framefm-train",
+        roles=[
+            specs.Role(
+                name="worker",
+                image=image,
+                entrypoint="framefm",
+                args=["train", "run", "--scheduler", "local_cwd"] + list(overrides),
+                num_replicas=1,
+                resource=specs.Resource(
+                    cpu=default_cpu,
+                    gpu=default_gpu,
+                    memKB=4 * 1024 * 1024,
+                ),
+            )
+        ],
+    )
+    
+   # 4. Run the job
+    runner = get_runner()
+    try:
+        job_id = runner.run(app, scheduler=scheduler)
+        click.secho(f"Job submitted successfully!", fg="green")
+        click.echo(f"Scheduler: {scheduler}")
+        click.echo(f"Job ID:    {job_id}")
+        
+        # Help info for the developer
+        if scheduler == "local_docker":
+            click.echo(f"View logs with: docker logs -f {job_id}")
+    except Exception as e:
+        click.secho(f"Failed to submit job to {scheduler}: {e}", fg="red")
+        raise click.Abort()
 
 @click.group()
 def app():
@@ -206,32 +276,38 @@ def train():
 ) # Registers train_run as a subcommand of the train group. Names it "run" so the CLI sees it as frame-fm train run
 
 @click.option(
+    "--scheduler", "-s",
+    type=click.Choice(["local_cwd", "local_docker", "slurm", "kubernetes"]),
+    default="local_cwd",
+    help="The TorchX scheduler to use for running the training job.'local_cwd' runs immediately, others submit jobs."
+)
+@click.option(
     "--verbose", "-v",
     is_flag=True,
     default=False,
     help="Print the resolved Hydra config to screen before training starts.",
 )
 @click.argument("overrides", nargs=-1, type=click.UNPROCESSED)
-def train_run(verbose: bool, overrides: tuple[str, ...]):
+def train_run(scheduler: str, verbose: bool, overrides: tuple[str, ...]):
     """
-    Start a training run.
+    Start a training run via TorchX.
+
+    Schedulers:
+      local_cwd: Run on the current machine in the current directory.
+      local_docker: Run inside a Docker container.
+      slurm: Submit a job to a Slurm cluster.
+      kubernetes: Launch a job on a K8s cluster.
+
     Pass any positional arguments to Hydra to override the config.
     This will not modify the YAML files directly, but can modify the configs.
-    \b
-    Hydra override syntax:
-      key=value   overrides an existing value. Raises an error if the key does not exist.
-      +key=value  Append new key. Raises an error if the key already exists.
-      ++key=value Override or append.
-      ~key=value  Remove a key from the config.
-    \b
-    Examples:
-      framefm train run
-      framefm train run model=convAE --- overrides an existing value in config.yaml. will swap demo_autoencoder to convAE
-      framefm train run data=land_cover_map --- tells Hydra to override the existing key called data with a value 'land_cover_map'.
-      framefm train run +experiment=baseline --- tells Hydra to append a new key called experiment to the config with the value baseline.
-      framefm train run --verbose model=convAE
     """
-    train_run_with_options(verbose, overrides)
+    check_torchx_config()
+    if scheduler == "local_cwd":
+        # Direct execution via your existing Hydra logic
+        train_run_with_local_hydra(verbose, overrides)
+    else:
+        # TorchX Execution logic
+        launch_torchx_job(scheduler, overrides)
 
 
 @click.group()
