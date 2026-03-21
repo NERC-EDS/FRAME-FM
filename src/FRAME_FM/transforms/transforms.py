@@ -600,10 +600,10 @@ class ToValuesLocationsTransform(BaseTransform):
     def __call__(self, sample: DA) -> tuple[TT, TT]:
         check_object_type(sample, allowed_types=(DA), caller=self.__class__.__name__)
         if self.crs_conversion is not None:
-            missing_dims = set(self.dims) - set(sample.dims)  # type: ignore
-            # (sample.dims may in theory be Hashable, but in practice are str)
-            sample = self.crs_conversion.add_converted_coords(sample, missing_dims)
+            new_dims = set(self.dims) & set(self.crs_conversion.target_dims)
+            sample = self.crs_conversion.add_converted_coords(sample, new_dims)
         missing_dims = set(self.dims) - set(sample.dims)  # type: ignore
+        # (sample.dims may in theory be Hashable, but in practice are str)
         if len(missing_dims) > 0:
             raise ValueError(f"dims {missing_dims} must be in sample.dims {sample.dims}")
         sample = datetime_coords_to_float(sample)

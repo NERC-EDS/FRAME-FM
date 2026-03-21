@@ -374,7 +374,7 @@ def test_tiled_index_mapper_roundtrip():
     tiled = TilerTransform(y=2, x=2, boundary="pad")(da)
     mapper = TiledIndexMapper.from_tiled_array(tiled)
 
-    tile_id = mapper.tile_id_from_coordinates(y=30.0, x=120.0)
+    tile_id = mapper.tile_id_from_coordinates({'y': 30.0, 'x': 120.0})
     assert tile_id == 3
 
     coarse_ids = mapper.coordinates_from_tile_id(tile_id)

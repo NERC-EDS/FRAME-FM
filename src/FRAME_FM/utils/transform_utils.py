@@ -103,6 +103,12 @@ class CRS_convertor:
         Returns:
             xarray.DataArray: Data array with additional coordinates in target CRS.
         """
+        missing_dims = set(self.source_dims) - set(sample.dims)  # type: ignore
+        # (sample.dims may in theory be Hashable, but in practice are str)
+        if len(missing_dims) > 0:
+            raise ValueError(
+                f"Source CRS mapping dims {missing_dims} must be among sample.dims {sample.dims}"
+                )
         missing_dims = set(dims) - set(self.target_dims)
         if len(missing_dims) > 0:
             raise ValueError(
