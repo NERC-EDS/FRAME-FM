@@ -39,10 +39,14 @@ def _select_embedder(input_shape: dict[str, int],
         return PatchEmbed(
             input_shape, patch_shape, n_channel, embed_dim, reconstruct_dim
             )
-    assert pos_space is not None, \
-        f"If inputs of shape {input_shape} have positions, position_space must not be None."
-    assert embed_ratio is not None, \
-        f"If inputs of shape {input_shape} have positions, pos_embed_ratio must not be None."
+    if pos_space is None:
+        raise ValueError(
+            f"If inputs of shape {input_shape} have positions, position_space must not be None."
+            )
+    if embed_ratio is None:
+        raise ValueError(
+            f"If inputs of shape {input_shape} have positions, pos_embed_ratio must not be None."
+            )
     if positioned == "pixels":
         return STPatchEmbed(
             input_shape, patch_shape, n_channel, pos_space, embed_dim, reconstruct_dim, embed_ratio
