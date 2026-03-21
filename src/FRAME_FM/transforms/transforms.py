@@ -598,8 +598,14 @@ class ToValuesLocationsTransform(BaseTransform):
             )
 
     def __call__(self, sample: DA) -> tuple[TT, TT]:
+        check_object_type(sample, allowed_types=(DA), caller=self.__class__.__name__)
         if self.crs_conversion is not None:
-            sample = self.crs_conversion.add_converted_coords(sample, self.dims)
+            missing_dims = set(self.dims) - set(sample.dims)  # type: ignore
+            # (sample.dims may in theory be Hashable, but in practice are str)
+            sample = self.crs_conversion.add_converted_coords(sample, missing_dims)
+        missing_dims = set(self.dims) - set(sample.dims)  # type: ignore
+        if len(missing_dims) > 0:
+            raise ValueError(f"dims {missing_dims} must be in sample.dims {sample.dims}")
         sample = datetime_coords_to_float(sample)
         coord_array = xr.broadcast(*[sample[dim] for dim in self.dims])
         locations = torch.stack(
