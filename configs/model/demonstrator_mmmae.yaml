@@ -2,10 +2,10 @@
 _target_: FRAME_FM.models.mmmae.MultimodalMaskedAutoencoder
 
 # Inputs
- # Input values are in 64x64 and 32x128x128 tiles, resp.
-input_shapes: [{y: 64, x: 64}, {t: 32, y: 128, x: 128}]
-n_channels: [10, 1]                                 # Inputs have 10 and 1 bands, resp.
-patch_shapes: [{x: 8, y: 8}, {x: 32, y: 32, t: 8}]  # Tokenise 8x8 and 32x32x8 patches, resp.
+ # Input values are in 32x128x128 and 64x64 tiles, resp.
+input_shapes: [{t: 32, y: 128, x: 128}, {y: 64, x: 64}]
+n_channels: [1, 10]                                 # Inputs have 1 and 10 bands, resp.
+patch_shapes: [{x: 32, y: 32, t: 8}, {x: 8, y: 8}]  # Tokenise 32x32x8 and 8x8 patches, resp.
 inputs_positioned: ["bounds", "bounds"]  # Each input is accompanied by tile coordinate bounds
 # Coords are all-numeric OSGB grid references across UK, and nanoseconds since Unix epoch 1961-2019
 position_space: {x: [0, 2e6], y: [0, 4e6], t: [0, 4e18]}
