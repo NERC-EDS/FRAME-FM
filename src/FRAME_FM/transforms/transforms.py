@@ -487,7 +487,7 @@ class TiledIndexMapper:
         max_idx = self._n_coarse_for_dim(dim) - 1
         return int(min(max(coarse_idx, 0), max_idx))
 
-    def tile_id_from_coordinates(self, **coords: float | int | np.datetime64) -> int:
+    def tile_id_from_coordinates(self, coords: dict[str, float | int | np.datetime64]) -> int:
         """
         Map real-world coordinates to a tile id in batch_dim.
 

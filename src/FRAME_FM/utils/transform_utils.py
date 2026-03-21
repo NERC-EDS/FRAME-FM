@@ -126,7 +126,7 @@ class CRS_convertor:
             inverse (bool, optional): Whether to enact inverse transform, from target CRS
                 to source CRS rather than from source CRS to target CRS. Defaults to False.
         Returns:
-            dict[str, float]: Transformed coordinates, by dim name.
+            dict[str, ndarray]: Transformed coordinates, by dim name.
         """
         if inverse:
             source_dims, target_dims, direction = self.target_dims, self.source_dims, 'INVERSE'
