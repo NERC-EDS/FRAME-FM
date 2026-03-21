@@ -577,15 +577,15 @@ class ToValuesBoundsTransform(BaseTransform):
     def __call__(self, sample: DA) -> tuple[TT, TT]:
         sample = datetime_coords_to_float(sample)
         pixel_halfwidths = [
-            (sample[dim][1].values - sample[dim][0].values) / 2 for dim in self.dims
+            (sample[dim][1].values - sample[dim][0].values) / 2 if sample[dim].size > 1 else None
+            for dim in self.dims
             ]
-        bounds = torch.from_numpy(
-            np.array([
-                [sample[dim][0].values - halfwidth, sample[dim][-1].values + halfwidth]
-                for dim, halfwidth in zip(self.dims, pixel_halfwidths)
-                ])
-            )
-        return torch.from_numpy(sample.values), bounds
+        bounds = np.array([
+            [sample[dim][0].values - halfwidth, sample[dim][-1].values + halfwidth]
+            if sample[dim].ndim > 0 else [sample[dim].values, sample[dim].values]
+            for dim, halfwidth in zip(self.dims, pixel_halfwidths)
+            ])
+        return torch.from_numpy(sample.values), torch.from_numpy(bounds)
 
 
 class ToValuesLocationsTransform(BaseTransform):
