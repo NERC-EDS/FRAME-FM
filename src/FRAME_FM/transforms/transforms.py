@@ -23,12 +23,12 @@ class BaseTransform:
         raise NotImplementedError("Transform must implement the __call__ method.")
 
 
-def _parse_coordinate(coord):
+def _parse_coordinate(coord: int | float | str) -> int | float | pd.Timestamp:
     return pd.to_datetime(coord) if isinstance(coord, str) else coord
 
 
 class AddFixedCoordinates(BaseTransform):
-    def __init__(self, coords: dict[str, float]):
+    def __init__(self, coords: dict[str, int | float | str]):
         self.coords = {dim: _parse_coordinate(coord) for dim, coord in coords.items()}
 
     def __call__(self, sample: DS | DA):
@@ -602,7 +602,7 @@ class ToValuesLocationsTransform(BaseTransform):
         if self.crs_conversion is not None:
             new_dims = set(self.dims) & set(self.crs_conversion.target_dims)
             sample = self.crs_conversion.add_converted_coords(sample, new_dims)
-        missing_dims = set(self.dims) - set(sample.dims)  # type: ignore
+        missing_dims = set(self.dims) - set(sample.coords)  # type: ignore
         # (sample.dims may in theory be Hashable, but in practice are str)
         if len(missing_dims) > 0:
             raise ValueError(f"dims {missing_dims} must be in sample.dims {sample.dims}")

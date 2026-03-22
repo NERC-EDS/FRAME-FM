@@ -34,7 +34,8 @@ class CorrespondingTilesDataset(Dataset):
         self.value_shapes = [dataset.data[0].shape for dataset in datasets]
         # TODO: Refactor to TiledDataset(BaseDataset) class with tile_index method, and enforce
         self.index_mappers = [
-            TiledIndexMapper.from_tiled_array(dataset.data) for dataset in datasets
+            TiledIndexMapper.from_tiled_array(dataset.data) for dataset in datasets  # type: ignore
+            # (dataset.data may be Dataset or - uncaught - untiled DataArray)
             ]
         self.crs_convertors = [
             None if crs_conversion_spec is None else CRS_convertor(crs_conversion_spec)
@@ -61,7 +62,7 @@ class CorrespondingTilesDataset(Dataset):
                 search_coords = crs_convertor.transform(ref_location, inverse=True)  # type: ignore
             # (DataArray.dims may in theory be Hashable, but in practice are str)
             search_coords = {
-                dim: coord.item() for dim, coord in search_coords.items()
+                dim: coord for dim, coord in search_coords.items()
                 if dim in index_mapper.tile_sizes.keys()
                 }
             tile_id = index_mapper.tile_id_from_coordinates(search_coords)  # type: ignore
