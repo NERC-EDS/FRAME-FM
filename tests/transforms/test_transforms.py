@@ -19,6 +19,7 @@ import torch
 import xarray as xr
 
 from FRAME_FM.transforms import (
+    AddFixedCoordinates,
     FillMissingValueTransform,
     NormalizeTransform,
     RenameTransform,
@@ -40,7 +41,6 @@ from FRAME_FM.transforms import (
 )
 from FRAME_FM.transforms.transforms import transform_mapping
 from FRAME_FM.utils.data_utils import load_data_from_uri
-from FRAME_FM.utils.transform_utils import CRS_conversion_spec
 
 from tests.datasets.common import CHESS_URI, ERA5_URI
 
@@ -72,6 +72,20 @@ def _load_data(source: str = "era5", response_type: str = "Dataset") -> xr.Datas
         resp = dsets[source]["ds"]
 
     return resp, var_id
+
+
+def test_add_fixed_coordinate():
+    da = xr.DataArray(np.arange(5), dims=('x'), coords={'x': np.arange(5)})
+    da_with_y = AddFixedCoordinates({'y': 1})(da)
+    assert 'y' in da_with_y.coords, \
+        f"AddFixedCoordinates failing: dims {da_with_y.coords.dims} != ('x', 'y')"
+    assert da_with_y['y'].values == 1, \
+        f"AddFixedCoordinates failing: coords {da_with_y['y'].values} != 1"
+    da_with_t = AddFixedCoordinates({'t': "2000-01-01"})(da)
+    assert 't' in da_with_t.coords, \
+        f"AddFixedCoordinates failing: dims {da_with_t.coords.dims} != ('x', 't')"
+    assert da_with_t['t'].values == pd.to_datetime("2000-01-01"), \
+        f"AddFixedCoordinates failing: coords {da_with_t['t'].values} != Timestamp('2000-01-01')"
 
 
 # Mark this test as failing in second stage
