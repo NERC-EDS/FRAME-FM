@@ -2,7 +2,7 @@
 training:
   _target_: torch.utils.data.DataLoader
   dataset:
-    _target_: FRAME_FM.datasets.combined_dataset.CombineCorrespondingDataset
+    _target_: FRAME_FM.datasets.combined_dataset.CorrespondingTilesDataset
     datasets:
     # Daily sqkm average precipitation from 1961-2019, in British National Grid
     - _target_: FRAME_FM.datasets.base_dataset.BaseDataset
@@ -36,7 +36,7 @@ training:
 validation:
   _target_: torch.utils.data.DataLoader
   dataset:
-    _target_: FRAME_FM.datasets.combined_dataset.CombineCorrespondingDataset
+    _target_: FRAME_FM.datasets.combined_dataset.CorrespondingTilesDataset
     datasets:
     # Daily sqkm average precipitation from 1961-2019, in British National Grid
     - _target_: FRAME_FM.datasets.base_dataset.BaseDataset
