@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: astral-sh/setup-uv@v7.2.0 
 
       - name: Install Test Dependencies
         run: |
