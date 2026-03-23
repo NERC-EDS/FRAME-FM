@@ -22,11 +22,12 @@ from pathlib import Path
 import os
 import torchx.specs as specs
 from torchx.runner import get_runner
+import configparser
 
 console = Console()
 DEFAULT_CONFIG_DIR = str(Path(__file__).parents[2] / "configs")
 CONFIG_DIR = os.getenv("CONFIG_DIR", DEFAULT_CONFIG_DIR)
-torchx_config = os.getenv("TORCHX_CONFIG", ".torchxconfig")
+torchx_config = os.getenv("TORCHX_CONFIG", f"{DEFAULT_CONFIG_DIR}/.torchxconfig")
 
 def _type_checker_and_conversion(data: Any, value: Any) -> Any:
     """Utility to check value against its source, and convert if necessary.
@@ -174,6 +175,20 @@ def check_torchx_config():
             f.write("[no_warn]\n")
         click.secho("Created default .torchxconfig", fg="yellow")
 
+def get_torchx_defaults() -> dict:
+    """Reads .torchxconfig manually to avoid import errors."""
+    torch_config = Path(torchx_config)
+    config = configparser.ConfigParser()
+    if not torch_config.exists():
+        click.secho(f"Unable to find torch config file:{torchx_config}", fg="red")
+        return {}
+    try:
+        config.read(torch_config)
+        return {section: dict(config[section]) for section in config.sections()}
+    except Exception as e:
+        click.secho(f"Error parsing .torchxconfig: {e}", fg="red")
+        return {}
+
 def train_run_with_local_hydra(verbose: bool, overrides: tuple[str, ...]) -> None:
     with initialize_config_dir(config_dir=CONFIG_DIR, version_base=None):
             cfg = compose(config_name="config", overrides=list(overrides),return_hydra_config=True)
@@ -186,8 +201,8 @@ def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
     """Dispatches the command to TorchX."""
     #1. Load defaults from .torchxconfig
     # This reads the [defaults] section
-    torchx_defaults = torchx_config.get_configs().get("defaults", {})
-    default_image = torchx_defaults.get("image", "pytorch/pytorch:latest")
+    torchx_defaults = get_torchx_defaults()
+    default_image = torchx_defaults.get("image", "pytorch/pytorch: latest")
     default_cpu = int(torchx_defaults.get("cpu", 2))
     default_gpu = int(torchx_defaults.get("gpu", 0))
     
@@ -210,7 +225,6 @@ def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
     # 3. Define the TorchX App
     # The entrypoint is 'framefm'
     # We pass '--scheduler local_cwd' to the remote worker so it actually executes.
-    job_args = ["train", "run", "--scheduler", "local_cwd"] + list(overrides)
 
     app = specs.AppDef(
         name="framefm-train",
@@ -224,7 +238,7 @@ def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
                 resource=specs.Resource(
                     cpu=default_cpu,
                     gpu=default_gpu,
-                    memKB=4 * 1024 * 1024,
+                    memMB=400,
                 ),
             )
         ],
