@@ -14,5 +14,5 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Run tests
-        run: echo "testing"
+      - name: Install UV
+        run: pip install uv
