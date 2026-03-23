@@ -249,26 +249,3 @@ class BaseShapefileDataset(Dataset):
 
         #Create the xarray dataset.
         self.data = self.to_xarray(self.var_out_map)
-
-
-
-if __name__ == "__main__":
-
-    # Specify the path to the config file. 
-    cfg_path = '../../../configs/data/config_FRAME_shpfiles.yaml'
-
-    # Set transforms for dataset
-    dataset = BaseShapefileDataset(
-        data_uri=data_uri,
-    )       
-
-    # Print the dataset to the screen to show sample output.
-    print(dataset.dataset_out)
-
-    # Print the catetory mappings for info.
-    print(dataset.category_mappings)
-
-
-    print(f"Dataset length: {len(dataset)}")
-    sample = dataset[0]
-    print(f"Sample shape: {sample.shape}")
