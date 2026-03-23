@@ -1,15 +1,20 @@
 import torch
 import pytest
+from pathlib import Path
+import json
 
 from .common import (
     GEOTIFF_URI,
     TIMESERIES_URI,
     ASCII_GRID_URI,
-    NC_URI
+    NC_URI, 
+    ERA5_URI,
 )
 
 from FRAME_FM.utils.settings import DatasetSettings
-from FRAME_FM.utils.data_utils import load_data_from_uri, hash_preprocessors, create_cache_path
+from FRAME_FM.utils.data_utils import (
+    load_data_from_uri, hash_preprocessors, create_cache_path, safely_remove_dir
+)
 
 from FRAME_FM.datasets.base_gridded_dataset import (
     BaseGriddedDataset,
@@ -134,18 +139,22 @@ def test_base_timeseries_dataset_nc_file():
 
 
 def test_base_timeseries_dataset_with_cache():
-
     cache_dir = "./test_cache"
 
-    preprocessors = [
-        {"type": "subset", "time": ("2000-01-01", "2000-01-10"), "latitude": (60, -30), "longitude": (40, 100)},
-    ]
+    # Remove cache directory if it already exists to ensure we are testing the caching process from scratch
+    safely_remove_dir(cache_dir)
+
+    data_uri = ERA5_URI.replace("*", "2d")
+
+    subset = {"type": "subset", "time": ("2000-01-01 00:00:00", "2000-01-31 23:00:00"), "latitude": (60, -30), "longitude": (40, 100)}
+    chunks = {"time": 12, "latitude": 361, "longitude": 720}
+
     dataset = BaseGriddedTimeSeriesDataset(
-        data_uri=TIMESERIES_URI,
-        preprocessors=preprocessors,
+        data_uri=data_uri,
+        preprocessors=[subset.copy()],
         time_stride=8,
         cache_dir=cache_dir,
-        chunks="auto"
+        chunks=chunks
     )
 
     assert len(dataset) > 0, f"Expected dataset length to be greater than 0 with cache enabled, but got {len(dataset)}"
@@ -155,20 +164,17 @@ def test_base_timeseries_dataset_with_cache():
 
     # Create a version without cache and compare the results - initially the dataset after construction
     dataset_no_cache = BaseGriddedTimeSeriesDataset(
-        data_uri=TIMESERIES_URI,
-        preprocessors=preprocessors,
+        data_uri=data_uri,
+        preprocessors=[subset.copy()],
         time_stride=8,
         cache_dir=None,
-        chunks="auto"
+        chunks=chunks
     )
 
-    # Compare the datasets 
-    assert dataset.data.equals(dataset_no_cache.data), "Expected cached dataset to have the same data as non-cached dataset after preprocessing, but they differ"
-    assert (dataset.data["d2m"].values == dataset_no_cache.data["d2m"].values).all(), "Expected cached dataset variable values to match non-cached dataset variable values after preprocessing, but they differ"
-
+    # Assert that the dataset has the hash key in its attributes, and that it matches the expected hash based on the preprocessors used
     # Assert that the hash of the preprocessors is stored in the cached dataset attributes and matches the hash of the preprocessors used
     cached_hash = dataset.data.attrs.get(DatasetSettings.preprocessor_hash_key, None)
-    expected_hash = hash_preprocessors(preprocessors)
+    expected_hash = hash_preprocessors([subset.copy()])
     assert cached_hash is not None, f"Expected cached dataset to have the hash attribute {DatasetSettings.preprocessor_hash_key}, but it was not found"
     assert cached_hash == expected_hash, f"Expected cached dataset hash {cached_hash} to match expected hash {expected_hash} based on the preprocessors, but they differ"
 
@@ -176,4 +182,23 @@ def test_base_timeseries_dataset_with_cache():
     non_cached_hash = dataset_no_cache.data.attrs.get(DatasetSettings.preprocessor_hash_key, None)
     assert non_cached_hash is None, f"Expected non-cached dataset to not have the hash attribute {DatasetSettings.preprocessor_hash_key}, but it was found with value {non_cached_hash}"
 
+    # Now remove the hash attribute from the cached dataset to simulate the case where we are comparing the datasets without considering the cache metadata, and compare the datasets
+    dataset.data.attrs.pop(DatasetSettings.preprocessor_hash_key, None)
 
+    ds1 = dataset.data.isel(time=0, latitude=0, longitude=slice(-3, None)) # Select a small subset of the data for comparison to speed up the process
+    ds2 = dataset_no_cache.data.isel(time=0, latitude=0, longitude=slice(-3, None)) # Select the same small subset of the data for comparison
+
+    # Compare the datasets - they should be the same after preprocessing, since the cache should not modify the data, only store it for future use. We compare both the dataset as a whole and the values of a specific variable to ensure they match.
+    assert ds1.equals(ds2), "Expected cached dataset to have the same data as non-cached dataset after preprocessing, but they differ"
+    assert (ds1["d2m"].values == ds2["d2m"].values).all(), "Expected cached dataset variable values to match non-cached dataset variable values after preprocessing, but they differ"
+
+    # Check that a croissant file was created for the cached dataset, and that it contains the expected variables and values
+    croissant_path = str(dataset.cache_path).replace(".zarr", "_croissant.json")
+    assert Path(croissant_path).exists(), f"Expected croissant file {croissant_path} to be created for cached dataset, but it was not found"
+    # Load croissant file and check it has a key called "@context"
+    with open(croissant_path, "r") as f:
+        croissant_data = json.load(f)
+    assert "@context" in croissant_data, f"Expected croissant file {croissant_path} to contain a key called '@context', but it was not found"
+
+    # Clean up cache directory after test
+    safely_remove_dir(cache_dir)

@@ -11,7 +11,7 @@ from FRAME_FM.utils.data_utils import (
     cache_data_to_zarr
 )
 
-from FRAME_FM.utils.settings import DatasetSettings, DefaultSettings
+from FRAME_FM.utils.settings import DatasetSettings
 from FRAME_FM.transforms import resolve_transform, apply_preprocessors
 
 
@@ -84,7 +84,7 @@ class BaseDataset(Dataset):
         if not self.force_recache and self._detect_existing_cache():  # If cache exists and force_recache is False, we can skip the caching step
             self.data = load_data_from_uri(
                 uri=self.cache_path,
-                zarr_format=DefaultSettings.zarr_format
+                zarr_format=DatasetSettings.zarr_format
             )
         else:
             self.data = cache_data_to_zarr(

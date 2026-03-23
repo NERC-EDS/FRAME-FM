@@ -5,7 +5,7 @@ from .common import (
     NC_URI,
 )
 
-from FRAME_FM.utils.settings import DatasetSettings, DefaultSettings
+from FRAME_FM.utils.settings import DatasetSettings
 from FRAME_FM.utils.data_utils import load_data_from_uri, hash_preprocessors, create_cache_path
 from FRAME_FM.datasets.base_dataset import BaseDataset
 
