@@ -14,9 +14,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Install Test Dependencies
         run: |
           pip install uv
+          uv venv
           uv pip install '.[test]'
-
