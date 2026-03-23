@@ -96,6 +96,21 @@ uv run pytest tests/datasets/test_base_dataset.py
 
 ## Coding Standards
 
+### Linting
+
+FRAME-FM uses [Ruff](https://docs.astral.sh/ruff/) for linting. You can run the linter locally with the following commands:
+
+```bash
+# Install lint dependencies
+uv sync --extra lint
+
+# Run the linter
+uv run ruff check .
+
+# Run the linter and automatically fix any fixable issues
+uv run ruff check . --fix
+```
+
 ### Style
 
 - Follow [PEP 8](https://peps.python.org/pep-0008/) conventions.
