@@ -1,0 +1,26 @@
+name: Run linter
+# Run on pushes to main and on pull requests.
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  run-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: astral-sh/setup-uv@v7.2.0        
+
+      - name: Install Dependencies
+        run: |          
+          uv sync --extra lint
+
+      - name: Run Linter
+        # Currently --exit-zero to prevent failure of job.
+        # Remove this once we want to enforce linting rules.
+        run: |
+          uv run ruff check . --exit-zero
