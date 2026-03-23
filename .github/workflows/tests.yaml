@@ -13,9 +13,15 @@ jobs:
   tests:
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Install Test Dependencies
-        run: |
-          pip install uv
-          uv venv
-          uv pip install '.[test]'
+  steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Install Test Dependencies
+      run: |
+        pip install uv
+        uv venv
+        uv pip install '.[test]'
+
+    - name: Run tests
+      run: uv run pytest
