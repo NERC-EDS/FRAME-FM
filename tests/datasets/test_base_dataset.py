@@ -1,3 +1,5 @@
+import os
+
 import torch
 import pytest
 
@@ -5,8 +7,11 @@ from .common import (
     NC_URI,
 )
 
-from FRAME_FM.utils.settings import DatasetSettings, DefaultSettings
-from FRAME_FM.utils.data_utils import load_data_from_uri, hash_preprocessors, create_cache_path
+from FRAME_FM.utils.settings import DatasetSettings
+from FRAME_FM.utils.data_utils import (
+    load_data_from_uri, hash_preprocessors, 
+    create_cache_path, safely_remove_dir
+)
 from FRAME_FM.datasets.base_dataset import BaseDataset
 
 
@@ -37,8 +42,12 @@ def test_base_dataset():
     assert torch.isclose(sample.max(), torch.tensor(original_data.max()), atol=1e-5), f"Sample max value {sample.max()} does not match original data max {original_data.max()}"
 
 
-def test_dataset_caching():
+def test_dataset_caching_basic():
     cache_dir = "./test_cache"
+    # Remove cache directory if it already exists to ensure we are testing the caching process from scratch
+    safely_remove_dir(cache_dir)
+
+    os.environ["CACHING_BACKEND"] = "basic"
 
     dataset = BaseDataset(
         data_uri=NC_URI,
@@ -87,3 +96,7 @@ def test_dataset_caching():
     # Now add it in to the non-cached dataset to ensure that the presence of the hash attribute does not affect the data
     dataset_no_cache.data.attrs[DatasetSettings.preprocessor_hash_key] = expected_hash
     assert dataset.data.equals(dataset_no_cache.data), "Cached and non-cached datasets should be equal"
+
+    # Tidy up by removing the cache directory after the test
+    safely_remove_dir(cache_dir)
+
