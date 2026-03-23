@@ -19,9 +19,7 @@ jobs:
 
       - name: Install Test Dependencies
         run: |
-          pip install uv
-          uv venv
-          uv pip install '.[test]'
+          uv sync --extra test
 
       - name: Run tests
         continue-on-error: true
