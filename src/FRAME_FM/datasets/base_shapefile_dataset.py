@@ -25,7 +25,6 @@ class BaseShapefileDataset(Dataset):
         self.data_uri = data_uri
         self.transforms = unify_transforms(transforms, self._transforms, override_transforms)
 
-
         self.category_mappings = {}   # Stores category→integer mappings for each shapefile/column
 
         #Initialise from confing.
@@ -52,8 +51,12 @@ class BaseShapefileDataset(Dataset):
     # ----------------------------------------------------------
     # 1. LOAD SHAPEFILES
     # ----------------------------------------------------------
-    def proc_shapefiles(self, file_list, parent_grd, categorical_columns):
-        # """Load a list of shapefiles into GeoDataFrames."""
+    def proc_shapefiles(self, file_list: list[str], parent_grd: str, categorical_columns: dict[str, list]):
+        """Load a list of shapefiles into GeoDataFrames.
+        file_list - the list of shapefiles to process
+        parent_grd - the file to use as the parent grid who's boundaries will be used for all other files
+        categorical_columns - the list of columns to se
+        """
         self.gdfs = {}
   
         # Loop over each file and convert caterogical columns as needed.
@@ -72,10 +75,9 @@ class BaseShapefileDataset(Dataset):
             if file_path == parent_grd:
                 self.parent_bounds = gdf.total_bounds
 
-    # ----------------------------------------------------------
-    # 2. BUILD A COMMON PARENT GRID
-    # ----------------------------------------------------------
     def build_parent_grid(self):
+        """Builds a common parent grid and scale it to the target resolution"""
+        
         xmin, ymin, xmax, ymax = self.parent_bounds
         res = self.resolution
 
@@ -91,10 +93,14 @@ class BaseShapefileDataset(Dataset):
         #self.y = np.arange(ymin, ymin + (self.ny * res), res)
 
 
-    # ----------------------------------------------------------
-    # 3. ENCODE CATEGORICAL COLUMNS - INTERNAL ONLY.
-    # ----------------------------------------------------------
-    def encode_categories(self, gdf, categorical_columns, file_path):
+    def encode_categories(self, gdf ,categorical_columns: list[str], file_path: str):
+        """Encodes the categorical columns
+        gdf - a geopandas data file to encode
+        categorical_columns - the list of categorical columns from the data file
+        file_path - the path to the file we are processing
+        returns a geopandas data file with the columns overwritten to the encoded values
+        """
+        
         enc = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
 
         integer_values = enc.fit_transform(gdf[categorical_columns])
@@ -113,10 +119,12 @@ class BaseShapefileDataset(Dataset):
         return gdf
 
 
-    # ----------------------------------------------------------
-    # 4. RASTERISE A SINGLE VARIABLE FROM A GDF
-    # ----------------------------------------------------------
-    def rasterise(self, gdf, column):
+    def rasterise(self, gdf, column: str):
+        """Rasterises a single variable from a geopandas data file
+        gdf - a geopandas data file
+        column - a string specifying the column name
+        returns a rasterised array of the shapefile for the specified column
+        """
         shapes = [(geom, value) 
                   for geom, value in zip(gdf.geometry, gdf[column])]
         
@@ -130,11 +138,8 @@ class BaseShapefileDataset(Dataset):
         return arr
 
 
-    # ----------------------------------------------------------
-    # 5. CREATE THE FINAL XARRAY DATASET
-    # ----------------------------------------------------------
     def to_xarray(self, variable_map):
-        
+        """Create the final xarray dataset"""
         data_vars = {}
 
         for curr_gdf in variable_map:
@@ -167,9 +172,10 @@ class BaseShapefileDataset(Dataset):
         with open(path, "r") as f:
             return yaml.safe_load(f) or {}
 
-    # Extract the correct file lists from the config file.
-    def build_inputs_from_config(self, cfg):
-
+    def build_inputs_from_config(self, cfg: str):
+        """Extract the correct file lists from the config file.
+        cfg - a string with the path to the configuration file
+        """
         
         # --- Required fields ---
         if "resolution" not in cfg:
@@ -237,8 +243,10 @@ class BaseShapefileDataset(Dataset):
         else:
             self.parent_grd = self.file_list[parent_grd_list.index("YES")]
 
-    # Final wrapper function to run the whole process.
     def build_dataset(self):
+        """ Final wrapper function to run the whole process. 
+        Builds the xarray dataset from a set of shapefiles
+        """
 
         # Execute the stpes to build the dataset from the shapefiles.
         # Read the shapefiles.
