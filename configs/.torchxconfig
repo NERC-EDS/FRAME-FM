@@ -3,5 +3,14 @@ name = "local_cwd"
 
 [defaults]
 cpu = 6
-gpu = 4
+gpu = 4
 image = "pytorch/pytorch:2.2.0-cuda11.8-cudnn8-runtime"
+
+[slurm]
+partition = gpu 
+time = 04:00:00
+account = FRAME-FM
+nodes = 1
+ntasks_per_node = 1
+gres = gpu:1
+mem = 32G

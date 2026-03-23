@@ -175,7 +175,7 @@ def check_torchx_config():
             f.write("[no_warn]\n")
         click.secho("Created default .torchxconfig", fg="yellow")
 
-def get_torchx_defaults() -> dict:
+def get_torchx_config() -> dict:
     """Reads .torchxconfig manually to avoid import errors."""
     torch_config = Path(torchx_config)
     config = configparser.ConfigParser()
@@ -200,21 +200,36 @@ def train_run_with_local_hydra(verbose: bool, overrides: tuple[str, ...]) -> Non
 def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
     """Dispatches the command to TorchX."""
     #1. Load defaults from .torchxconfig
-    # This reads the [defaults] section
-    torchx_defaults = get_torchx_defaults()
-    default_image = torchx_defaults.get("image", "pytorch/pytorch: latest")
-    default_cpu = int(torchx_defaults.get("cpu", 2))
-    default_gpu = int(torchx_defaults.get("gpu", 0))
+    # defaults section
+    torchx_config = get_torchx_config()
+    default_image = torchx_config.get("image", "pytorch/pytorch: latest")
+    default_cpu = int(torchx_config.get("cpu", 2))
+    default_gpu = int(torchx_config.get("gpu", 0))
+    default_mem = int(torchx_config.get("memMB", 1024))
+
+    # Slurm-specific section
+    slurm_cfg = torchx_config.get("slurm", {})
+    partition = slurm_cfg.get("partition", "gpu")
+    time_limit = slurm_cfg.get("time", "01:00:00")
     
     # 2. Resolve Hydra config to find the Docker image or resource requirements
     # We do this so we can pass metadata (like image name) to TorchX
     with initialize_config_dir(config_dir=CONFIG_DIR, version_base=None):
         cfg = compose(config_name="config", overrides=list(overrides))
 
-    # 2. Extract Image and Resource info (falling back to defaults if not in YAML)
+    # 3. Extract Image
     # This can be ovveriden as follows: framefm train run torchx.image=any-repo/image:tag
     image = cfg.get("torchx", {}).get("image", default_image)
 
+    # 4. Define Resources
+    # Note: 'capabilities' is often required by Slurm schedulers to find GPUs
+    resource = specs.Resource(
+        cpu=default_cpu,
+        gpu=default_gpu,
+        memMB=default_mem,
+        capabilities={"gpu_type": "nvidia"} if default_gpu > 0 else {}
+    )
+    #5. If docker or kunernetess: It i not supported yet.
     # Docker and K8s REQUIRE an image
     if scheduler in ["local_docker", "kubernetes"] and not image:
         raise click.UsageError(
@@ -222,9 +237,9 @@ def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
             "Please provide one in your config or via CLI: 'torchx.image=your_image_name'"
         )
 
-    # 3. Define the TorchX App
+    # 6. Define the TorchX App
     # The entrypoint is 'framefm'
-    # We pass '--scheduler local_cwd' to the remote worker so it actually executes.
+    # We pass '--scheduler <slurm|local_cwd>' to the remote worker so it actually executes.
 
     app = specs.AppDef(
         name="framefm-train",
@@ -235,26 +250,30 @@ def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
                 entrypoint="framefm",
                 args=["train", "run", "--scheduler", "local_cwd"] + list(overrides),
                 num_replicas=1,
-                resource=specs.Resource(
-                    cpu=default_cpu,
-                    gpu=default_gpu,
-                    memMB=400,
-                ),
-            )
+                resource=resource,
+                )
         ],
     )
     
    # 4. Run the job
     runner = get_runner()
     try:
-        job_id = runner.run(app, scheduler=scheduler)
-        click.secho(f"Job submitted successfully!", fg="green")
-        click.echo(f"Scheduler: {scheduler}")
-        click.echo(f"Job ID:    {job_id}")
-        
-        # Help info for the developer
-        if scheduler == "local_docker":
-            click.echo(f"View logs with: docker logs -f {job_id}")
+       # For Slurm, we pass scheduler-specific arguments here
+        cfg = None
+        if scheduler == "slurm":
+            cfg={
+              "partition":partition,
+               "time": time_limit,
+            }
+            if slurm_cfg.get("account"):
+              cfg["account"]= slurm_cfg.get("account")
+            job_id = runner.run(app, scheduler=scheduler, cfg = cfg)
+      
+            click.secho(f"Job submitted successfully!", fg="green")
+            click.echo(f"Scheduler: {scheduler}")
+            click.echo(f"Job ID:    {job_id}")
+            click.echo(f"Check status: squeue -j {job_id.split('//')[-1]}")
+            click.echo(f"View logs:    tail -f slurm-{job_id.split('//')[-1]}.out")
     except Exception as e:
         click.secho(f"Failed to submit job to {scheduler}: {e}", fg="red")
         raise click.Abort()
