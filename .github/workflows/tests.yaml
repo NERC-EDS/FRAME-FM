@@ -16,3 +16,7 @@ jobs:
     steps:
       - name: Install UV
         run: pip install uv
+
+
+      - name: UV Install Test Dependencies
+        run: uv pip install '.[test]'
