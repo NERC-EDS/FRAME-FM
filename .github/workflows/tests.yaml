@@ -18,11 +18,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Test Dependencies
-        continue-on-error: true
         run: |
           pip install uv
           uv venv
           uv pip install '.[test]'
 
       - name: Run tests
+        continue-on-error: true
         run: uv run pytest
