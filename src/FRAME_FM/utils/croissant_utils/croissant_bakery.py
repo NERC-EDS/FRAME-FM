@@ -43,9 +43,9 @@ def get_temporal_resolution(ds: xr.Dataset) -> Tuple[float, str]:
         return mcd.total_seconds(), 'second'
     elif mcd < pd.Timedelta('1 day'):
         return mcd.total_seconds() / 3600, 'hour'
-    elif mcd < pd.Timedelta('1 month'):
+    elif mcd < pd.Timedelta('31 day'):
         return mcd.total_seconds() / 86400, 'day'
-    elif mcd < pd.Timedelta('1 year'):
+    elif mcd < pd.Timedelta('366 day'):
         return mcd.total_seconds() / (30 * 86400), 'month'
     else:
         return mcd.total_seconds() / (365 * 86400), 'year'
@@ -160,11 +160,12 @@ class ZarrToCroissantConverter:
             time_values = self.ds.time.values
             start, end = [pd.to_datetime(tm).strftime("%Y-%m-%dT%H:%M:%SZ") for tm in [time_values[0], time_values[-1]]]
 
+        # Use mid-points to calculate spatial resolution, since the edges may not be evenly spaced
         lat, lon = self.ds.cf["latitude"].values, self.ds.cf["longitude"].values
-        lat_mid = int((lat.max() + lat.min()) / 2)
-        lon_mid = int((lon.max() + lon.min()) / 2)
-        lat_diff = float(lat[lat_mid] - lat[lat_mid - 1]) if len(lat) > 1 else "undefined"
-        lon_diff = float(lon[lon_mid] - lon[lon_mid - 1]) if len(lon) > 1 else "undefined"
+        lat_mid_index = int(len(lat) / 2)
+        lon_mid_index = int(len(lon) / 2)
+        lat_diff = float(lat[lat_mid_index] - lat[lat_mid_index - 1]) if len(lat) > 1 else "undefined"
+        lon_diff = float(lon[lon_mid_index] - lon[lon_mid_index - 1]) if len(lon) > 1 else "undefined"
 
         # Create GeoCroissant metadata
         croissant = {

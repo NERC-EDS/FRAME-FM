@@ -15,12 +15,8 @@ from FRAME_FM.utils.settings import DEBUG, DatasetSettings
 from FRAME_FM.transforms import apply_preprocessors
 from FRAME_FM.utils.croissant_utils.croissant_bakery import write_croissant_file
 
-if DatasetSettings.caching_backend != "basic":
-    from zarr_parallel import ZarrParallelAssembler
-    from zarr_parallel.utils import set_verbose as zp_set_verbose
-else:
-    ZarrParallelAssembler = None  # Placeholder to avoid import errors when not using zarr_parallel
-    zp_set_verbose = None  # Placeholder to avoid import errors when not using zarr_parallel
+from zarr_parallel import ZarrParallelAssembler
+from zarr_parallel.utils import set_verbose as zp_set_verbose
 
 
 def safely_remove_dir(path: Path | str):
@@ -254,10 +250,13 @@ def cache_data_to_zarr(data_uri: str | Path,
     # Compute a hash of the preprocessors for caching purposes
     preprocessor_hash = hash_preprocessors(preprocessors)
 
+    # Get caching backend from environment variable or settings, default to "basic"
+    caching_backend = os.getenv("CACHING_BACKEND", DatasetSettings.caching_backend)
+
     # If backend is "basic", we will use the simple caching implementation that loads the data
     # into memory, applies preprocessors, and writes to Zarr format. If the backend is "series" 
     # or "dask_distributed", we will use the ZarrParallelAssembler to handle the caching in a more distributed manner.
-    if DatasetSettings.caching_backend == "basic":
+    if caching_backend == "basic":
         ds = load_data_from_uri(
             uri=data_uri,
             chunks=chunks)
@@ -266,6 +265,7 @@ def cache_data_to_zarr(data_uri: str | Path,
         write_zarr(ds, cache_path, chunks=chunks)
     
     else:
+        print(f"Caching data from {data_uri} to {cache_path} using ZarrParallelAssembler with preprocessors: {preprocessors} and chunks: {chunks}")
         zp = ZarrParallelAssembler(
             data_uri=data_uri,
             preprocessors=preprocessors,
@@ -273,7 +273,7 @@ def cache_data_to_zarr(data_uri: str | Path,
             chunks=chunks,
             engine=get_xr_kwargs(data_uri)['engine']
         )
-        set_verbose(1)  # Enable verbose logging for debugging purposes
+        zp_set_verbose(1)  # Enable verbose logging for debugging purposes
         
         # Assume the cache path includes the actual zarr store name
         zp.cache(
@@ -281,7 +281,7 @@ def cache_data_to_zarr(data_uri: str | Path,
             generate_stats=generate_stats, 
             await_completion=True,
             simultaneous_worker_limit=4, # Number of workers
-            deploy_mode="dask_distributed" # "series"  - Deploy mode for Dask distributed cluster
+            deploy_mode=caching_backend # "series"  - Deploy mode for Dask distributed cluster
             # Memory limit if less than 2GB per worker?
             # Worker timeout if not 30 minutes
             # Deploy mode if specifying between dask/slurm
