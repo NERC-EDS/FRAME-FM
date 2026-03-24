@@ -6,17 +6,22 @@ import zipfile
 from pathlib import Path
 from typing import Union
 from collections.abc import Callable
+import yaml
 
 import dask
 import xarray as xr
 
 from FRAME_FM.utils.common_utils import convert_subset_selectors_to_slices
-from FRAME_FM.utils.settings import DEBUG, DatasetSettings
 from FRAME_FM.transforms import apply_preprocessors
 from FRAME_FM.utils.croissant_utils.croissant_bakery import write_croissant_file
 
 from zarr_parallel import ZarrParallelAssembler
 from zarr_parallel.utils import set_verbose as zp_set_verbose
+
+preprocessor_hash_key = "_preprocessor_cache_hash"
+default_zarr_format = os.getenv("FRAME_ZARR_FORMAT", 2)  # Use Zarr v2 format for better compatibility with xarray and Dask
+default_chunks = yaml.safe_load(os.getenv("FRAME_DEFAULT_CHUNKS", "{time: 64}"))  # Default chunking strategy, can be overridden by environment variable
+DEBUG = True
 
 
 def safely_remove_dir(path: Path | str):
@@ -150,7 +155,7 @@ def load_data_from_uri(uri: Union[str, Path, list, tuple],
         uri = str(uri)
 
     # Set a default chunking strategy if not provided to ensure Dask is used for larger datasets
-    chunks = chunks or {"time": 64}
+    chunks = chunks or default_chunks
 
     # Load dataset from URI
     subset_selection = convert_subset_selectors_to_slices(subset_selection) if subset_selection else {}
@@ -251,7 +256,7 @@ def cache_data_to_zarr(data_uri: str | Path,
     preprocessor_hash = hash_preprocessors(preprocessors)
 
     # Get caching backend from environment variable or settings, default to "basic"
-    caching_backend = os.getenv("CACHING_BACKEND", DatasetSettings.caching_backend)
+    caching_backend = os.getenv("FRAME_CACHING_BACKEND", "basic")
 
     # If backend is "basic", we will use the simple caching implementation that loads the data
     # into memory, applies preprocessors, and writes to Zarr format. If the backend is "series" 
@@ -260,7 +265,7 @@ def cache_data_to_zarr(data_uri: str | Path,
         ds = load_data_from_uri(
             uri=data_uri,
             chunks=chunks)
-        ds.attrs[DatasetSettings.preprocessor_hash_key] = preprocessor_hash
+        ds.attrs[preprocessor_hash_key] = preprocessor_hash
         ds = apply_preprocessors(ds, preprocs) if preprocs else ds
         write_zarr(ds, cache_path, chunks=chunks)
     
@@ -269,7 +274,7 @@ def cache_data_to_zarr(data_uri: str | Path,
         zp = ZarrParallelAssembler(
             data_uri=data_uri,
             preprocessors=preprocessors,
-            add_attrs={DatasetSettings.preprocessor_hash_key: preprocessor_hash},
+            add_attrs={preprocessor_hash_key: preprocessor_hash},
             chunks=chunks,
             engine=get_xr_kwargs(data_uri)['engine']
         )
@@ -298,7 +303,7 @@ def cache_data_to_zarr(data_uri: str | Path,
     # Now load the cached Zarr files into memory and add to the response dictionary
     return load_data_from_uri(
                 uri=cache_path,
-                zarr_format=DatasetSettings.zarr_format
+                zarr_format=default_zarr_format
             )
 
 
@@ -315,7 +320,7 @@ def write_zarr(ds: xr.Dataset,
     #  - https://github.com/roocs/rook/issues/55
     #  - https://docs.dask.org/en/latest/scheduling.html
     with dask.config.set(scheduler="synchronous"):
-        delayed_obj = chunked_ds.to_zarr(output_path, zarr_format=DatasetSettings.zarr_format, compute=False)
+        delayed_obj = chunked_ds.to_zarr(output_path, zarr_format=default_zarr_format, compute=False)
         delayed_obj.compute()
 
     print(f"Wrote output file: {output_path}")
