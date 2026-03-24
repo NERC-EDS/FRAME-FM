@@ -236,6 +236,51 @@ The torchx and hydra configs can be viewed and edited during runtime via the CLI
 </div>
 
 ---
+# Running FRAME-FM Training on Slurm
+
+## 1️⃣ Command to start a job
+
+Run your training via TorchX:
+
+```bash
+framefm train run -s slurm model=demo_autoencoder
+```
+
+** Where to check the Slurm wrapper logs **
+
+TorchX generates a wrapper log when submitting via Slurm:
+if no job_dir was specified in config then 
+/home/users/<username>/FRAME-FM/slurm-<jobid>.out
+
+** Where to check the actual training logs **
+The real training output is written by the worker:
+
+/home/users/<username>/FRAME-FM/slurm-<jobid>-worker-0.out
+/home/users/<username>/FRAME-FM/slurm-<jobid>-worker-0.err
+
+worker-0.out → stdout from your training process (metrics, progress).
+worker-0.err → stderr (errors, exceptions).
+
+---
+# Useful Slurm Commands for FRAME-FM Jobs
+
+| Command | Description / Use | Notes / Examples |
+|---------|-----------------|----------------|
+| `squeue -u $USER` | Lists all current jobs submitted by your user | Shows job ID, name, state, partition, nodes, runtime, etc. Useful to quickly check running or pending jobs. |
+| `sacct -u $USER -S <start_date> --format=JobID,JobName,State,Partition,Start,End` | Shows historical jobs for your user starting from `<start_date>` | Example: `sacct -u $USER -S 2026-03-24 --format=JobID,JobName,State,Partition,Start,End` lists all jobs submitted today with their start/end times. |
+| `scontrol show job <JobID>` | Shows detailed info for a specific job | Example: `scontrol show job 10176547` displays stdout/stderr paths, resources, nodes, time limits, QoS, etc. |
+| `tail -f <stdout_file>` | Follows real-time stdout logs of a job | Example: `tail -f /home/users/<user>/FRAME-FM/slurm-10176547-worker-0.out` shows the actual training logs. |
+| `scancel <JobID>` | Cancels a specific job | Example: `scancel 10176547` stops that job. |
+| `scancel -u $USER` | Cancels all jobs for your user | Useful to clear all pending/running jobs before starting new experiments. |
+| `sacct -j <JobID> --format=JobID,JobName,State,ExitCode,Elapsed` | Check the status and exit code of a specific job | Example: `sacct -j 10176547 --format=JobID,JobName,State,ExitCode,Elapsed` helps debug why a job failed. |
+| `squeue -j <JobID>` | Check if a specific job is still running/pending | Example: `squeue -j 10176547` |
+| `scontrol requeue <JobID>` | Requeues a failed or cancelled job | Useful when a job hits a transient error and you want to retry without resubmitting. |
+
+**Tips:**  
+- `StdOut` and `StdErr` from `scontrol show job <JobID>` show the exact log file locations.  
+- `squeue` only shows **active/pending jobs**, while `sacct` can show **completed, failed, or canceled jobs**.  
+- Use `tail -f` on the worker logs to monitor training in real time.  
+---
 
 # Configuration
 ## Hydra Config
