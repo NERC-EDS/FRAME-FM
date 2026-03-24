@@ -264,8 +264,7 @@ def cache_data_to_zarr(data_uri: str | Path,
     if caching_backend == "basic":
         ds = load_data_from_uri(
             uri=data_uri,
-            chunks=chunks,
-            zarr_format=default_zarr_format)
+            chunks=chunks)
         ds.attrs[preprocessor_hash_key] = preprocessor_hash
         ds = apply_preprocessors(ds, preprocs) if preprocs else ds
         write_zarr(ds, cache_path, chunks=chunks)
