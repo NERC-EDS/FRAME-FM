@@ -167,15 +167,17 @@ def hydra_config_fixture():
 
     return cs, cfg
 
-@pytest.fixture
-def eurossat_datamodule():
+# @pytest.fixture
+def test_eurossat_datamodule():
     from hydra.utils import instantiate
 
     cs, cfg = hydra_config_fixture()
 
     datamodule = instantiate(cfg.data)
 
-    yield datamodule
+    pause = 1
+
+    # yield datamodule
 
 
 def test_dataset(eurossat_datamodule):
