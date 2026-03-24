@@ -140,6 +140,8 @@ def train_run_with_options(verbose: bool, overrides: tuple[str, ...]) -> None:
             if verbose:
                 console.print(Panel(OmegaConf.to_yaml(cfg), title="Resolved config"))
             train_main(cfg)
+
+
 def edit_torch_config_file(key_value_pairs: str) -> None:
     """Edit the key-value pairs within the torchxconfig TOML.
 

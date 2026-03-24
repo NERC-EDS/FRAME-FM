@@ -4,14 +4,6 @@ FRAME\_FM.training package
 Submodules
 ----------
 
-FRAME\_FM.training.logger module
---------------------------------
-
-.. automodule:: FRAME_FM.training.logger
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 FRAME\_FM.training.logging\_utils module
 ----------------------------------------
 

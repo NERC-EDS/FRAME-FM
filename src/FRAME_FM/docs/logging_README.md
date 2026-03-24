@@ -53,7 +53,7 @@ MLflow logging in FRAME‑FM is controlled by Hydra configuration files stored i
 Below is an example configuration ([demo_mlflow.yaml](../../../configs/logging/demo_mlflow.yaml)):
 
 ```yaml
-_target_: FRAME_FM.training.logger.create_mlflow_logger
+_target_: FRAME_FM.training.logging_utils.create_mlflow_logger
 
 experiment_name: "frame-fm-mmmae-demo"
 tracking_uri: ${oc.env:MLFLOW_TRACKING_URI, "sqlite:///mlflow.db"}
