@@ -63,6 +63,18 @@ class NormalizeTransform(BaseTransform):
         return (sample - self.mean) / self.std
 
 
+class StandardizeTransform(BaseTransform):
+    def __init__(self, mean: float, std: float):
+        self.mean = mean
+        self.std = std
+
+    def __call__(self, sample: DA) -> DA:
+        # Implement normalization logic here
+        check_object_type(sample, allowed_types=DA, caller=self.__class__.__name__)
+        return (sample - self.mean) / self.std
+
+
+
 class ScaleTransform(NormalizeTransform): 
     pass
 
@@ -644,6 +656,7 @@ transform_mapping = {
     "fill_missing": FillMissingValueTransform,
     "fill_nan": FillNaNTransform,
     "normalize": NormalizeTransform,
+    "standardize": StandardizeTransform,
     "rename": RenameTransform,
     "resample": ResampleTransform,
     "reshape": ReshapeTransform,
