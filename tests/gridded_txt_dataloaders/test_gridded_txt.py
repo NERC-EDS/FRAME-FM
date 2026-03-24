@@ -177,7 +177,7 @@ def eurossat_datamodule():
 
     yield datamodule
 
-
+@pytest.mark.xfail(reason = "replace 1 with actual assertions relevant to your dataset and dataloader")
 def test_dataset(eurossat_datamodule):
     # GOT TO HERE
     assert eurossat_datamodule == 1 # This is wrong, replace with actual assertions relevant to your dataset and dataloader

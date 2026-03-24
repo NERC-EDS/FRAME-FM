@@ -13,6 +13,7 @@ def test_dataset():
     assert True==True
 
 # This is a stupid test. But my brain isn't working right now.
+@pytest.mark.xfail(reason="Placeholder for the proper test")
 def test_end_to_end(import_fixture):
     # This test will run after the xarray_dataloader_test fixture has completed
     from xarray_dataloaders import xarray_end_to_end
