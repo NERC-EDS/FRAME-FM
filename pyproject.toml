@@ -53,6 +53,9 @@ test = [
     "pytest-cov",
     "pytest-xdist",
 ]
+dev = [
+    "ruff>=0.15.7",
+]
 
 [build-system]
 requires = ["hatchling", "hatch-vcs"]
