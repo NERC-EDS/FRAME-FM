@@ -156,8 +156,7 @@ class ERA5BaseDataModule(BaseDataModule):
         for req in ["time", "latitude", "longitude"]:
             if req not in arr.coords and req not in arr.dims:
                 raise ValueError(
-                    f"Expected ERA5-style coord/dim '{req}' not found. "
-                    f"Found dims={arr.dims}, coords={list(arr.coords)}"
+                    f"Expected ERA5-style coord/dim '{req}' not found. Found dims={arr.dims}, coords={list(arr.coords)}"
                 )
 
         # Put channel first because downstream model code is written with that in mind.
@@ -323,9 +322,7 @@ class ERA5SpatialPixelsDataModule(ERA5BaseDataModule):
         self.train_dataset = TransformedInputTimeCoordsDataset(train_base, self.train_transforms)
         self.val_dataset = TransformedInputTimeCoordsDataset(val_base, self.val_transforms)
         self.test_dataset = (
-            None
-            if test_base is None
-            else TransformedInputTimeCoordsDataset(test_base, self.test_transforms)
+            None if test_base is None else TransformedInputTimeCoordsDataset(test_base, self.test_transforms)
         )
 
     def get_tile_index_mapper(self) -> TiledIndexMapper:
@@ -362,9 +359,7 @@ class ERA5SpatialBoundsDataModule(ERA5BaseDataModule):
         self.train_dataset = TransformedInputTimeCoordsDataset(train_base, self.train_transforms)
         self.val_dataset = TransformedInputTimeCoordsDataset(val_base, self.val_transforms)
         self.test_dataset = (
-            None
-            if test_base is None
-            else TransformedInputTimeCoordsDataset(test_base, self.test_transforms)
+            None if test_base is None else TransformedInputTimeCoordsDataset(test_base, self.test_transforms)
         )
 
     def get_tile_index_mapper(self) -> TiledIndexMapper:

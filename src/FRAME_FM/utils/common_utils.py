@@ -29,7 +29,7 @@ def check_object_type(obj: object, allowed_types: object | tuple[object, ...], c
     if isinstance(allowed_types, type):
         allowed_types = (allowed_types,)
 
-    for t in allowed_types:   # type: ignore
+    for t in allowed_types:  # type: ignore
         if isinstance(obj, t):
             return obj
 
@@ -39,16 +39,18 @@ def check_object_type(obj: object, allowed_types: object | tuple[object, ...], c
 def get_main_vars(dset: xr.Dataset) -> list:
     """
     Get the main variable names from an xarray Dataset, excluding coordinate variables.
-    Match only variables that have the maximum size (i.e., the main data variables) to 
+    Match only variables that have the maximum size (i.e., the main data variables) to
     avoid including ancillary variables that may be present in the dataset.
-    
+
     Args:
         - dset (xr.Dataset): The xarray Dataset from which to extract variable names.
-    
+
     Returns:
         - list: A list of variable names that are not coordinates.
     """
     max_var_size = max([variable.size for variable in dset.data_vars.values()])
-    return [var_id for var_id, variable in dset.data_vars.items() 
-            if var_id not in dset.coords and variable.size == max_var_size]
-
+    return [
+        var_id
+        for var_id, variable in dset.data_vars.items()
+        if var_id not in dset.coords and variable.size == max_var_size
+    ]

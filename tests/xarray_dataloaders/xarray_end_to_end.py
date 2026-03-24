@@ -9,6 +9,7 @@ from hydra.utils import instantiate
 # Print hello world to verify the script runs
 print("Hello, FRAME-FM training script is running!")
 
+
 @hydra_main(version_base=None, config_path="/configs", config_name="config")
 def main(cfg: DictConfig) -> None:
     # Ensure reproducibility

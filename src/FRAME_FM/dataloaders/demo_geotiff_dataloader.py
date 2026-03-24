@@ -22,28 +22,30 @@ def convert_to_long_lat(x, y, src_crs, dst_crs="EPSG:4326"):
 
 
 class XarrayStaticDataModule(BaseDataModule):
-    '''
+    """
     A simple DataModule for loading tiled static data from a geotiff file using xarray.
-    '''
+    """
+
     train_dataset: TransformedInputCoordsDataset
     val_dataset: TransformedInputCoordsDataset
     test_dataset: TransformedInputCoordsDataset | None
 
-    def __init__(self,
-                 data_root: str,
-                 batch_size: int = 32,
-                 num_workers: int = 4,
-                 pin_memory: bool = True,
-                 persistent_workers: bool = False,
-                 train_split: float = 0.85,
-                 val_split: float = 0.15,
-                 test_split: float = 0.0,
-                 split_strategy: str = "fraction",
-                 train_transforms: Callable | None = None,
-                 val_transforms: Callable | None = None,
-                 test_transforms: Callable | None = None,
-                 tile_size: int = 256,
-                 ) -> None:
+    def __init__(
+        self,
+        data_root: str,
+        batch_size: int = 32,
+        num_workers: int = 4,
+        pin_memory: bool = True,
+        persistent_workers: bool = False,
+        train_split: float = 0.85,
+        val_split: float = 0.15,
+        test_split: float = 0.0,
+        split_strategy: str = "fraction",
+        train_transforms: Callable | None = None,
+        val_transforms: Callable | None = None,
+        test_transforms: Callable | None = None,
+        tile_size: int = 256,
+    ) -> None:
         super().__init__(
             data_root=data_root,
             batch_size=batch_size,
@@ -75,15 +77,14 @@ class XarrayStaticDataModule(BaseDataModule):
             raise ValueError(
                 "DataArray is smaller than minimal tile size required for encoding: "
                 f"{nY}x{nX} < {self.tile_size}x{self.tile_size}"
-                )
+            )
         # tile
-        tiles = array.coarsen(
-            x=self.tile_size, y=self.tile_size, boundary='pad'
-            ).construct(
-            x=("tile_xid", "x"), y=("tile_yid", "y")
-            ).stack(
-            batch_dim=("tile_xid", "tile_yid")
-            ).transpose("batch_dim", "band", "y", "x")
+        tiles = (
+            array.coarsen(x=self.tile_size, y=self.tile_size, boundary="pad")
+            .construct(x=("tile_xid", "x"), y=("tile_yid", "y"))
+            .stack(batch_dim=("tile_xid", "tile_yid"))
+            .transpose("batch_dim", "band", "y", "x")
+        )
         # THIS WILL CHANGE
         # replace nans with zeros (required for PCA for latent space visualization)
         tiles = tiles.fillna(0)
@@ -107,22 +108,25 @@ class XarrayStaticDataModule(BaseDataModule):
         # transform datasets
         self.train_dataset = TransformedInputCoordsDataset(train_base, self.train_transforms)
         self.val_dataset = TransformedInputCoordsDataset(val_base, self.val_transforms)
-        self.test_dataset = None if test_base is None else TransformedInputCoordsDataset(
-            test_base, self.test_transforms
-            )
+        self.test_dataset = (
+            None if test_base is None else TransformedInputCoordsDataset(test_base, self.test_transforms)
+        )
 
 
 class GeotiffSpatialDataModule(XarrayStaticDataModule):
-    '''
+    """
     Module for loading tiled values and their positions from a geotiff file, using xarray.
-    '''
+    """
+
     def extract_position_tensor(self, array: xarray.DataArray) -> torch.Tensor:
         y, x = xarray.broadcast(array.y, array.x)
-        positions = torch.stack([
-            torch.tensor(y.values, dtype=torch.float32),
-            torch.tensor(x.values, dtype=torch.float32),
-            ], dim=1
-            )
+        positions = torch.stack(
+            [
+                torch.tensor(y.values, dtype=torch.float32),
+                torch.tensor(x.values, dtype=torch.float32),
+            ],
+            dim=1,
+        )
         return positions
 
     def _create_datasets(self, stage: str | None = None) -> None:
@@ -131,21 +135,22 @@ class GeotiffSpatialDataModule(XarrayStaticDataModule):
         spatial_dataset = TensorDataset(
             torch.tensor(tiles.values, dtype=torch.float32),
             self.extract_position_tensor(tiles),
-            )
+        )
         # split into subsets
         train_base, val_base, test_base = self._split_dataset(spatial_dataset)
         # transform datasets
         self.train_dataset = TransformedInputCoordsDataset(train_base, self.train_transforms)
         self.val_dataset = TransformedInputCoordsDataset(val_base, self.val_transforms)
-        self.test_dataset = None if test_base is None else TransformedInputCoordsDataset(
-            test_base, self.test_transforms
-            )
+        self.test_dataset = (
+            None if test_base is None else TransformedInputCoordsDataset(test_base, self.test_transforms)
+        )
 
 
 class GeotiffBoundedDataModule(GeotiffSpatialDataModule):
-    '''
+    """
     Module for loading tiled values and tile coordinate bounds from a geotiff file, using xarray.
-    '''
+    """
+
     def extract_position_tensor(self, tiles: xarray.DataArray) -> torch.Tensor:
         # get bounds for each tile
         dx = (tiles.x[:, 1] - tiles.x[:, 0]) / 2
@@ -167,12 +172,10 @@ def main():
     geotiff_path = Path(
         "/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/land_cover_map_2015/data/"
         "LCM2015_GB_1km_percent_cover_aggregate_class.tif"
-        )
+    )
     # try initializing the dataloader
     tile_size = 128
-    data_module = GeotiffSpatialDataModule(
-        data_root=geotiff_path.as_posix(), tile_size=tile_size
-        )
+    data_module = GeotiffSpatialDataModule(data_root=geotiff_path.as_posix(), tile_size=tile_size)
     data_module.setup()
     train_dataloader = data_module.train_dataloader()
     for batch_id, (batch_values, batch_positions) in enumerate(train_dataloader):
@@ -181,9 +184,7 @@ def main():
             tile_id = non_zero_tile.int().argmax()
             break
     tile_values, tile_positions = batch_values[tile_id], batch_positions[tile_id]
-    bounded_data_module = GeotiffBoundedDataModule(
-        data_root=geotiff_path.as_posix(), tile_size=tile_size
-        )
+    bounded_data_module = GeotiffBoundedDataModule(data_root=geotiff_path.as_posix(), tile_size=tile_size)
     bounded_data_module.setup()
     train_dataloader = bounded_data_module.train_dataloader()
     for bbatch_values, batch_bounds in train_dataloader:
@@ -218,9 +219,14 @@ def main():
         fig, axs = plt.subplots(2, nBands // 2, figsize=(15, 6))
         for band, ax in enumerate(axs.flatten()):
             sm = ax.pcolormesh(
-                tile_positions[1], tile_positions[0], tile_values[band],
-                cmap="viridis", vmin=vmin, vmax=vmax, shading='nearest'
-                )
+                tile_positions[1],
+                tile_positions[0],
+                tile_values[band],
+                cmap="viridis",
+                vmin=vmin,
+                vmax=vmax,
+                shading="nearest",
+            )
             ax.set_title(f"Band {band}")
         fig.colorbar(sm, ax=axs, label="% coverage")
         x_bounds, y_bounds = tile_bounds[0].tolist(), tile_bounds[1].tolist()

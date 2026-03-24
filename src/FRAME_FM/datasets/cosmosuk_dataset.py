@@ -11,44 +11,46 @@ class CosmosUKDataset(BaseDataset):
     """
     Loads the CosmosUK Dataset
 
-    This expects a directory with a series of files named cosmos-uk_?????_hydrosoil_sh_????-????.csv 
-    (where ????? is a 5 characeter site ID, the two ???? are years) plus 
-    QC files cosmos-uk_?????_hydrosoil_sh_????-????_qc_flags.csv and cosmos-uk_?????_hydrosoil_sh_????-????_flags.csv. 
-    
-    In the parent directory to these there should be a file cosmos-uk_sitemetadata_2013-2024.csv which lists 
+    This expects a directory with a series of files named cosmos-uk_?????_hydrosoil_sh_????-????.csv
+    (where ????? is a 5 characeter site ID, the two ???? are years) plus
+    QC files cosmos-uk_?????_hydrosoil_sh_????-????_qc_flags.csv and cosmos-uk_?????_hydrosoil_sh_????-????_flags.csv.
+
+    In the parent directory to these there should be a file cosmos-uk_sitemetadata_2013-2024.csv which lists
     the sites and their precise locations.
 
-    Descriptions of the data format are in cosmos-uk_supportinginformation_2013-2024.docx 
+    Descriptions of the data format are in cosmos-uk_supportinginformation_2013-2024.docx
     from https://data-package.ceh.ac.uk/sd/2dce161d-2fab-47bb-9fe6-38e7ed1ae18a.zip
     """
+
     _transforms = []
 
-    def __init__(self, 
-                 data_uri: str | Path | list | tuple,
-                 preprocessors: list | None = None,
-                 transforms: list | None = None,
-                 chunks: dict | None = None,
-                 override_transforms: bool = False,
-                 cache_dir: None | Path | str = None,
-                 generate_stats: bool = True,
-                 force_recache: bool = False,
-                 qc_bitmask: int = 0b11111111111,
-                 drop_qc_flags: list = ["M", "U", "I", "E"],
-                 ):
+    def __init__(
+        self,
+        data_uri: str | Path | list | tuple,
+        preprocessors: list | None = None,
+        transforms: list | None = None,
+        chunks: dict | None = None,
+        override_transforms: bool = False,
+        cache_dir: None | Path | str = None,
+        generate_stats: bool = True,
+        force_recache: bool = False,
+        qc_bitmask: int = 0b11111111111,
+        drop_qc_flags: list = ["M", "U", "I", "E"],
+    ):
         # Save the QC content so it can be used in the _setup_dataset method to filter the data as it's loaded.
         # This is necessary because the QC flags are stored in separate files and need to be applied at load time.
         self.qc_bitmask = qc_bitmask
         self.drop_qc_flags = drop_qc_flags
 
         super().__init__(
-             data_uri=data_uri,
-             preprocessors=preprocessors,
-             transforms=transforms,
-             chunks=chunks,
-             override_transforms=override_transforms,
-             cache_dir=cache_dir,
-             generate_stats=generate_stats,
-             force_recache=force_recache
+            data_uri=data_uri,
+            preprocessors=preprocessors,
+            transforms=transforms,
+            chunks=chunks,
+            override_transforms=override_transforms,
+            cache_dir=cache_dir,
+            generate_stats=generate_stats,
+            force_recache=force_recache,
         )
 
     def _setup_dataset(self):
@@ -113,19 +115,13 @@ class CosmosUKDataset(BaseDataset):
                 # flags which were empty are already NaNs, these will turn into False when we run notna()
                 # make flags into Trues, notna() will keep them as true, but if invert it's response we'll get what we want
                 # e.g. flags = false, no flag = true
-                flags_df[column] = flags_df[column].where(
-                    flags_df[column] != flag, "False"
-                )
+                flags_df[column] = flags_df[column].where(flags_df[column] != flag, "False")
             # print("after masking:\n",flags_df[column])
             # columns are either NaN (no flags), false (flagged to drop) or a value (flag which we are ignoring)
             # convert anything that's not false to true
-            flags_df[column] = flags_df[column].where(
-                flags_df[column] == "False", "True"
-            )
+            flags_df[column] = flags_df[column].where(flags_df[column] == "False", "True")
             # print("before inversion:\n",flags_df[column])
-            flags_df[column] = (
-                flags_df[column].where(flags_df[column] == "True", 0).astype("bool")
-            )
+            flags_df[column] = flags_df[column].where(flags_df[column] == "True", 0).astype("bool")
             # flags_df[column] = flags_df[column].astype("bool")
             # print("after inversion")
             # print(flags_df[column])
@@ -160,9 +156,7 @@ class CosmosUKDataset(BaseDataset):
 
         files = glob.glob(data_path + "/cosmos-uk_?????_hydrosoil_sh_????-????.csv")
 
-        metadata_df = pd.read_csv(
-            data_path + "../cosmos-uk_sitemetadata_2013-2024.csv", index_col="SITE_ID"
-        )
+        metadata_df = pd.read_csv(data_path + "../cosmos-uk_sitemetadata_2013-2024.csv", index_col="SITE_ID")
 
         all_data = []
 
@@ -181,25 +175,19 @@ class CosmosUKDataset(BaseDataset):
                 raise FileNotFoundError("QC Flags file " + flags_file + " not found")
 
             # missing values should be -9999 anyway and we turn them to NaNs at load time
-            data_df = pd.read_csv(
-                file, delimiter=",", parse_dates=["DATE_TIME"], na_values=[-9999]
-            )
+            data_df = pd.read_csv(file, delimiter=",", parse_dates=["DATE_TIME"], na_values=[-9999])
             qc_df = pd.read_csv(qc_file, delimiter=",", parse_dates=["DATE_TIME"])
-            flags_df = pd.read_csv(
-                flags_file, delimiter=",", parse_dates=["DATE_TIME"], low_memory=False
-            )
+            flags_df = pd.read_csv(flags_file, delimiter=",", parse_dates=["DATE_TIME"], low_memory=False)
 
             # check the data and QC files match in shape
-            assert (
-                data_df.shape == qc_df.shape == flags_df.shape
-            ), "Shapes of Data, QC and Flags files are not same."
+            assert data_df.shape == qc_df.shape == flags_df.shape, "Shapes of Data, QC and Flags files are not same."
 
             # check column names are the same and are in the same order
             qc_columns = [c.replace("_QCFLAG", "") for c in qc_df.columns]
             flags_columns = [c.replace("_FLAG", "") for c in flags_df.columns]
-            assert (
-                data_df.columns.tolist() == qc_columns == flags_columns
-            ), "Data, QC and Flags column names are not same."
+            assert data_df.columns.tolist() == qc_columns == flags_columns, (
+                "Data, QC and Flags column names are not same."
+            )
 
             # drop the data failing QC
             data_df = self._process_bitmask(data_df, qc_df, qc_bitmask)
@@ -215,9 +203,7 @@ class CosmosUKDataset(BaseDataset):
             # data_df['LONGITUDE'] = longitude
 
             # remove timezone from the datetime as xarray's to_netcdf doesn't like it
-            data_df["DATE_TIME"] = pd.to_datetime(data_df.DATE_TIME).dt.tz_localize(
-                None
-            )
+            data_df["DATE_TIME"] = pd.to_datetime(data_df.DATE_TIME).dt.tz_localize(None)
             # make DATE_TIME the index instead of using a index number
             data_df.set_index(["DATE_TIME"]).sort_index().to_xarray()
 

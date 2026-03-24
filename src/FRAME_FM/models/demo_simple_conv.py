@@ -12,6 +12,7 @@ from FRAME_FM.utils.LightningModuleWrapper import BaseModule
 class MyModel(BaseModule):
     pass
 
+
 # import torch.multiprocessing as mp
 # mp.set_start_method("spawn", force=True)
 
@@ -27,13 +28,13 @@ class SpatialCollapse(nn.Module):
 
         # --- Conv stack ---
         self.conv1 = nn.Conv2d(in_variables, hidden_channels, kernel_size=3, padding=1)
-        self.bn1   = nn.BatchNorm2d(hidden_channels)
+        self.bn1 = nn.BatchNorm2d(hidden_channels)
 
         self.conv2 = nn.Conv2d(hidden_channels, hidden_channels * 2, kernel_size=3, padding=1)
-        self.bn2   = nn.BatchNorm2d(hidden_channels * 2)
+        self.bn2 = nn.BatchNorm2d(hidden_channels * 2)
 
         self.conv3 = nn.Conv2d(hidden_channels * 2, hidden_channels * 4, kernel_size=3, padding=1)
-        self.bn3   = nn.BatchNorm2d(hidden_channels * 4)
+        self.bn3 = nn.BatchNorm2d(hidden_channels * 4)
 
         self.dropout = nn.Dropout2d(dropout)
 
@@ -64,32 +65,36 @@ class SpatialCollapse(nn.Module):
 
         x = F.relu(self.bn3(self.conv3(x)))
 
-        x = self.pool(x)         # [B, C, 1, 1]
+        x = self.pool(x)  # [B, C, 1, 1]
         x = x.view(x.size(0), -1)  # [B, C]
 
-        x = self.head(x)         # [B, 1]
+        x = self.head(x)  # [B, 1]
 
-        return x.squeeze(-1)     # [B]
+        return x.squeeze(-1)  # [B]
+
 
 KERCHUNK_ZIP = "tests/transforms/fixtures/ecmwf-era5X_oper_an_sfc_2000_2020_2d_repack.kr1.0.json.zip"
 
 
-
 if __name__ == "__main__":
-
     n_variables = 5
     model = SpatialCollapse(in_variables=n_variables)
     x = torch.randn(16, n_variables, 128, 128)
     y = model(x)
     print(y.shape)
 
-
     # Read in this zipped Kerchunk file and modify it and then do a basic Pytorch
     # training loop with it.
     ds = load_data_from_uri(KERCHUNK_ZIP)
     transforms = [
         {"type": "reverse_axis", "dim": "latitude"},
-        {"type": "subset", "variables": "d2m", "time": ("2001-01-01", "2001-01-01T00:05:00"), "latitude": (60, -30), "longitude": (40, 160)},
+        {
+            "type": "subset",
+            "variables": "d2m",
+            "time": ("2001-01-01", "2001-01-01T00:05:00"),
+            "latitude": (60, -30),
+            "longitude": (40, 160),
+        },
     ]
 
     for transform in reversed(transforms):
@@ -111,10 +116,10 @@ if __name__ == "__main__":
 
     # Duplicate the variable dimension 5 times to create a fake "variable" dimension for the model
     n_variables = 5
-    array =  []
+    array = []
     for i in range(n_variables):
         array.append(ds["d2m"].values[None, ...])  # [1, T, lat, lon]
-    
+
     data = np.concatenate(array, axis=0)  # [V=2, T, lat, lon]
 
     # Reshape to [T, V, lat, lon]
@@ -144,5 +149,3 @@ if __name__ == "__main__":
 
     # Save the trained model
     torch.save(model.state_dict(), "spatial_collapse_model.pth")
-
-    

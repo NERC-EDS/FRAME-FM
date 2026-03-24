@@ -6,6 +6,7 @@ class TransformedInputTimeCoordsDataset(Dataset):
     """
     Wrap a dataset that yields (tile, time, coords) and apply transforms to tile only.
     """
+
     def __init__(self, base: Dataset, transform: Optional[Any] = None) -> None:
         self.base = base
         self.transform = transform

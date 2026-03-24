@@ -9,6 +9,7 @@ GITHUB_BASE_URL = "https://github.com/NERC-EDS/FRAME-FM/tree/main/src/"
 # Class resolution
 # ---------------------------------------------------------------------------
 
+
 def _resolve_class(op_type: str):
     """
     Look up the implementing class for an operation type via transform_mapping.
@@ -16,6 +17,7 @@ def _resolve_class(op_type: str):
     """
     try:
         from FRAME_FM.transforms import transform_mapping as tm
+
         return tm.get(op_type)
     except ImportError:
         return None
@@ -61,6 +63,7 @@ def _build_github_url(base_url: str, relative_path: str, line_number: int | None
 # Core conversion
 # ---------------------------------------------------------------------------
 
+
 def _recipe_to_property_value(
     step_number: int,
     recipe: dict,
@@ -83,11 +86,13 @@ def _recipe_to_property_value(
 
     param_properties = []
     for param_name, param_value in params.items():
-        param_properties.append({
-            "@type": "PropertyValue",
-            "name": param_name,
-            "value": _serialise_value(param_value),
-        })
+        param_properties.append(
+            {
+                "@type": "PropertyValue",
+                "name": param_name,
+                "value": _serialise_value(param_value),
+            }
+        )
 
     # --- Class introspection ---
     cls = _resolve_class(op_type)
@@ -95,19 +100,23 @@ def _recipe_to_property_value(
         class_name = cls.__name__
         relative_path, line_number = _get_class_source_info(cls)
 
-        param_properties.append({
-            "@type": "PropertyValue",
-            "name": "implementingClass",
-            "value": class_name,
-        })
+        param_properties.append(
+            {
+                "@type": "PropertyValue",
+                "name": "implementingClass",
+                "value": class_name,
+            }
+        )
 
         if github_base_url and relative_path:
             github_url = _build_github_url(github_base_url, relative_path, line_number)
-            param_properties.append({
-                "@type": "PropertyValue",
-                "name": "sourceCodeURL",
-                "value": github_url,
-            })
+            param_properties.append(
+                {
+                    "@type": "PropertyValue",
+                    "name": "sourceCodeURL",
+                    "value": github_url,
+                }
+            )
 
     pv = {
         "@type": "PropertyValue",
@@ -133,12 +142,12 @@ def _serialise_value(value: Any) -> Any:
     if value is None:
         return "null"
     if isinstance(value, tuple):
-        return list(value)          # JSON has no tuple type; list is fine
+        return list(value)  # JSON has no tuple type; list is fine
     if isinstance(value, (str, int, float, bool)):
         return value
     if isinstance(value, list):
         return [_serialise_value(v) for v in value]
-    return str(value)               # fallback for anything exotic
+    return str(value)  # fallback for anything exotic
 
 
 def _build_pipeline_block(
@@ -150,10 +159,7 @@ def _build_pipeline_block(
     """
     Build one top-level PropertyValue block for either preprocessors.
     """
-    steps = [
-        _recipe_to_property_value(i + 1, recipe, github_base_url)
-        for i, recipe in enumerate(recipes)
-    ]
+    steps = [_recipe_to_property_value(i + 1, recipe, github_base_url) for i, recipe in enumerate(recipes)]
 
     return {
         "@type": "PropertyValue",
@@ -190,15 +196,16 @@ def build_additional_property(
     blocks = []
 
     if preprocessors:
-        blocks.append(_build_pipeline_block(
-            label="preprocessingPipeline",
-            description=(
-                "Ordered sequence of preprocessing operations applied once "
-                "at Dataset instantiation time."
-            ),
-            recipes=preprocessors,
-            github_base_url=github_base_url,
-        ))
+        blocks.append(
+            _build_pipeline_block(
+                label="preprocessingPipeline",
+                description=(
+                    "Ordered sequence of preprocessing operations applied once at Dataset instantiation time."
+                ),
+                recipes=preprocessors,
+                github_base_url=github_base_url,
+            )
+        )
 
     return blocks
 

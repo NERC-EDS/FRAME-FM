@@ -34,18 +34,18 @@ def safely_remove_dir(path: Path | str):
                 safely_remove_dir(item)
         path.rmdir()
 
-    if DEBUG: 
+    if DEBUG:
         print(f"Removed directory at: {path}")
 
 
 def _infer_extension(uri: Union[str, Path, list, tuple]) -> str:
     """
-    Infer the file extension from the URI, handling cases where the URI might be a list 
+    Infer the file extension from the URI, handling cases where the URI might be a list
     or tuple of paths.
-    
+
     Args:
         - uri (str, Path, list, or tuple): The URI of the data source, which can be a string, a Path object, or a list/tuple of URIs.
-    
+
     Returns:
         - str: The inferred file extension from the URI.
     """
@@ -65,12 +65,12 @@ def _infer_extension(uri: Union[str, Path, list, tuple]) -> str:
 
 def get_xr_kwargs(uri: Union[str, Path, list, tuple]) -> dict:
     """
-    Determine the appropriate xarray loading engine and any additional kwargs 
+    Determine the appropriate xarray loading engine and any additional kwargs
     based on the URI format or file extension.
-    
+
     Args:
         - uri (str, Path, list, or tuple): The URI of the data source, which can be a string, a Path object, or a list/tuple of URIs.
-        
+
     Returns:
         - dict: A dictionary of kwargs to pass to xarray loading functions, including the 'engine' key.
     """
@@ -92,7 +92,7 @@ def get_xr_kwargs(uri: Union[str, Path, list, tuple]) -> dict:
         kwargs["masked"] = True  # Ensure that rasterio engine returns masked arrays for nodata values
     else:
         raise ValueError(f"Unsupported data URI format: {uri}")
-    
+
     return kwargs
 
 
@@ -107,7 +107,7 @@ def handle_special_uri_case(uri: Union[str, Path, list, tuple], engine: str) -> 
     """
     if isinstance(uri, str) and uri.endswith(".json.zip"):
         bytestream = BytesIO()
-        # For zipped kerchunk files, we need to extract the JSON file from the zip and 
+        # For zipped kerchunk files, we need to extract the JSON file from the zip and
         # pass it to xarray as an in-memory BytesIO object.
         with Path(uri).open("rb") as f:
             with zipfile.ZipFile(f) as z:
@@ -118,8 +118,8 @@ def handle_special_uri_case(uri: Union[str, Path, list, tuple], engine: str) -> 
         bytestream.seek(0)
         resource = json.load(bytestream)
     else:
-        resource = uri                
-    
+        resource = uri
+
     return resource
 
 
@@ -131,11 +131,9 @@ def _get_xr_loader(uri: Union[str, Path, list, tuple]) -> Callable:
         return xr.open_dataset
 
 
-def load_data_from_uri(uri: Union[str, Path, list, tuple], 
-                       chunks: dict | None = None, 
-                       subset_selection: dict | None = None,
-                       **kwargs
-                       ) -> xr.Dataset | xr.DataArray:
+def load_data_from_uri(
+    uri: Union[str, Path, list, tuple], chunks: dict | None = None, subset_selection: dict | None = None, **kwargs
+) -> xr.Dataset | xr.DataArray:
     """
     Load data from a URI with optional subset selection.
     Args:
@@ -161,7 +159,7 @@ def load_data_from_uri(uri: Union[str, Path, list, tuple],
     xr_loader = _get_xr_loader(uri)
     print(f"Using xarray loader: {xr_loader.__name__} for URI: {uri}")
 
-    # Apply special handling if necessary based on the engine type (e.g., for zipped kerchunk we 
+    # Apply special handling if necessary based on the engine type (e.g., for zipped kerchunk we
     # might need to load the refs first)
     resource = handle_special_uri_case(uri, extra_args.get("engine"))
 
@@ -180,8 +178,8 @@ def load_data_from_uri(uri: Union[str, Path, list, tuple],
 def unify_transforms(transforms: list | None, class_transforms: list, override_transforms: bool) -> list:
     """
     Unify the list of transforms by combining user-specified transforms with the default (class) transforms.
-    If override_transforms is True, only the user-specified transforms will be used. 
-    If False, the user-specified transforms will be combined with the default transforms, ensuring that 
+    If override_transforms is True, only the user-specified transforms will be used.
+    If False, the user-specified transforms will be combined with the default transforms, ensuring that
     there are no duplicates based on the "type" key of each transform.
     """
     transforms = transforms or []
@@ -209,11 +207,13 @@ def create_zarr_name(data_uri: str) -> str:
     zarr_name = f"{base_name}.zarr"
     return zarr_name
 
+
 def create_cache_path(data_uri: str, cache_dir: Path | str) -> Path:
     "Create cache path from URI."
-    zarr_name  = create_zarr_name(data_uri)
+    zarr_name = create_zarr_name(data_uri)
     cache_path = Path(cache_dir) / zarr_name
     return cache_path
+
 
 def hash_preprocessors(preprocessors: list | None) -> str:
     # Create a hash of the preprocessor list to use for caching
@@ -222,12 +222,14 @@ def hash_preprocessors(preprocessors: list | None) -> str:
     return hashlib.md5(preprocessor_str).hexdigest()
 
 
-def cache_data_to_zarr(data_uri: str | Path, 
-                       preprocessors: list | None,
-                       chunks: dict | None,
-                       cache_path: str | Path,
-                       generate_stats: bool = True,
-                       variables: list | None = None) -> xr.Dataset:
+def cache_data_to_zarr(
+    data_uri: str | Path,
+    preprocessors: list | None,
+    chunks: dict | None,
+    cache_path: str | Path,
+    generate_stats: bool = True,
+    variables: list | None = None,
+) -> xr.Dataset:
     """
     Cache data to Zarr format based on the provided preprocessors and cache directory.
 
@@ -255,38 +257,38 @@ def cache_data_to_zarr(data_uri: str | Path,
     caching_backend = os.getenv("CACHING_BACKEND", DatasetSettings.caching_backend)
 
     # If backend is "basic", we will use the simple caching implementation that loads the data
-    # into memory, applies preprocessors, and writes to Zarr format. If the backend is "series" 
+    # into memory, applies preprocessors, and writes to Zarr format. If the backend is "series"
     # or "dask_distributed", we will use the ZarrParallelAssembler to handle the caching in a more distributed manner.
     if caching_backend == "basic":
-        ds = load_data_from_uri(
-            uri=data_uri,
-            chunks=chunks)
+        ds = load_data_from_uri(uri=data_uri, chunks=chunks)
         ds.attrs[DatasetSettings.preprocessor_hash_key] = preprocessor_hash
         ds = apply_preprocessors(ds, preprocs) if preprocs else ds
         write_zarr(ds, cache_path, chunks=chunks)
-    
+
     else:
-        print(f"Caching data from {data_uri} to {cache_path} using ZarrParallelAssembler with preprocessors: {preprocessors} and chunks: {chunks}")
+        print(
+            f"Caching data from {data_uri} to {cache_path} using ZarrParallelAssembler with preprocessors: {preprocessors} and chunks: {chunks}"
+        )
         zp = ZarrParallelAssembler(
             data_uri=data_uri,
             preprocessors=preprocessors,
             add_attrs={DatasetSettings.preprocessor_hash_key: preprocessor_hash},
             chunks=chunks,
-            engine=get_xr_kwargs(data_uri)['engine']
+            engine=get_xr_kwargs(data_uri)["engine"],
         )
         zp_set_verbose(1)  # Enable verbose logging for debugging purposes
-        
+
         # Assume the cache path includes the actual zarr store name
         zp.cache(
             str(cache_path),
-            generate_stats=generate_stats, 
+            generate_stats=generate_stats,
             await_completion=True,
-            simultaneous_worker_limit=4, # Number of workers
-            deploy_mode=caching_backend # "series"  - Deploy mode for Dask distributed cluster
+            simultaneous_worker_limit=4,  # Number of workers
+            deploy_mode=caching_backend,  # "series"  - Deploy mode for Dask distributed cluster
             # Memory limit if less than 2GB per worker?
             # Worker timeout if not 30 minutes
             # Deploy mode if specifying between dask/slurm
-            )
+        )
 
     # Write Croissant record for the cached Zarr file
     # This should include metadata about the original data source, the preprocessors applied, and the
@@ -297,15 +299,10 @@ def cache_data_to_zarr(data_uri: str | Path,
     )
 
     # Now load the cached Zarr files into memory and add to the response dictionary
-    return load_data_from_uri(
-                uri=cache_path,
-                zarr_format=DatasetSettings.zarr_format
-            )
+    return load_data_from_uri(uri=cache_path, zarr_format=DatasetSettings.zarr_format)
 
 
-def write_zarr(ds: xr.Dataset,  
-               output_path: Path | str, 
-               chunks: dict[str, int] | None = None) -> Path | str:
+def write_zarr(ds: xr.Dataset, output_path: Path | str, chunks: dict[str, int] | None = None) -> Path | str:
     """
     Return output after applying chunking and determining the output format and chunking.
     """

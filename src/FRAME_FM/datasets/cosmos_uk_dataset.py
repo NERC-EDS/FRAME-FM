@@ -6,9 +6,7 @@ from FRAME_FM.datasets.base_dataset import BaseDataset
 
 
 class COSMOSUKSiteTimeSeriesDataset(BaseDataset):
-    _transforms = [
-        {"type": "to_tensor"}
-    ]
+    _transforms = [{"type": "to_tensor"}]
 
     def _setup_dataset(self):
         self.data = load_data_from_uri(self.data_uri, chunks=self.chunks)

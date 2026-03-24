@@ -13,7 +13,6 @@ from tests.datasets.common import COSMOSUK_DATA_URI
 # 1024=error code stored as value
 
 
-
 # test QC masks
 def test_qc_mask_all_flags():
     ds = cosmosuk.CosmosUKDataset(

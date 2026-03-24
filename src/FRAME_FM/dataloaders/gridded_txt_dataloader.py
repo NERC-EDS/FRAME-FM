@@ -7,11 +7,13 @@ import torch
 from pathlib import Path
 import polars as pl
 
+
 class TabularDataset(TensorDataset):
     """Very simple tabular dataset: X numeric features, y target."""
 
     # Inherit TensorDataset behaviour; you might extend this later if needed.
     ...
+
 
 class GriddedDataModule(BaseDataModule):
     """
@@ -76,6 +78,7 @@ class GriddedDataModule(BaseDataModule):
 def main():
     GriddedDataModule()
     # pause = 1
+
 
 if __name__ == "__main__":
     main()

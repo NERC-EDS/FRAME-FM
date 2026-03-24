@@ -3,6 +3,7 @@
 from pytorch_lightning.loggers import MLFlowLogger
 from typing import Any, Optional
 
+
 def create_mlflow_logger(
     experiment_name: str,
     tracking_uri: str,

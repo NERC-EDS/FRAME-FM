@@ -24,29 +24,30 @@ def get_temporal_resolution(ds: xr.Dataset) -> Tuple[float, str]:
     tuple: A tuple containing the temporal resolution value and unit.
     """
     # Check if 'time' coordinate exists
-    if 'time' not in ds.coords:
+    if "time" not in ds.coords:
         raise ValueError("Dataset does not contain a 'time' coordinate.")
 
     # Extract time values and convert to pandas datetime
-    time_values = pd.to_datetime(ds['time'].values)
+    time_values = pd.to_datetime(ds["time"].values)
 
     # Calculate the differences between consecutive time points
     time_diffs = time_values[1:] - time_values[:-1]
 
     # Get the most common time difference
-    mcd: pd.Timedelta = time_diffs.value_counts().idxmax()   # type: ignore
+    mcd: pd.Timedelta = time_diffs.value_counts().idxmax()  # type: ignore
 
     # Convert the most common difference to a human-readable format
-    if mcd < pd.Timedelta('1 hour'):
-        return mcd.total_seconds(), 'second'
-    elif mcd < pd.Timedelta('1 day'):
-        return mcd.total_seconds() / 3600, 'hour'
-    elif mcd < pd.Timedelta('31 day'):
-        return mcd.total_seconds() / 86400, 'day'
-    elif mcd < pd.Timedelta('366 day'):
-        return mcd.total_seconds() / (30 * 86400), 'month'
+    if mcd < pd.Timedelta("1 hour"):
+        return mcd.total_seconds(), "second"
+    elif mcd < pd.Timedelta("1 day"):
+        return mcd.total_seconds() / 3600, "hour"
+    elif mcd < pd.Timedelta("31 day"):
+        return mcd.total_seconds() / 86400, "day"
+    elif mcd < pd.Timedelta("366 day"):
+        return mcd.total_seconds() / (30 * 86400), "month"
     else:
-        return mcd.total_seconds() / (365 * 86400), 'year'
+        return mcd.total_seconds() / (365 * 86400), "year"
+
 
 def _get_bbox_string(ds: xr.Dataset) -> str:
     """Get bounding box string in the format 'lat_min lon_min lat_max lon_max'"""
@@ -62,19 +63,14 @@ def _get_crs(metadata: Dict[str, Any], ds: xr.Dataset | None) -> str:
 
     # Try to resolve from Dataset
     rio_crs = ds.rio.crs
-    
+
     return str(rio_crs) if rio_crs else "Undefined"
 
 
 class ZarrToCroissantConverter:
     """Dynamic converter for NASA POWER data to GeoCroissant format"""
 
-    def __init__(
-        self,
-        zarr_url: str | Path,
-        metadata: Optional[Dict[str, Any]] = None,
-        verbose: bool = False
-    ):
+    def __init__(self, zarr_url: str | Path, metadata: Optional[Dict[str, Any]] = None, verbose: bool = False):
         """
         Initialize the converter with the Zarr URL
 
@@ -101,10 +97,7 @@ class ZarrToCroissantConverter:
                 print(f"  - Dimensions: {self.ds.dims}")
                 print(f"  - Total size: {self.ds.nbytes / 1e9:.2f} GB")
                 print(f"  - Variables: {len(self.ds.data_vars)}")
-                print(
-                    f"  - Time range: {self.ds.time.values[0]} to"
-                    f" {self.ds.time.values[-1]}"
-                )
+                print(f"  - Time range: {self.ds.time.values[0]} to {self.ds.time.values[-1]}")
             return True
         except Exception as e:
             raise Exception(f"Error loading dataset due to issue: {e}")
@@ -121,9 +114,7 @@ class ZarrToCroissantConverter:
                 "dimensions": list(var.dims),
                 "dtype": str(var.dtype),
                 "size_mb": float(var.nbytes / 1e6),
-                "attributes": (
-                    dict(var.attrs) if hasattr(var, "attrs") and var.attrs else {}
-                ),
+                "attributes": (dict(var.attrs) if hasattr(var, "attrs") and var.attrs else {}),
             }
         return variables
 
@@ -223,13 +214,7 @@ class ZarrToCroissantConverter:
             "citeAs": self.metadata.get("citeAs", None),
             "datePublished": self.metadata.get("datePublished", datetime.now().isoformat().split(".")[0]),
             "license": "https://creativecommons.org/licenses/by/4.0/",
-            "spatialCoverage": {
-                "@type": "Place",
-                "geo": {
-                    "@type": "GeoShape",
-                    "box": _get_bbox_string(self.ds)
-                }
-            },
+            "spatialCoverage": {"@type": "Place", "geo": {"@type": "GeoShape", "box": _get_bbox_string(self.ds)}},
             "geocr:temporalExtent": {"startDate": start, "endDate": end},
             "geocr:temporalResolution": get_temporal_resolution(self.ds),
             "geocr:spatialResolution": f"{lat_diff}° lat x {lon_diff}° lon",
@@ -274,9 +259,7 @@ class ZarrToCroissantConverter:
                 "description": f"Coordinate: {coord_name}",
                 "dataType": "sc:Float" if coord.dtype.kind == "f" else "sc:Date",
                 "source": {
-                    "fileObject": {
-                        "@id": self.zarr_url
-                    },
+                    "fileObject": {"@id": self.zarr_url},
                     "extract": {"jsonPath": f"$.{coord_name}"},
                 },
                 "geocr:dataShape": list(coord.shape),
@@ -286,7 +269,7 @@ class ZarrToCroissantConverter:
                         "max": mx,
                     }
                 ),
-                "geocr:units": coord.attrs.get("units", "")
+                "geocr:units": coord.attrs.get("units", ""),
             }
             # Remove None values
             coord_field = {k: v for k, v in coord_field.items() if v is not None}
@@ -301,9 +284,7 @@ class ZarrToCroissantConverter:
                 "description": var.attrs.get("long_name", var_name),
                 "dataType": "sc:Float",
                 "source": {
-                    "fileObject": {
-                        "@id": self.zarr_url
-                    },
+                    "fileObject": {"@id": self.zarr_url},
                     "extract": {"jsonPath": f"$.{var_name}"},
                 },
                 "geocr:dataShape": list(var.shape),
@@ -312,8 +293,7 @@ class ZarrToCroissantConverter:
                         "min": float(var.attrs.get("valid_min", "UNDEFINED")),
                         "max": float(var.attrs.get("valid_max", "UNDEFINED")),
                     }
-                    if var.attrs.get("valid_min") is not None
-                    and var.attrs.get("valid_max") is not None
+                    if var.attrs.get("valid_min") is not None and var.attrs.get("valid_max") is not None
                     else None
                 ),
                 "geocr:units": var.attrs.get("units", ""),
@@ -321,7 +301,7 @@ class ZarrToCroissantConverter:
                 "geocr:definition": var.attrs.get("definition", ""),
                 "geocr:cellMethods": var.attrs.get("cell_methods", ""),
                 "geocr:cellMeasures": var.attrs.get("cell_measures", ""),
-                "geocr:chunkSizes": {d: next(iter(v)) for d, v in var.chunksizes.items()}  
+                "geocr:chunkSizes": {d: next(iter(v)) for d, v in var.chunksizes.items()},
             }
             # Remove None values
             var_field = {k: v for k, v in var_field.items() if v is not None}
@@ -336,10 +316,7 @@ class ZarrToCroissantConverter:
 
         return croissant
 
-    def convert(
-        self,
-        output_file: str = "record.json"
-    ) -> Dict[str, Any]:
+    def convert(self, output_file: str = "record.json") -> Dict[str, Any]:
         """
         Complete conversion pipeline
 
@@ -364,12 +341,13 @@ class ZarrToCroissantConverter:
 
 
 def write_croissant_file(
-        data_uri: str | Path, 
-        output_file: str | Path = None, 
-        metadata: Optional[Dict[str, Any]] = None,
-        preprocessors: list[dict] = None) -> None:
+    data_uri: str | Path,
+    output_file: str | Path = None,
+    metadata: Optional[Dict[str, Any]] = None,
+    preprocessors: list[dict] = None,
+) -> None:
     """
-    Write a Croissant JSON-LD record for a Zarr file. Use input metadata about the original data source 
+    Write a Croissant JSON-LD record for a Zarr file. Use input metadata about the original data source
     and the preprocessors applied to create a traceable record.
 
     Args:
@@ -384,7 +362,7 @@ def write_croissant_file(
     metadata = metadata or {}
     data_uri = str(data_uri)
 
-    # If there are preprocessors, then send them to the `build_additional_property` function to 
+    # If there are preprocessors, then send them to the `build_additional_property` function to
     # create the `additionalProperty` block for the Croissant record
     if preprocessors:
         additional_property = build_additional_property(preprocessors=preprocessors)
@@ -393,19 +371,18 @@ def write_croissant_file(
     # Set some defaults
     data_uri_stem = Path(data_uri).stem
     metadata.setdefault("name", f"Dataset for {data_uri_stem}")
-    metadata.setdefault("description", f"Dataset converted from Zarr file at {data_uri}. Generated by FRAME-FM package, courtesy of NERC-EDS.")
+    metadata.setdefault(
+        "description",
+        f"Dataset converted from Zarr file at {data_uri}. Generated by FRAME-FM package, courtesy of NERC-EDS.",
+    )
     metadata.setdefault("url", data_uri)
 
-    converter = ZarrToCroissantConverter(
-        zarr_url=data_uri,
-        metadata=metadata,
-        verbose=False
-    )
+    converter = ZarrToCroissantConverter(zarr_url=data_uri, metadata=metadata, verbose=False)
 
     # If output_file is not provided, generate a default name based on the data_uri
     if output_file is None:
         dri = Path(data_uri)
         output_file = str(dri.with_name(dri.stem + "_croissant.json"))
-    
+
     converter.convert(output_file=output_file)
     print(f"Croissant record written to {output_file}")

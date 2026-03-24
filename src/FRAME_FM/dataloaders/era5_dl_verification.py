@@ -52,13 +52,11 @@ def assert_positions_not_normalized(
 
     if lat_range < min_lat_range_deg:
         raise AssertionError(
-            f"Latitude range too small ({lat_range:.6f} deg). "
-            "Positions may have been normalized/scaled incorrectly."
+            f"Latitude range too small ({lat_range:.6f} deg). Positions may have been normalized/scaled incorrectly."
         )
     if lon_range < min_lon_range_deg:
         raise AssertionError(
-            f"Longitude range too small ({lon_range:.6f} deg). "
-            "Positions may have been normalized/scaled incorrectly."
+            f"Longitude range too small ({lon_range:.6f} deg). Positions may have been normalized/scaled incorrectly."
         )
 
 
@@ -100,7 +98,7 @@ def validate_batch(
 
     B, C, H, W = values.shape
     if pos.shape != (B, 2, H, W):
-        raise AssertionError(f"pos shape mismatch: expected {(B,2,H,W)}, got {tuple(pos.shape)}")
+        raise AssertionError(f"pos shape mismatch: expected {(B, 2, H, W)}, got {tuple(pos.shape)}")
 
     lat = pos[:, 0]  # (B,H,W)
     lon = pos[:, 1]  # (B,H,W)
@@ -122,16 +120,12 @@ def validate_batch(
     # Latitude should be constant across columns within a row
     lat_col_var = lat.var(dim=2)  # variance across W, shape (B,H)
     if not (lat_col_var < cfg.axis_const_tol).all():
-        raise AssertionError(
-            "Latitude varies across columns -> likely wrong broadcasting or transform misalignment"
-        )
+        raise AssertionError("Latitude varies across columns -> likely wrong broadcasting or transform misalignment")
 
     # Longitude should be constant across rows within a column
     lon_row_var = lon.var(dim=1)  # variance across H, shape (B,W)
     if not (lon_row_var < cfg.axis_const_tol).all():
-        raise AssertionError(
-            "Longitude varies across rows -> likely wrong broadcasting or transform misalignment"
-        )
+        raise AssertionError("Longitude varies across rows -> likely wrong broadcasting or transform misalignment")
 
     # Monotonicity checks (expected after sortby longitude)
     # latitude monotonic down rows (increasing or decreasing OK)
@@ -153,8 +147,9 @@ def validate_batch(
         min_lon_range_deg=cfg.min_lon_range_deg,
     )
 
-#Function to check - Our tiles come from stacking (time, tile_lat_id, tile_lon_id) into batch_dim. 
-# That means we can pick a tile and reconstruct the exact global slice indices and compare to the original arr. 
+
+# Function to check - Our tiles come from stacking (time, tile_lat_id, tile_lon_id) into batch_dim.
+# That means we can pick a tile and reconstruct the exact global slice indices and compare to the original arr.
 def assert_tile_matches_global(
     *,
     raw_arr: xr.DataArray,
@@ -185,11 +180,15 @@ def assert_tile_matches_global(
     lat_start = tile_lat_id * tile_size_lat
     lon_start = tile_lon_id * tile_size_lon
 
-    global_patch = raw_arr.sel(time=t_val).isel(
-        channel=channel,
-        latitude=slice(lat_start, lat_start + H),
-        longitude=slice(lon_start, lon_start + W),
-    ).values
+    global_patch = (
+        raw_arr.sel(time=t_val)
+        .isel(
+            channel=channel,
+            latitude=slice(lat_start, lat_start + H),
+            longitude=slice(lon_start, lon_start + W),
+        )
+        .values
+    )
 
     tile_patch = tiles.isel(batch_dim=tile_index, channel=channel).values
 
@@ -203,7 +202,8 @@ def assert_tile_matches_global(
             f"max_abs={max_abs:.6e} > atol={atol:.6e}"
         )
 
-#Prove positions match global coords
+
+# Prove positions match global coords
 def assert_positions_match_coords(
     *,
     global_lat: np.ndarray,

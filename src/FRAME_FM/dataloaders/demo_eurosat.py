@@ -9,6 +9,7 @@ from torchvision.datasets import EuroSAT
 from FRAME_FM.utils.LightningDataModuleWrapper import BaseDataModule
 from FRAME_FM.datasets.ImageLabel_Dataset import TransformedDataset
 
+
 class EuroSATDataModule(BaseDataModule):
     """
     FRAME-FM DataModule for EuroSAT.
@@ -68,7 +69,5 @@ class EuroSATDataModule(BaseDataModule):
         )
         # test_base may be None if no test split configured
         self.test_dataset = (
-            TransformedDataset(test_base, transform=self.test_transforms)
-            if test_base is not None
-            else None
+            TransformedDataset(test_base, transform=self.test_transforms) if test_base is not None else None
         )

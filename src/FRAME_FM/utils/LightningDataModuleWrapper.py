@@ -79,24 +79,16 @@ class BaseDataModule(pl.LightningDataModule, ABC):
         self.val_transforms = val_transforms
         self.test_transforms = test_transforms
 
-    def _split_dataset(
-        self, full_ds: Dataset[Any]
-    ) -> tuple[Dataset[Any], Dataset[Any], Optional[Dataset[Any]]]:
+    def _split_dataset(self, full_ds: Dataset[Any]) -> tuple[Dataset[Any], Dataset[Any], Optional[Dataset[Any]]]:
         n_total = len(full_ds)
 
         # 1) explicit indices
         if self.split_strategy == "indices":
             if self._train_indices is None or self._val_indices is None:
-                raise RuntimeError(
-                    "split_strategy='indices' but train/val indices missing."
-                )
+                raise RuntimeError("split_strategy='indices' but train/val indices missing.")
             train_ds = Subset(full_ds, self._train_indices)
             val_ds = Subset(full_ds, self._val_indices)
-            test_ds = (
-                Subset(full_ds, self._test_indices)
-                if self._test_indices is not None
-                else None
-            )
+            test_ds = Subset(full_ds, self._test_indices) if self._test_indices is not None else None
             return train_ds, val_ds, test_ds
 
         # 2) fraction splits
@@ -171,9 +163,7 @@ class BaseDataModule(pl.LightningDataModule, ABC):
 
         # Basic sanity checks
         if self.train_dataset is None:
-            raise RuntimeError(
-                "train_dataset has not been created in _create_datasets()"
-            )
+            raise RuntimeError("train_dataset has not been created in _create_datasets()")
         if self.val_dataset is None:
             warnings.warn(
                 "val_dataset has not been created in _create_datasets(), :: copying train_dataset",
@@ -202,25 +192,18 @@ class BaseDataModule(pl.LightningDataModule, ABC):
     # --- Public PyTorch Lightning Hooks ----
     def train_dataloader(self) -> DataLoader[Any]:
         if self.train_dataset is None:
-            raise RuntimeError(
-                "train_dataset is not set up yet. Did you call setup()? "
-            )
-        return self._make_dloader(
-            self.train_dataset, sampler=self._train_sampler, shuffle=True
-        )
+            raise RuntimeError("train_dataset is not set up yet. Did you call setup()? ")
+        return self._make_dloader(self.train_dataset, sampler=self._train_sampler, shuffle=True)
 
     def val_dataloader(self) -> DataLoader[Any]:
         if self.val_dataset is None:
             raise RuntimeError("val_dataset is not set up yet. Did you call setup()?")
-        return self._make_dloader(
-            self.val_dataset, sampler=self._val_sampler, shuffle=False
-        )
+        return self._make_dloader(self.val_dataset, sampler=self._val_sampler, shuffle=False)
 
     def test_dataloader(self) -> DataLoader[Any]:
         if self.test_dataset is None:
             warnings.warn(
-                "BaseDataModule: `test_dataset` is None. "
-                "Falling back to `val_dataset` or `train_dataset`.",
+                "BaseDataModule: `test_dataset` is None. Falling back to `val_dataset` or `train_dataset`.",
                 UserWarning,
                 stacklevel=2,
             )
@@ -232,6 +215,4 @@ class BaseDataModule(pl.LightningDataModule, ABC):
                 "`val_dataset` nor `train_dataset` are available to fall back to. "
                 "Ensure datasets are created in `_create_datasets()` Did you call setup()?"
             )
-        return self._make_dloader(
-            self.test_dataset, sampler=self._test_sampler, shuffle=False
-        )
+        return self._make_dloader(self.test_dataset, sampler=self._test_sampler, shuffle=False)

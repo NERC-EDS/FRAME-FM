@@ -79,17 +79,14 @@ class EuroSATAutoencoder(BaseModule):
             nn.BatchNorm2d(chs[1]),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(2, 2),
-
             nn.Conv2d(chs[1], chs[2], kernel_size=k_size, stride=1, padding=pad),
             nn.BatchNorm2d(chs[2]),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(2, 2),
-
             nn.Conv2d(chs[2], chs[3], kernel_size=k_size, stride=1, padding=pad),
             nn.BatchNorm2d(chs[3]),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(2, 2),
-
             nn.Conv2d(chs[3], chs[4], kernel_size=k_size, stride=1, padding=pad),
             nn.BatchNorm2d(chs[4]),
             nn.ReLU(inplace=True),
@@ -99,13 +96,13 @@ class EuroSATAutoencoder(BaseModule):
         # ---- Latent projection ----
         # Assumes encoder output spatial size is 4x4 (e.g., input 64x64).
         self.to_latent = nn.Sequential(
-            nn.Flatten(),                              # [B, chs[4]*4*4]
-            nn.Linear(chs[4] * 4 * 4, latent_dim),      # [B, latent_dim]
+            nn.Flatten(),  # [B, chs[4]*4*4]
+            nn.Linear(chs[4] * 4 * 4, latent_dim),  # [B, latent_dim]
         )
 
         self.from_latent = nn.Sequential(
-            nn.Linear(latent_dim, chs[4] * 4 * 4),      # [B, chs[4]*4*4]
-            nn.Unflatten(1, (chs[4], 4, 4)),            # [B, chs[4], 4, 4]
+            nn.Linear(latent_dim, chs[4] * 4 * 4),  # [B, chs[4]*4*4]
+            nn.Unflatten(1, (chs[4], 4, 4)),  # [B, chs[4], 4, 4]
         )
 
         # ---- Decoder ----
@@ -114,17 +111,14 @@ class EuroSATAutoencoder(BaseModule):
             nn.Conv2d(chs[4], chs[3], kernel_size=k_size, padding=pad),
             nn.BatchNorm2d(chs[3]),
             nn.ReLU(inplace=True),
-
             nn.Upsample(scale_factor=2, mode="nearest"),  # 8->16
             nn.Conv2d(chs[3], chs[2], kernel_size=k_size, padding=pad),
             nn.BatchNorm2d(chs[2]),
             nn.ReLU(inplace=True),
-
             nn.Upsample(scale_factor=2, mode="nearest"),  # 16->32
             nn.Conv2d(chs[2], chs[1], kernel_size=k_size, padding=pad),
             nn.BatchNorm2d(chs[1]),
             nn.ReLU(inplace=True),
-
             nn.Upsample(scale_factor=2, mode="nearest"),  # 32->64
             nn.Conv2d(chs[1], chs[0], kernel_size=k_size, padding=pad),
             # No final activation: depends on how you normalize inputs.

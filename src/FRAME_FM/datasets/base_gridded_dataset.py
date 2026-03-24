@@ -10,7 +10,7 @@ from FRAME_FM.transforms import resolve_transform
 class BaseGriddedDataset(BaseDataset):
     _transforms = [
         {"type": "vars_to_dimension", "variables": "__all__", "new_dim": "variable", "only_vars_with_time": False},
-        {"type": "to_tensor"}
+        {"type": "to_tensor"},
     ]
 
     def _setup_dataset(self):
@@ -35,7 +35,7 @@ class BaseGriddedDataset(BaseDataset):
 class BaseGeoTIFFDataset(BaseDataset):
     _transforms = [
         {"type": "vars_to_dimension", "variables": ["band_data"], "new_dim": "variable"},
-        {"type": "to_tensor"}
+        {"type": "to_tensor"},
     ]
 
     def __len__(self) -> int:
@@ -57,26 +57,24 @@ class BaseASCIIGridDataset(BaseGeoTIFFDataset):
 
 
 class BaseGriddedTimeSeriesDataset(BaseDataset):
-    # Define transforms that are always appended to the end of the transforms list in any child class. 
-    # This ensures that the data is always converted to a tensor and has a "variable" dimension for 
+    # Define transforms that are always appended to the end of the transforms list in any child class.
+    # This ensures that the data is always converted to a tensor and has a "variable" dimension for
     # the model to work with, even if the user doesn't specify these transforms themselves.
-    _transforms = [
-        {"type": "vars_to_dimension", "variables": "__all__", "new_dim": "variable"},
-        {"type": "to_tensor"}
-    ]
+    _transforms = [{"type": "vars_to_dimension", "variables": "__all__", "new_dim": "variable"}, {"type": "to_tensor"}]
     DEFAULT_CHUNKS = {"time": 64}  # Default chunking strategy to ensure Dask is used for time series data
 
-    def __init__(self, 
-                 data_uri: str | Path | list | tuple,
-                 preprocessors: list | None = None,
-                 transforms: list | None = None,
-                 time_stride: int = 16,
-                 chunks: dict | None = None,
-                 override_transforms: bool = False,
-                 cache_dir: None | Path | str = None,
-                 generate_stats: bool = True,
-                 force_recache: bool = False
-                 ):
+    def __init__(
+        self,
+        data_uri: str | Path | list | tuple,
+        preprocessors: list | None = None,
+        transforms: list | None = None,
+        time_stride: int = 16,
+        chunks: dict | None = None,
+        override_transforms: bool = False,
+        cache_dir: None | Path | str = None,
+        generate_stats: bool = True,
+        force_recache: bool = False,
+    ):
         # Set instance variables specific to time series datasets
         self.time_stride = time_stride
         self.chunks = chunks or self.DEFAULT_CHUNKS
@@ -90,7 +88,7 @@ class BaseGriddedTimeSeriesDataset(BaseDataset):
             override_transforms=override_transforms,
             cache_dir=cache_dir,
             generate_stats=generate_stats,
-            force_recache=force_recache
+            force_recache=force_recache,
         )
 
     def __len__(self) -> int:
@@ -106,4 +104,3 @@ class BaseGriddedTimeSeriesDataset(BaseDataset):
             sample = resolve_transform(transform)(sample)
 
         return sample  # type: ignore
-    

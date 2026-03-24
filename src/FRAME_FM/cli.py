@@ -1,6 +1,5 @@
 """Click entrypoint."""
 
-
 from collections import defaultdict
 from hydra import initialize_config_dir, compose
 from hydra.core.hydra_config import HydraConfig
@@ -24,6 +23,7 @@ console = Console()
 DEFAULT_CONFIG_DIR = str(Path(__file__).parents[2] / "configs")
 CONFIG_DIR = os.getenv("CONFIG_DIR", DEFAULT_CONFIG_DIR)
 torchx_config = os.getenv("TORCHX_CONFIG", ".torchxconfig")
+
 
 def _type_checker_and_conversion(data: Any, value: Any) -> Any:
     """Utility to check value against its source, and convert if necessary.
@@ -79,8 +79,7 @@ def display_contents_of_config_file(torchx_only: bool, config_file: str) -> None
             raise click.ClickException(f"Torchx config not found: {torchx_config}")
         with torchx_file.open() as f:
             torchx_contents = f.read()
-        console.print(
-            Syntax(torchx_contents, "ini", theme="monokai", line_numbers=True))
+        console.print(Syntax(torchx_contents, "ini", theme="monokai", line_numbers=True))
         return
 
     files = list(Path(CONFIG_DIR).rglob(config_file))
@@ -92,9 +91,7 @@ def display_contents_of_config_file(torchx_only: bool, config_file: str) -> None
         console.print(f"File: {file}")
         with file.open() as f:
             contents = f.read()
-        console.print(
-            Syntax(contents, "yaml", theme="monokai", line_numbers=True)
-        )
+        console.print(Syntax(contents, "yaml", theme="monokai", line_numbers=True))
 
 
 def view_hydra_defaults() -> None:
@@ -103,9 +100,7 @@ def view_hydra_defaults() -> None:
         contents = yaml.safe_load(f.read())
 
     if (defaults := contents.get("defaults")) is not None:
-        console.print(
-            Panel(Pretty(defaults), title="Hydra Defaults", expand=False)
-        )
+        console.print(Panel(Pretty(defaults), title="Hydra Defaults", expand=False))
     else:
         click.secho("Unable to find Hydra config file: configs/config.yaml", fg="red")
 
@@ -123,21 +118,22 @@ def edit_config_file(config_file: str, key_value_pairs: str) -> None:
         key, value = pair.split(":")
         if key not in data:
             raise click.BadParameter(f"Key '{key}' not found in config.")
-   
+
         data[key] = _type_checker_and_conversion(data=data[key], value=value)
-    
+
     with open(config_file, mode="w") as edited_file:
         edited_file.write(yaml.dump(data, sort_keys=False))
 
 
-
 def train_run_with_options(verbose: bool, overrides: tuple[str, ...]) -> None:
     with initialize_config_dir(config_dir=CONFIG_DIR, version_base=None):
-            cfg = compose(config_name="config", overrides=list(overrides),return_hydra_config=True)
-            HydraConfig.instance().set_config(cfg)
-            if verbose:
-                console.print(Panel(OmegaConf.to_yaml(cfg), title="Resolved config"))
-            train_main(cfg)
+        cfg = compose(config_name="config", overrides=list(overrides), return_hydra_config=True)
+        HydraConfig.instance().set_config(cfg)
+        if verbose:
+            console.print(Panel(OmegaConf.to_yaml(cfg), title="Resolved config"))
+        train_main(cfg)
+
+
 def edit_torch_config_file(key_value_pairs: str) -> None:
     """Edit the key-value pairs within the torchxconfig TOML.
 
@@ -167,10 +163,8 @@ def edit_torch_config_file(key_value_pairs: str) -> None:
 
         toml_file[table][key] = _type_checker_and_conversion(data=toml_file[table][key], value=value)
 
-
     with open(torchx_config, mode="w") as file:
         toml.dump(toml_file, file)
-
 
 
 @click.group()
@@ -193,18 +187,20 @@ def app():
     """
     pass
 
+
 @click.group()
 def train():
     """Launch a model training run."""
-    click.echo("Training command invoked.") # This is a placeholder for the time being.
+    click.echo("Training command invoked.")  # This is a placeholder for the time being.
+
 
 @train.command(
     "run",
     context_settings=dict(ignore_unknown_options=True),
-) # Registers train_run as a subcommand of the train group. Names it "run" so the CLI sees it as frame-fm train run
-
+)  # Registers train_run as a subcommand of the train group. Names it "run" so the CLI sees it as frame-fm train run
 @click.option(
-    "--verbose", "-v",
+    "--verbose",
+    "-v",
     is_flag=True,
     default=False,
     help="Print the resolved Hydra config to screen before training starts.",
@@ -238,9 +234,7 @@ def config():
     pass
 
 
-@config.command(
-    "list", help="This will recursively list all config files in the configs directory."
-)
+@config.command("list", help="This will recursively list all config files in the configs directory.")
 @click.option("--torchx", is_flag=True, help="Only show and verify the location for the torchx config.")
 def list_configs(torchx):
     """List available config files."""
@@ -252,18 +246,10 @@ def list_configs(torchx):
     help=(
         "Display the contents of a config file. "
         "Pass the full path to a config file, or use the --torchx flag to display only the torchx config."
-    )
+    ),
 )
-@click.option(
-    "--torchx",
-    is_flag=True,
-    help="Display only the contents of the torchx config file."
-)
-@click.argument(
-    "config_file",
-    type=click.Path(dir_okay=False),
-    required=False
-)
+@click.option("--torchx", is_flag=True, help="Display only the contents of the torchx config file.")
+@click.argument("config_file", type=click.Path(dir_okay=False), required=False)
 def display(torchx, config_file):
     """
     Display the contents of either the torchx config file, or a specific config file provided by the user.
@@ -312,7 +298,7 @@ def edit(config_file, key_value_pairs):
         "Examples:\n"
         "\nframefm config edit-torchx scheduler-name:new_local_cwd\n"
         "\nframefm config edit-torchx defaults-cpu:4"
-    )
+    ),
 )
 @click.argument("kv")
 def edit_torch(kv):

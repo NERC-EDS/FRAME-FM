@@ -8,10 +8,12 @@ from pathlib import Path
 import xarray as xr
 import polars as pl
 
+
 class TabularDataset(TensorDataset):
     """Very simple tabular dataset: X numeric features, y target."""
 
     # Inherit TensorDataset behaviour; you might extend this later if needed.
+
 
 class GriddedDataModule(BaseDataModule):
     """
@@ -44,25 +46,25 @@ class GriddedDataModule(BaseDataModule):
         path = Path(self.data_root) / self.filename
 
         if path.suffix == ".shp":
-            ... # TODO
+            ...  # TODO
             xarr = 1
         elif path.suffix in {"nc", "netcdf"}:
             xarr = xr.open_dataset(path)
         elif path.suffix in {".cfa"}:
-            ... # TODO
+            ...  # TODO
             xarr = 1
         elif path.suffix in {".zarr"}:
-            ... # TODO
+            ...  # TODO
             xarr = 1
         elif path.suffix in {".json"}:
-            ... # TODO
+            ...  # TODO
             xarr = 1
         else:
             raise ValueError(f"Unsupported file extension: {path.suffix}")
         return xarr
 
     def _create_datasets(self, stage: Optional[str] = None) -> None:
-        _: pl.DataFrame = self._raw_data # TODO xarr
+        _: pl.DataFrame = self._raw_data  # TODO xarr
 
         # TODO
         full_ds = 1
@@ -87,6 +89,7 @@ class GriddedDataModule(BaseDataModule):
 def main():
     temp = GriddedDataModule()
     print(temp)
+
 
 if __name__ == "__main__":
     main()

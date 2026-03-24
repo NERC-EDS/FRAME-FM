@@ -28,14 +28,14 @@ def main(cfg: DictConfig) -> None:
     if isinstance(data, pl.LightningDataModule):
         trainer.fit(model, datamodule=data)
     else:
-        trainer.fit(model, train_dataloaders=data['training'], val_dataloaders=data['validation'])
+        trainer.fit(model, train_dataloaders=data["training"], val_dataloaders=data["validation"])
 
     # Optional: test after training
     if hasattr(cfg.trainer, "run_test") and cfg.trainer.run_test:
         if isinstance(data, pl.LightningDataModule):
             trainer.test(model, datamodule=data)
         else:
-            trainer.test(model, dataloaders=data['test'])
+            trainer.test(model, dataloaders=data["test"])
 
 
 if __name__ == "__main__":
