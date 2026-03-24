@@ -9,7 +9,7 @@ def import_fixture():
 
 def test_dataset():
 
-    assert True==True
+    assert True
 
 # This is a stupid test. But my brain isn't working right now.
 def test_end_to_end(import_fixture):
@@ -17,6 +17,6 @@ def test_end_to_end(import_fixture):
     from xarray_dataloaders import xarray_end_to_end
     try:
         xarray_end_to_end.main() # Call the main function to run the end-to-end test
-    except:
-        assert True==False  # Replace with actual assertions relevant to your tests
+    except Exception:
+        assert not True  # Replace with actual assertions relevant to your tests
     

@@ -34,7 +34,8 @@ def safely_remove_dir(path: Path | str):
                 safely_remove_dir(item)
         path.rmdir()
 
-    if DEBUG: print(f"Removed directory at: {path}")
+    if DEBUG: 
+        print(f"Removed directory at: {path}")
 
 
 def _infer_extension(uri: Union[str, Path, list, tuple]) -> str:

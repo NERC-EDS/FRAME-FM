@@ -9,10 +9,6 @@ import xarray as xr
 
 LonMode = Literal["[-180,180]", "[0,360)"]
 
-@dataclass(frozen=True)
-
-LonMode = Literal["[-180,180]", "[0,360)"]
-
 
 @dataclass(frozen=True)
 class BatchChecksConfig:

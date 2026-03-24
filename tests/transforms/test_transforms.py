@@ -13,11 +13,15 @@ PYTHONPATH=src python -m pytest tests/test_transforms.py
 """
 
 
+import numpy as np
+import torch
+import xarray as xr
+
 import pytest
 import pandas as pd
 
-from FRAME_FM.transforms import *
-from FRAME_FM.transforms.transforms import transform_mapping
+from FRAME_FM.transforms import FillMissingValueTransform, VarsToDimensionTransform
+from FRAME_FM.transforms.transforms import NormalizeTransform, RenameTransform, ResampleTransform, ReshapeTransform, ReverseAxisTransform, RollTransform, SortAxisTransform, SubsetTransform, TiledIndexMapper, TilerTransform, ToTensorTransform, ToValuesBoundsTransform, ToValuesLocationsTransform, TransposeTransform, tiled_to_coordinate_bounds, tiled_to_pixel_coordinates, transform_mapping
 from FRAME_FM.utils.data_utils import load_data_from_uri
 
 from tests.datasets.common import CHESS_URI, ERA5_URI

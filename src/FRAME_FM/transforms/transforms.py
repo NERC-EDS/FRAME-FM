@@ -6,12 +6,11 @@ import torch
 from dataclasses import dataclass
 import math
 
+from FRAME_FM.utils.common_utils import convert_subset_selectors_to_slices, check_object_type
+
 DA = xr.DataArray
 DS = xr.Dataset
 TT = torch.Tensor
-
-
-from FRAME_FM.utils.common_utils import convert_subset_selectors_to_slices, check_object_type
 
 
 class BaseTransform:

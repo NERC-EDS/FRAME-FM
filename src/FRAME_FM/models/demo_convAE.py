@@ -162,8 +162,8 @@ class ConvAutoencoder(BaseModule):
             with torch.no_grad():
                 # Keep only as many as we can fit in the cap
                 remaining = self.max_latents_per_epoch - len(self.latent_buffer)
-                take = min(remaining, z.size(0))
-                z_take = z[:remaining].detach().cpu()
+                _ = min(remaining, z.size(0)) # take
+                _ = z[:remaining].detach().cpu() # z_take
                 # self.latent_buffer.append(z_take)
                 # print(f"[val_step] collected={take}, total_so_far={sum(t.size(0) for t in self.latent_buffer)}")
                 

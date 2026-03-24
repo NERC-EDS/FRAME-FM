@@ -1,3 +1,5 @@
+from FRAME_FM.transforms.transforms import resolve_transform
+from FRAME_FM.utils.data_utils import load_data_from_uri
 import torch
 
 from FRAME_FM.datasets.base_dataset import BaseDataset
@@ -9,7 +11,7 @@ class COSMOSUKSiteTimeSeriesDataset(BaseDataset):
     ]
 
     def _setup_dataset(self):
-        self.data = load_(self.data_uri, chunks=self.chunks)
+        self.data = load_data_from_uri(self.data_uri, chunks=self.chunks)
 
     def __len__(self) -> int:
         return len(self.data)

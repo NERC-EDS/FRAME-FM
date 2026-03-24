@@ -74,9 +74,8 @@ class GriddedDataModule(BaseDataModule):
 
 
 def main():
-    GriddedDataModule
-
-    pause = 1
+    GriddedDataModule()
+    # pause = 1
 
 if __name__ == "__main__":
     main()

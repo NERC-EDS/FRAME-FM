@@ -219,8 +219,8 @@ def test_eurosat_end_to_end():
     from gridded_txt_dataloaders import grid_txt_end_to_end
     try:
         grid_txt_end_to_end.main() # Call the main function to run the end-to-end test
-    except:
-        assert True==False  # Replace with actual assertions relevant to your tests
+    except Exception:
+        assert not True  # Replace with actual assertions relevant to your tests
 
 
 

@@ -1,24 +1,27 @@
-import rioxarray
-import glob
+# import rioxarray
+# import glob
 
-class CogHandler(self):
+# TODO: Define CogHandler class.
 
-    def __init__(self):
-        self.glob_string = '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_water_index_europe_1km_daily_v1/data/**/*.cog'
+# class CogHandler():
 
-    def list_files(self, glob_string):
-        file_list = glob.glob(self.glob_string,recursive=True)
+#     def __init__(self):
+#         self.glob_string = '/gws/ssde/j25b/eds_ai/frame-fm/data/inputs/soil_water_index_europe_1km_daily_v1/data/**/*.cog'
 
-    def load_files(self, file_list):
+#     def list_files(self, glob_string):
+#         file_list = glob.glob(self.glob_string,recursive=True)
 
-        for file in file_list:
-            rds = rioxarray.open_rasterio(file, masked=True, overview_level=4)
-            pause = 1
+#     def load_files(self, file_list):
 
-    def main(self):
-        file_list = list(files)
+#         for file in file_list:
+#             rds = rioxarray.open_rasterio(file, masked=True, overview_level=4)
+#             pause = 1
 
-        lemon = load_files(file_list)
+#     def main(self):
+#         # TODO: 
+#         # file_list = list(files)
+#         # lemon = load_files(file_list)
+#         pass
 
-    if __name__ == "__main__":
-        main()
+#     if __name__ == "__main__":
+#         main()

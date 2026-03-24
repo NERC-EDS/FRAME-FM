@@ -223,7 +223,7 @@ def test_cosmosuk_dataset():
     )
 
     data = dataset.data
-    assert type(data) == list, f"Expected dataset.data to be a list of xarray Datasets (one per site), but got {type(data)}"
+    assert type(data) is list, f"Expected dataset.data to be a list of xarray Datasets (one per site), but got {type(data)}"
     # Test data has one site, so assert length of dataset is 1
     assert len(dataset) == 1, "Expected dataset length to be 1 since there is only one site"
     

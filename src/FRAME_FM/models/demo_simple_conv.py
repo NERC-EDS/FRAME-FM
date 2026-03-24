@@ -1,12 +1,16 @@
-from FRAME_FM.utils.LightningModuleWrapper import BaseModule
-
-
-class MyModel(BaseModule): pass
-
 import numpy as np
+import pandas as pd
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+from FRAME_FM.utils.data_utils import load_data_from_uri
+from FRAME_FM.transforms import transform_mapping, ToTensorTransform
+from FRAME_FM.utils.LightningModuleWrapper import BaseModule
+
+
+class MyModel(BaseModule):
+    pass
 
 # import torch.multiprocessing as mp
 # mp.set_start_method("spawn", force=True)
@@ -67,16 +71,7 @@ class SpatialCollapse(nn.Module):
 
         return x.squeeze(-1)     # [B]
 
-
-import pandas as pd
-
-
 KERCHUNK_ZIP = "tests/transforms/fixtures/ecmwf-era5X_oper_an_sfc_2000_2020_2d_repack.kr1.0.json.zip"
-
-
-from FRAME_FM.utils.data_utils import load_data_from_uri
-from FRAME_FM.transforms import transform_mapping, ToTensorTransform
-
 
 
 

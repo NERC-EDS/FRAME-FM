@@ -6,6 +6,7 @@ from torch.utils.data import TensorDataset
 import torch
 from pathlib import Path
 import xarray as xr
+import polars as pl
 
 class TabularDataset(TensorDataset):
     """Very simple tabular dataset: X numeric features, y target."""
@@ -61,7 +62,7 @@ class GriddedDataModule(BaseDataModule):
         return xarr
 
     def _create_datasets(self, stage: Optional[str] = None) -> None:
-        xarr: pl.DataFrame = self._raw_data # TODO
+        _: pl.DataFrame = self._raw_data # TODO xarr
 
         # TODO
         full_ds = 1
@@ -85,8 +86,7 @@ class GriddedDataModule(BaseDataModule):
 
 def main():
     temp = GriddedDataModule()
-
-    pause = 1
+    print(temp)
 
 if __name__ == "__main__":
     main()
