@@ -15,4 +15,4 @@ ntasks_per_node = 1
 gres = gpu:1
 mem = 32G
 qos = orchid
-job_dir = "~/FRAME-FM/job_logs"
+job_dir = job_logs
