@@ -53,39 +53,58 @@ def _load_data(source: str = "era5", response_type: str = "Dataset") -> xr.Datas
     return resp, var_id
 
 
-# Mark this test as failing in second stage
-@pytest.mark.xfail(reason="This test is currently failing due the `.interpolate_na()` method needing investigation.")
-def test_FillMissingValueTransform():
-    ds, var_id = _load_data().isel(time=slice(0, 3))
+def _general_fill_missing_test(transform_class, strategy):
+    ds, var_id = _load_data()
 
     # Introduce some missing values into the dataset for testing
     ds_with_nans = ds.copy().isel(time=slice(0, 3))  # Take a small subset for testing
     ds_with_nans[var_id] = ds_with_nans[var_id].where(ds_with_nans[var_id] > 290)  # Set values <= 290 to NaN
 
-    # Run the fill missing value transform with constant strategy
-    fill_transform_constant = FillMissingValueTransform(strategy="constant", fill_value=0.0)
-    filled_ds_constant = fill_transform_constant(ds_with_nans)
-    assert not filled_ds_constant[var_id].isnull().any(), "FillMissingValueTransform with constant strategy did not work as expected (there are still NaN values)."
+    if strategy == "constant":
+        # Run the fill missing value transform with constant strategy
+        fill_transform_constant = transform_class(strategy="constant", fill_value=0.0)
+        filled_ds_constant = fill_transform_constant(ds_with_nans)
+        assert not filled_ds_constant[var_id].isnull().any(), f"{transform_class} with constant strategy did not work as expected (there are still NaN values)."
 
-    # Run the fill missing value transform with interpolate strategy
-    fill_transform_interpolate = FillMissingValueTransform(strategy="interpolate", method="linear")
-    filled_ds_interpolate = fill_transform_interpolate(ds_with_nans)
-    assert not filled_ds_interpolate[var_id].isnull().any(), "FillMissingValueTransform with interpolate strategy did not work as expected (there are still NaN values)."
+    elif strategy == "interpolate":
+        # Run the fill missing value transform with interpolate strategy
+        fill_transform_interpolate = transform_class(strategy="interpolate", method="linear", fill_value="extrapolate")
+        filled_ds_interpolate = fill_transform_interpolate(ds_with_nans)
+        assert not filled_ds_interpolate[var_id].isnull().any(), f"{transform_class} with interpolate strategy did not work as expected (there are still NaN values)."
+
+
+def test_FillMissingValueTransform_invalid_strategy():
+    ds, var_id = _load_data()
+
+    # Introduce some missing values into the dataset for testing
+    ds_with_nans = ds.copy().isel(time=slice(0, 3))  # Take a small subset for testing
+    ds_with_nans[var_id] = ds_with_nans[var_id].where(ds_with_nans[var_id] > 290)  # Set values <= 290 to NaN
 
     # Run the fill missing value transform with an unsupported strategy to check that it raises an error
+    transform_class = FillMissingValueTransform
     try:
-        fill_transform_invalid = FillMissingValueTransform(strategy="unsupported_strategy", fill_value=273.15)
+        fill_transform_invalid = transform_class(strategy="unsupported_strategy", fill_value=273.15)
         fill_transform_invalid(ds_with_nans)
-        assert False, "FillMissingValueTransform did not raise an error for an unsupported strategy."
+        assert False, f"{transform_class} did not raise an error for an unsupported strategy."
     except ValueError as e:
-        assert str(e) == "Unsupported fill strategy: unsupported_strategy", f"FillMissingValueTransform raised an unexpected error message: {str(e)}"
+        assert str(e) == "Unsupported fill strategy: unsupported_strategy", f"{transform_class} raised an unexpected error message: {str(e)}"
 
 
-@pytest.mark.xfail(reason="This test is currently failing due the `.interpolate_na()` method needing investigation.")
-def test_FillNaNTransform():
-    # Identical to the FillMissingValueTransform test but with the FillNaNTransform instead 
-    return test_FillMissingValueTransform()
+def test_FillMissingValueTransform_constant():
+    _general_fill_missing_test(FillMissingValueTransform, strategy="constant")
 
+@pytest.mark.xfail(reason="This test is currently failing due to an issue with the interpolate strategy, which needs further investigation.")
+def test_FillMissingValueTransform_interpolate():
+    _general_fill_missing_test(FillMissingValueTransform, strategy="interpolate")
+
+def test_FillNaNTransform_constant():
+    # Identical to the FillMissingValueTransform test but with the FillNaNTransform instead
+    _general_fill_missing_test(FillNaNTransform, strategy="constant")
+
+@pytest.mark.xfail(reason="This test is currently failing due to an issue with the interpolate strategy, which needs further investigation.")
+def test_FillNaNTransform_interpolate():
+    # Identical to the FillMissingValueTransform test but with the FillNaNTransform instead
+    _general_fill_missing_test(FillNaNTransform, strategy="interpolate")
 
 def test_NormalizeTransform():
     da, var_id = _load_data(response_type="DataArray")  # type: ignore
