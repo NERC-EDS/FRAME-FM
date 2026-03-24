@@ -1,5 +1,5 @@
 # src/FRAME_FM/utils/LightningModuleWrapper.py
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 import pytorch_lightning as pl
 
 

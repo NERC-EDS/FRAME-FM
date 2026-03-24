@@ -1,5 +1,3 @@
-from typing import Sequence
-from FRAME_FM.utils.embedders import BaseEmbedder, PatchEmbed
 from FRAME_FM.utils.LightningModuleWrapper import BaseModule
 
 
@@ -70,8 +68,6 @@ class SpatialCollapse(nn.Module):
         return x.squeeze(-1)     # [B]
 
 
-from pathlib import Path
-import xarray as xr
 import pandas as pd
 
 

@@ -1,12 +1,10 @@
 import pytest
 from hydra.core.config_store import ConfigStore
-from typing import Any, List, Optional
+from typing import Any, List
 
 def hydra_config_fixture():
     from hydra import initialize, compose
-    from omegaconf import OmegaConf, DictConfig
     from dataclasses import dataclass, field, MISSING
-    import torchvision
 
     @dataclass(kw_only=True)
     class TrainTransformsConfig:

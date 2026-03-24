@@ -1,9 +1,8 @@
 # src/FRAME_FM/dataloaders/gridded_dataloader.py
 from __future__ import annotations
-from typing import Optional, Any, Sequence
+from typing import Optional, Any
 from FRAME_FM.utils.LightningDataModuleWrapper import BaseDataModule
-from FRAME_FM.datasets.ImageLabel_Dataset import TransformedDataset
-from torch.utils.data import Dataset, TensorDataset
+from torch.utils.data import TensorDataset
 import torch
 from pathlib import Path
 import polars as pl

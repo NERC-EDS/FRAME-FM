@@ -1,4 +1,3 @@
-from pathlib import Path
 
 from FRAME_FM.datasets.base_gridded_dataset import BaseGriddedTimeSeriesDataset
 

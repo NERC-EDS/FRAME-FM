@@ -18,8 +18,6 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.pretty import Pretty
 from rich.syntax import Syntax
-from pathlib import Path
-import os
 
 
 console = Console()

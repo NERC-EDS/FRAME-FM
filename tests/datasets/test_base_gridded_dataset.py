@@ -16,8 +16,7 @@ from .common import (
 
 from FRAME_FM.utils.settings import DatasetSettings
 from FRAME_FM.utils.data_utils import (
-    load_data_from_uri, hash_preprocessors, create_cache_path,
-    safely_remove_dir
+    hash_preprocessors, safely_remove_dir
 )
 
 from FRAME_FM.datasets.base_gridded_dataset import (

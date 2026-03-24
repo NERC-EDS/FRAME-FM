@@ -8,7 +8,6 @@ def import_fixture():
 
 
 def test_dataset():
-    from FRAME_FM.dataloaders import gridded_txt_dataloader
 
     assert True==True
 

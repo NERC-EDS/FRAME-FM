@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import cf_xarray # Needed for .cf accessor to get lat/lon coordinates
 from datetime import datetime
 import pandas as pd
 from pathlib import Path
 from typing import Optional, Dict, Any, Tuple
-import calendar
 import hashlib
 import json
 
@@ -63,7 +61,6 @@ def _get_crs(metadata: Dict[str, Any], ds: xr.Dataset | None) -> str:
         return metadata["crs"]
 
     # Try to resolve from Dataset
-    import rioxarray  # Needed to access .rio accessor for CRS info
     rio_crs = ds.rio.crs
     
     return str(rio_crs) if rio_crs else "Undefined"
@@ -100,7 +97,7 @@ class ZarrToCroissantConverter:
                 print(f"Attempting to load dataset from: {self.zarr_url}")
             self.ds = xr.open_zarr(self.zarr_url)
             if self.verbose:
-                print(f"Dataset loaded successfully!")
+                print("Dataset loaded successfully!")
                 print(f"  - Dimensions: {self.ds.dims}")
                 print(f"  - Total size: {self.ds.nbytes / 1e9:.2f} GB")
                 print(f"  - Variables: {len(self.ds.data_vars)}")

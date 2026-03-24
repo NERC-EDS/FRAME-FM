@@ -3,7 +3,6 @@ from pathlib import Path
 import torch
 from torch.utils.data import Dataset
 import xarray as xr
-import numpy as np
 
 from FRAME_FM.utils.data_utils import (
     load_data_from_uri, unify_transforms, 
@@ -42,7 +41,7 @@ class BaseDataset(Dataset):
             self.cache_path = create_cache_path(self.data_uri, self.cache_dir)
             self.precache_data()
         else:
-            print(f"No cache directory provided, loading data from source.")
+            print("No cache directory provided, loading data from source.")
             # Either of the following may be overriden in child classes.
             self._setup_dataset()
             self._apply_preprocessors()

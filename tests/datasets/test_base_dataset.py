@@ -1,7 +1,6 @@
 import os
 
 import torch
-import pytest
 
 from .common import (
     NC_URI,

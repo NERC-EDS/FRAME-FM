@@ -12,7 +12,6 @@ PYTHONPATH=src python -m pytest tests/test_transforms.py
 ```
 """
 
-from pathlib import Path
 
 import pytest
 import pandas as pd
