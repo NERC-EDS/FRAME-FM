@@ -20,7 +20,6 @@ jobs:
           uv sync --extra lint
 
       - name: Run Linter
-        # TODO: Remove --exit-zero once we want to enforce linting rules.
         # TODO: add --fix flag and commit changes back to the branch if any fixes were made.
         run: |
-          uv run ruff check . --exit-zero
+          uv run ruff check .
