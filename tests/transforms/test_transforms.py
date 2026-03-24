@@ -253,17 +253,19 @@ def test_SubsetTransform_with_2d_coordinate_axes():
     assert np.array_equal(lon_y_values, precip_y_values), "Expected the y values of the lon variable to match the y values of the precip variable after subsetting, but they do not match."
 
 
-@pytest.mark.xfail(reason="This test is currently failing due to a check on the last tile matching the original data.")
 def test_TilerTransform_time_series_data():
     da, var_id = _load_data(response_type="DataArray")
+
+    # Reverse the latitude axis to check that the tiler can handle this case (since ERA5 has a descending latitude axis)
+    da = da.isel(latitude=slice(None, None, -1))
     step = 10
 
     # Run the tiler transform with tile sizes of step x step and "pad" boundary handling
-    tiler_transform = TilerTransform(latitude=step, longitude=step, boundary="pad")
+    tiler_transform = TilerTransform(latitude=step, longitude=step, boundary="trim")
     tiled = tiler_transform(da)
 
     # Check that the tiled array has the expected shape (should have new dimensions for tiles)
-    expected_shape = (10512, 3, step, step)  # (batch_dim[=n_tiles], time, latitude_fine, longitude_fine)
+    expected_shape = (10368, 3, step, step)  # (batch_dim[=n_tiles], time, latitude_fine, longitude_fine)
     assert tiled.shape == expected_shape, f"Tiler transform did not work as expected (shape is {tiled.shape} instead of {expected_shape})"
 
     assert tiled.dims[0] == "batch_dim", f"Expected first dimension to be 'batch_dim', but got {tiled.dims[0]}"
@@ -275,30 +277,23 @@ def test_TilerTransform_time_series_data():
     assert np.array_equal(first_tile, original_subset), "First tile does not match expected subset of original dataset"
 
     # Check the last tile (which has shape: (3, 10, 10) so cuts across three time slices)
-    # At the moment this is failing because the last tile is not matching the expected subset of the original dataset, 
-    # even though the first tile is correct. This may be due to an issue with how the tiler is handling the padding for 
-    # the last tile, or it may be an issue with how the test is checking the values of the last tile. This needs further 
-    # investigation.
+    # But note that the `trim` operation means the last latitude is lost, so need to use
+    # and offset of -1 when slicing the original dataset for comparison with the last tile
     last_tile = tiled[-1]
-    original_subset = da.isel(latitude=slice(-step, None), longitude=slice(-step, None))
+    original_subset = da.isel(latitude=slice(-step - 1, -1), longitude=slice(-step, None))
     assert np.array_equal(last_tile, original_subset), "Last tile does not match expected subset of original dataset"
 
     # Test that reverse-lookup metadata is stored in attrs
     assert "tiler_tile_sizes" in tiled.attrs, "Expected 'tiler_tile_sizes' in tiled.attrs, but not found"
     assert tiled.attrs["tiler_tile_sizes"] == {"latitude": step, "longitude": step}, f"Expected tile sizes in metadata to be {{'latitude': {step}, 'longitude': {step}}}, but got {tiled.attrs['tiler_tile_sizes']}"
     assert "tiler_boundary" in tiled.attrs, "Expected 'tiler_boundary' in tiled.attrs, but not found"
-    assert tiled.attrs["tiler_boundary"] == "pad", f"Expected boundary in metadata to be 'pad', but got {tiled.attrs['tiler_boundary']}"
+    assert tiled.attrs["tiler_boundary"] == "trim", f"Expected boundary in metadata to be 'trim', but got {tiled.attrs['tiler_boundary']}"
     assert "tiler_original_sizes" in tiled.attrs, "Expected 'tiler_original_sizes' in tiled.attrs, but not found"
 
     original_sizes = {"latitude": da.latitude.size, "longitude": da.longitude.size}
     assert tiled.attrs["tiler_original_sizes"] == original_sizes, f"Expected original sizes in metadata to be {original_sizes}, but got {tiled.attrs['tiler_original_sizes']}"
     assert "tiler_original_coords" in tiled.attrs, "Expected 'tiler_original_coords' in tiled.attrs, but not found"
     assert tiled.attrs["tiler_original_coords"] == {"latitude": da.latitude.values.tolist(), "longitude": da.longitude.values.tolist()}, f"Expected original coords in metadata to match original dataset coords, but got {tiled.attrs['tiler_original_coords']}"   
-
-    # Now test that the index mapper helper function works as expected
-    raise NotImplementedError("This test is currently failing due to an issue with the last tile matching "
-    "the original data, so the rest of the test has not been implemented yet. "
-    "This needs further investigation before it can be implemented.")
 
 
 def test_tiled_coordinate_utilities_static_grid():
