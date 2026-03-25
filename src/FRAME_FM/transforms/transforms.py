@@ -584,10 +584,12 @@ class ToDataArray(BaseTransform):
 
 class ToTensorTransform(BaseTransform):
     def __call__(self, sample: DA | np.ndarray) -> torch.Tensor:
+        # Implement conversion to PyTorch tensor here
         check_object_type(sample, allowed_types=(DA, np.ndarray), caller=self.__class__.__name__)
+        if isinstance(sample, DA):
+            sample = sample.values
 
-        arr = sample.values if isinstance(sample, DA) else sample
-        return torch.from_numpy(np.asarray(arr, dtype=np.float32))
+        return torch.from_numpy(sample)
     
 
 class TransposeTransform(BaseTransform):

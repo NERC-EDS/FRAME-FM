@@ -88,10 +88,7 @@ def test_FillNaNTransform():
 
 
 def test_StandardizeTransform():
-    # da, var_id = _load_data(response_type="DataArray")  # type: ignore
-
-    # Run the normalize transform
-    da = xr.DataArray([2,4,6,8,10])
+    da,_ = _load_data(response_type="DataArray")  # type: ignore
 
     standardize_transform = StandardizeTransform(mean=float(da.mean()), std=float(da.std()))
     standardized_da = standardize_transform(da)
