@@ -1,9 +1,10 @@
 # utils/
 
 Shared utilities used across the project, such as I/O helpers, metrics, and transforms.  
-Generic code that supports models, dataloaders, and training logic.
+Generic code that supports models, datasets, dataloaders, and training logic.
 
-Initially this will contain thin wrapper classes for pytorch lightning to ensure consistency through model development, but retain the flexibility afforded by configs.
+Initially this will contain thin wrapper classes for pytorch lightning to ensure consistency 
+through model development, but retain the flexibility afforded by configs.
 
 ### Lightning Wrappers
 

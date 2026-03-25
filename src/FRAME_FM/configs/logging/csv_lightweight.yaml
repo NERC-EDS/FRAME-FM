@@ -1,0 +1,5 @@
+_target_: FRAME_FM.training.logger.create_csv_logger
+
+save_dir: .
+name: csv_logs
+version: null

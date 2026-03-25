@@ -8,10 +8,9 @@ import numpy as np
 from FRAME_FM.utils.data_utils import (
     load_data_from_uri, unify_transforms, 
     create_cache_path, hash_preprocessors,
-    cache_data_to_zarr
+    cache_data_to_zarr, preprocessor_hash_key
 )
 
-from FRAME_FM.utils.settings import DatasetSettings, DefaultSettings
 from FRAME_FM.transforms import resolve_transform, apply_preprocessors
 
 
@@ -67,12 +66,12 @@ class BaseDataset(Dataset):
 
         # Check if the Zarr file contains the expected cache hash
         _ds = xr.open_zarr(self.cache_path)
-        if DatasetSettings.preprocessor_hash_key not in _ds.attrs:
+        if preprocessor_hash_key not in _ds.attrs:
             print(f"Cache hash not found for URI: {self.data_uri}")
             return False
 
         # Check if the cache hash matches the current preprocessor list
-        zarr_hash = _ds.attrs[DatasetSettings.preprocessor_hash_key]
+        zarr_hash = _ds.attrs[preprocessor_hash_key]
         if zarr_hash != hash_preprocessors(self.preprocessors):
             print(f"Cache hash mismatch for URI: {self.data_uri}. Expected: {hash_preprocessors(self.preprocessors)}, Found: {zarr_hash}")
             return False
@@ -83,8 +82,7 @@ class BaseDataset(Dataset):
     def precache_data(self):
         if not self.force_recache and self._detect_existing_cache():  # If cache exists and force_recache is False, we can skip the caching step
             self.data = load_data_from_uri(
-                uri=self.cache_path,
-                zarr_format=DefaultSettings.zarr_format
+                uri=self.cache_path
             )
         else:
             self.data = cache_data_to_zarr(
