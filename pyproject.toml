@@ -75,7 +75,7 @@ package = true
 packages = ["src/FRAME_FM"]
 
 [tool.hatch.build.targets.wheel.force-include]
-"configs" = "configs"
+"configs" = "src/FRAME_FM/configs"
 
 [tool.hatch.version]
 source = "vcs"

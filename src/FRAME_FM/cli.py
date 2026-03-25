@@ -2,6 +2,7 @@
 
 
 from collections import defaultdict
+import shutil
 from hydra import initialize_config_dir, compose
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import OmegaConf
@@ -23,7 +24,8 @@ import os
 
 
 console = Console()
-DEFAULT_CONFIG_DIR = str(Path(__file__).parents[2] / "configs")
+# Default configs directory is within the current working directory.
+DEFAULT_CONFIG_DIR = str(Path(os.getcwd()) / "configs")
 CONFIG_DIR = os.getenv("CONFIG_DIR", DEFAULT_CONFIG_DIR)
 torchx_config = os.getenv("TORCHX_CONFIG", ".torchxconfig")
 
@@ -239,6 +241,28 @@ def config():
     """Configuration entrypoint."""
     pass
 
+@config.command(
+    "init", help=(
+        "Copy config files from the package into a local configs directory for editing and use."
+        "This only needs to be done once, and will not overwrite existing configs."
+        "\n\nNote: This is only required FRAME-FM is installed as a package."
+    )
+)
+def init_configs():
+    """Copy config files from the package into a local configs directory for editing and use."""
+    # Source dir is the configs directory within the package
+    source_dir = Path(__file__).parent / "configs"
+    dest_dir = Path.cwd() / "configs"
+
+    if dest_dir.exists():
+        click.secho(f"Destination directory already exists: {dest_dir.resolve()}", fg="red")
+        return
+
+    try:
+        shutil.copytree(source_dir, dest_dir)
+        click.secho(f"Config files successfully copied to: {dest_dir.resolve()}", fg="green")
+    except Exception as e:
+        click.secho(f"Error copying config files: {e}", fg="red")
 
 @config.command(
     "list", help="This will recursively list all config files in the configs directory."
