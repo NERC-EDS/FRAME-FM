@@ -6,8 +6,11 @@ from .common import (
     NC_URI,
 )
 
-from FRAME_FM.utils.settings import DatasetSettings
-from FRAME_FM.utils.data_utils import load_data_from_uri, hash_preprocessors, create_cache_path, safely_remove_dir
+from FRAME_FM.utils.data_utils import (
+    load_data_from_uri, hash_preprocessors, 
+    create_cache_path, safely_remove_dir,
+    preprocessor_hash_key, default_zarr_format
+)
 from FRAME_FM.datasets.base_dataset import BaseDataset
 
 
@@ -80,11 +83,9 @@ def test_dataset_caching_basic():
     assert zarr_path.exists(), f"Zarr cache file {zarr_path} should exist after precaching"
 
     # Assert that the cached data has the hash attribute and that it matches the hash of the preprocessors
-    cached_ds = load_data_from_uri(zarr_path, zarr_format=2)
-    assert DatasetSettings.preprocessor_hash_key in cached_ds.attrs, (
-        f"Cached dataset should have the hash attribute {DatasetSettings.preprocessor_hash_key}"
-    )
-    cached_hash = cached_ds.attrs[DatasetSettings.preprocessor_hash_key]
+    cached_ds = load_data_from_uri(zarr_path, zarr_format=default_zarr_format)
+    assert preprocessor_hash_key in cached_ds.attrs, f"Cached dataset should have the hash attribute {preprocessor_hash_key}"
+    cached_hash = cached_ds.attrs[preprocessor_hash_key]
     expected_hash = hash_preprocessors(dataset.preprocessors)
     assert cached_hash == expected_hash, (
         f"Cached dataset hash {cached_hash} should match expected hash {expected_hash} based on the preprocessors"
@@ -110,12 +111,10 @@ def test_dataset_caching_basic():
 
     # Compare the data from the cached dataset with the non-cached dataset
     # First assert that the hash is NOT in the non-cached dataset
-    assert DatasetSettings.preprocessor_hash_key not in dataset_no_cache.data.attrs, (
-        f"Non-cached dataset should not have the hash attribute {DatasetSettings.preprocessor_hash_key}"
-    )
+    assert preprocessor_hash_key not in dataset_no_cache.data.attrs, f"Non-cached dataset should not have the hash attribute {preprocessor_hash_key}"
 
     # Now add it in to the non-cached dataset to ensure that the presence of the hash attribute does not affect the data
-    dataset_no_cache.data.attrs[DatasetSettings.preprocessor_hash_key] = expected_hash
+    dataset_no_cache.data.attrs[preprocessor_hash_key] = expected_hash
     assert dataset.data.equals(dataset_no_cache.data), "Cached and non-cached datasets should be equal"
 
     # Tidy up by removing the cache directory after the test

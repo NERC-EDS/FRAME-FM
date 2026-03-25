@@ -13,8 +13,11 @@ from .common import (
     ERA5_URI,
 )
 
-from FRAME_FM.utils.settings import DatasetSettings
-from FRAME_FM.utils.data_utils import hash_preprocessors, safely_remove_dir
+from FRAME_FM.utils.data_utils import (
+    hash_preprocessors,
+    safely_remove_dir, 
+    preprocessor_hash_key
+)
 
 from FRAME_FM.datasets.base_gridded_dataset import (
     BaseGriddedDataset,
@@ -171,26 +174,20 @@ def test_base_timeseries_dataset_with_cache():
     )
 
     # Assert that the hash of the preprocessors is stored in the cached dataset attributes and matches the hash of the preprocessors used
-    cached_hash = dataset.data.attrs.get(DatasetSettings.preprocessor_hash_key, None)
+    cached_hash = dataset.data.attrs.get(preprocessor_hash_key, None)
     expected_hash = hash_preprocessors(preprocessors)
-    assert cached_hash is not None, (
-        f"Expected cached dataset to have the hash attribute {DatasetSettings.preprocessor_hash_key}, but it was not found"
-    )
-    assert cached_hash == expected_hash, (
-        f"Expected cached dataset hash {cached_hash} to match expected hash {expected_hash} based on the preprocessors, but they differ"
-    )
+    assert cached_hash is not None, f"Expected cached dataset to have the hash attribute {preprocessor_hash_key}, but it was not found"
+    assert cached_hash == expected_hash, f"Expected cached dataset hash {cached_hash} to match expected hash {expected_hash} based on the preprocessors, but they differ"
 
     # Assert that the non-cached file does not include the hash attribute in its attributes, since it should not have been modified by the caching process
-    non_cached_hash = dataset_no_cache.data.attrs.get(DatasetSettings.preprocessor_hash_key, None)
-    assert non_cached_hash is None, (
-        f"Expected non-cached dataset to not have the hash attribute {DatasetSettings.preprocessor_hash_key}, but it was found with value {non_cached_hash}"
-    )
+    non_cached_hash = dataset_no_cache.data.attrs.get(preprocessor_hash_key, None)
+    assert non_cached_hash is None, f"Expected non-cached dataset to not have the hash attribute {preprocessor_hash_key}, but it was found with value {non_cached_hash}"
 
 
 @pytest.mark.parametrize("caching_backend", ["basic", "series", "dask_distributed", "slurm"])
 def test_base_timeseries_dataset_caching_backends(caching_backend):
 
-    os.environ["CACHING_BACKEND"] = caching_backend
+    os.environ["FRAME_CACHING_BACKEND"] = caching_backend
     cache_dir = "./cache-zarrs"
     # Remove cache directory if it already exists to ensure we are testing the caching process from scratch
     safely_remove_dir(cache_dir)
@@ -223,23 +220,17 @@ def test_base_timeseries_dataset_caching_backends(caching_backend):
 
     # Assert that the dataset has the hash key in its attributes, and that it matches the expected hash based on the preprocessors used
     # Assert that the hash of the preprocessors is stored in the cached dataset attributes and matches the hash of the preprocessors used
-    cached_hash = dataset.data.attrs.get(DatasetSettings.preprocessor_hash_key, None)
+    cached_hash = dataset.data.attrs.get(preprocessor_hash_key, None)
     expected_hash = hash_preprocessors([subset.copy()])
-    assert cached_hash is not None, (
-        f"Expected cached dataset to have the hash attribute {DatasetSettings.preprocessor_hash_key}, but it was not found"
-    )
-    assert cached_hash == expected_hash, (
-        f"Expected cached dataset hash {cached_hash} to match expected hash {expected_hash} based on the preprocessors, but they differ"
-    )
+    assert cached_hash is not None, f"Expected cached dataset to have the hash attribute {preprocessor_hash_key}, but it was not found"
+    assert cached_hash == expected_hash, f"Expected cached dataset hash {cached_hash} to match expected hash {expected_hash} based on the preprocessors, but they differ"
 
     # Assert that the non-cached file does not include the hash attribute in its attributes, since it should not have been modified by the caching process
-    non_cached_hash = dataset_no_cache.data.attrs.get(DatasetSettings.preprocessor_hash_key, None)
-    assert non_cached_hash is None, (
-        f"Expected non-cached dataset to not have the hash attribute {DatasetSettings.preprocessor_hash_key}, but it was found with value {non_cached_hash}"
-    )
+    non_cached_hash = dataset_no_cache.data.attrs.get(preprocessor_hash_key, None)
+    assert non_cached_hash is None, f"Expected non-cached dataset to not have the hash attribute {preprocessor_hash_key}, but it was found with value {non_cached_hash}"
 
     # Now remove the hash attribute from the cached dataset to simulate the case where we are comparing the datasets without considering the cache metadata, and compare the datasets
-    dataset.data.attrs.pop(DatasetSettings.preprocessor_hash_key, None)
+    dataset.data.attrs.pop(preprocessor_hash_key, None)
 
     ds1 = dataset.data.isel(
         time=0, latitude=0, longitude=slice(-3, None)
