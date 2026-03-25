@@ -204,14 +204,24 @@ def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
     torchx_config = get_torchx_config()
     default_image = torchx_config.get("image", "pytorch/pytorch: latest")
     default_cpu = int(torchx_config.get("cpu", 2))
-    default_gpu = int(torchx_config.get("gpu", 0))
-    default_mem = int(torchx_config.get("memMB", 1024))
+    default_gpu = int(torchx_config.get("gpu", 1))
+    default_mem = int(torchx_config.get("memMB", 32768))
 
     # Slurm-specific section
     slurm_cfg = torchx_config.get("slurm", {})
-    partition = slurm_cfg.get("partition", "gpu")
-    time_limit = slurm_cfg.get("time", "01:00:00")
-    
+    partition = slurm_cfg.get("partition", "partition")
+    account = slurm_cfg.get("account", "account")
+    time_limit = slurm_cfg.get("time", "time")
+    qos = slurm_cfg.get("qos",account)
+    ntasks_per_node= slurm_cfg.get("ntasks_per_node",1)
+    job_dir_config=slurm_cfg.get("job_dir",None)
+
+    if job_dir_config:
+        # Expand ~ to the actual home directory
+        job_dir = os.path.expanduser(job_dir_config)
+        os.makedirs(job_dir, exist_ok=True)
+    else:
+        job_dir = None
     # 2. Resolve Hydra config to find the Docker image or resource requirements
     # We do this so we can pass metadata (like image name) to TorchX
     with initialize_config_dir(config_dir=CONFIG_DIR, version_base=None):
@@ -239,7 +249,6 @@ def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
 
     # 6. Define the TorchX App
     # The entrypoint is 'framefm'
-    # We pass '--scheduler <slurm|local_cwd>' to the remote worker so it actually executes.
 
     app = specs.AppDef(
         name="framefm-train",
@@ -248,7 +257,7 @@ def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
                 name="worker",
                 image=image,
                 entrypoint="framefm",
-                args=["train", "run", "--scheduler", "local_cwd"] + list(overrides),
+                args=["train", "run"] + list(overrides),
                 num_replicas=1,
                 resource=resource,
                 )
@@ -259,21 +268,33 @@ def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
     runner = get_runner()
     try:
        # For Slurm, we pass scheduler-specific arguments here
-        cfg = None
         if scheduler == "slurm":
-            cfg={
+            scheduler_run_opts={
               "partition":partition,
                "time": time_limit,
+               "comment": f"framefm-train",          # optional
+               "account":account,
+               "job_dir": job_dir,
             }
-            if slurm_cfg.get("account"):
-              cfg["account"]= slurm_cfg.get("account")
-            job_id = runner.run(app, scheduler=scheduler, cfg = cfg)
-      
+            
+            # Step 1: dryrun — generates the sbatch script without submitting
+            dryrun_info = runner.dryrun(app, scheduler=scheduler, cfg=scheduler_run_opts)
+             # replicas is a dict of {name: SlurmReplicaRequest}
+             # inject account into sbatch_opts on each replica
+            for name, replica in dryrun_info.request.replicas.items():
+                replica.sbatch_opts["account"] = account
+                replica.sbatch_opts["qos"] = qos
+                replica.sbatch_opts["ntasks"] = ntasks_per_node
+
+
+            # Step 4: overwrite the script in dryrun_info and submit
+            job_id = runner.schedule(dryrun_info)
+            slurm_job_id = job_id
             click.secho(f"Job submitted successfully!", fg="green")
             click.echo(f"Scheduler: {scheduler}")
-            click.echo(f"Job ID:    {job_id}")
-            click.echo(f"Check status: squeue -j {job_id.split('//')[-1]}")
-            click.echo(f"View logs:    tail -f slurm-{job_id.split('//')[-1]}.out")
+            click.echo(f"Job ID:    {slurm_job_id}")
+            click.echo(f"Check status: squeue -j {slurm_job_id.split('//')[-1]}")
+            click.echo(f"View logs:    tail -f slurm-{slurm_job_id.split('//')[-1]}.out")
     except Exception as e:
         click.secho(f"Failed to submit job to {scheduler}: {e}", fg="red")
         raise click.Abort()
