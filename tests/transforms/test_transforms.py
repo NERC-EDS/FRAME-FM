@@ -87,14 +87,26 @@ def test_FillNaNTransform():
     return test_FillMissingValueTransform()
 
 
-def test_NormalizeTransform():
-    da, var_id = _load_data(response_type="DataArray")  # type: ignore
+def test_StandardizeTransform():
+    # da, var_id = _load_data(response_type="DataArray")  # type: ignore
 
     # Run the normalize transform
-    normalize_transform = NormalizeTransform(mean=float(da.mean()), std=float(da.std()))
-    normalized_da = normalize_transform(da)
-    assert np.isclose(float(normalized_da.mean()), 0, atol=1e-5), "Normalize transform did not work as expected (mean is not close to 0)."
-    assert np.isclose(float(normalized_da.std()), 1, atol=1e-5), "Normalize transform did not work as expected (std is not close to 1)."
+    da = xr.DataArray([2,4,6,8,10])
+
+    standardize_transform = StandardizeTransform(mean=float(da.mean()), std=float(da.std()))
+    standardized_da = standardize_transform(da)
+    assert np.isclose(float(standardized_da.mean()), 0, atol=1e-5), "Standardize transform did not work as expected (mean is not close to 0)."
+    assert np.isclose(float(standardized_da.std()), 1, atol=1e-5), "Standardize transform did not work as expected (std is not close to 1)."
+
+def test_NormalizeTransform():
+    data = xr.DataArray([2,4,6,8,10])
+
+    transform = NormalizeTransform()
+    out = transform(data)
+    assert np.array_equal(out, np.array([0, 0.25, 0.5, 0.75, 1])), "Normalize transform did not produce the expected values."
+
+
+
 
 
 def test_RenameTransform():

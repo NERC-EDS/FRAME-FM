@@ -53,14 +53,13 @@ class FillNaNTransform(FillMissingValueTransform):
 
 
 class NormalizeTransform(BaseTransform):
-    def __init__(self, mean: float, std: float):
-        self.mean = mean
-        self.std = std
+    def __init__(self, *args, **kwargs):
+        pass
 
     def __call__(self, sample: DA) -> DA:
-        # Implement normalization logic here
+
         check_object_type(sample, allowed_types=DA, caller=self.__class__.__name__)
-        return (sample - self.mean) / self.std
+        return (sample - sample.min()) / (sample.max() - sample.min())
 
 
 class StandardizeTransform(BaseTransform):
@@ -69,7 +68,6 @@ class StandardizeTransform(BaseTransform):
         self.std = std
 
     def __call__(self, sample: DA) -> DA:
-        # Implement normalization logic here
         check_object_type(sample, allowed_types=DA, caller=self.__class__.__name__)
         return (sample - self.mean) / self.std
 
@@ -582,12 +580,10 @@ class ToDataArray(BaseTransform):
 
 class ToTensorTransform(BaseTransform):
     def __call__(self, sample: DA | np.ndarray) -> torch.Tensor:
-        # Implement conversion to PyTorch tensor here
         check_object_type(sample, allowed_types=(DA, np.ndarray), caller=self.__class__.__name__)
-        if isinstance(sample, DA):
-            sample = sample.values
 
-        return torch.from_numpy(sample)
+        arr = sample.values if isinstance(sample, DA) else sample
+        return torch.from_numpy(np.asarray(arr, dtype=np.float32))
     
 
 class TransposeTransform(BaseTransform):
