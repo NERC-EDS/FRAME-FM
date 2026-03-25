@@ -2,6 +2,7 @@
 import xarray as xr
 import cf_xarray  # noqa: F401 - We just need to register the accessor for CF-compliant operations on xarray objects
 import numpy as np
+import pandas as pd
 import torch
 from dataclasses import dataclass
 import math
@@ -236,6 +237,11 @@ class TilerTransform(BaseTransform):
         self.discontinuity_periods = discontinuity_periods or {"longitude": 360.0, "lon": 360.0}
         self.tile_sizes = dim_tile_sizes
 
+        if self.boundary not in {"pad", "trim"}:
+            raise ValueError(
+                f"Unsupported tile boundary='{self.boundary}'. Expected one of: ['pad', 'trim']"
+            )
+
     def _validate_axis_order(self, sample: DA) -> None:
         for dim in self.tile_sizes:
             if dim not in sample.coords:
@@ -289,8 +295,26 @@ class TilerTransform(BaseTransform):
                     f"(period={period}). Affected coarse tile ids: {bad_tiles[:10]}"
                 )
 
+    def _check_tile_sizes(self, sample: DA) -> None:
+        """
+        Check that tiles are not larger than the original data along any dimension, and that tile sizes are positive integers.
+        """
+        for dim, tile_size in self.tile_sizes.items():
+            if not isinstance(tile_size, int) or tile_size <= 0:
+                raise ValueError(f"Tile size for dimension '{dim}' must be a positive integer. Got: {tile_size}")
+
+            arr_size = sample.sizes.get(dim)
+            if arr_size < tile_size:
+                raise ValueError(
+                    f"Total grid is smaller than the requested tile size along dimension '{dim}': "
+                    f"{arr_size} < {tile_size}"
+                )
+
     def __call__(self, sample: DA) -> DA:
         check_object_type(sample, allowed_types=DA, caller=self.__class__.__name__)
+
+        # Check tile sizes are not bigger than the original data and are valid positive integers
+        self._check_tile_sizes(sample)
 
         if self.validate_axis_order:
             self._validate_axis_order(sample)
@@ -336,11 +360,23 @@ class TilerTransform(BaseTransform):
         return tiled
 
 
+def datetime_coords_to_float(da: DA) -> DA:
+    datetime_coords = {
+        name: (coord.dims, coord.values.astype("datetime64[ns]").astype("float64"))
+        for name, coord in da.coords.items()
+        if pd.api.types.is_datetime64_any_dtype(coord)
+    }
+    return da.assign_coords(datetime_coords)
+
+
 class ToValuesLocationsTransform(BaseTransform):
     def __init__(self, coords):
         self.coords = coords
 
     def __call__(self, sample: DA) -> tuple[TT, TT]:
+        # Ensure any datetimes are converted to float seconds for the coordinate tensors
+        sample = datetime_coords_to_float(sample)
+
         coord_array = xr.broadcast(*[sample[coord] for coord in self.coords])
         locations = torch.stack(
             [torch.tensor(coords.values, dtype=torch.float32) for coords in coord_array],
@@ -354,6 +390,9 @@ class ToValuesBoundsTransform(BaseTransform):
         self.coords = coords
 
     def __call__(self, sample: DA) -> tuple[TT, TT]:
+        # Ensure any datetimes are converted to float seconds for the coordinate tensors
+        sample = datetime_coords_to_float(sample)
+
         pixel_halfwidths = [
             (sample[coord][1].values - sample[coord][0].values) / 2
             for coord in self.coords
