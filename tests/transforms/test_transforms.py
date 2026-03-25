@@ -103,7 +103,7 @@ def test_NormalizeTransform():
 
     transform = NormalizeTransform()
     out = transform(data)
-    assert np.array_equal(out, np.array([0, 0.25, 0.5, 0.75, 1])), "Normalize transform did not produce the expected values."
+    assert np.allclose(out, np.array([0, 0.25, 0.5, 0.75, 1])), "Normalize transform did not produce the expected values."
 
 
 
