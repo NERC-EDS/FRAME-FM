@@ -245,7 +245,7 @@ def config():
     "init", help=(
         "Copy config files from the package into a local configs directory for editing and use."
         "This only needs to be done once, and will not overwrite existing configs."
-        "\n\nNote: This is only required FRAME-FM is installed as a package."
+        "\n\nNote: This is only required when FRAME-FM is installed as a package."
     )
 )
 def init_configs():

@@ -157,7 +157,17 @@ Below are the steps to run *train.py* using the default configuration:
     uv add torchgeo --optional data
     ```
 
-6. **Running the training model**
+6. **Initialise configs**
+
+    FRAME-FM expects a `configs` directory to be present in your current working directory. Run the following command
+    to initialise a configs directory if one does not already exist:
+
+    ```bash
+    uv run framefm config init
+    ```
+
+
+7. **Running the training model**
 
     At this point, all of your dependencies are installed and your environment is set up. Run the
     default config with:
