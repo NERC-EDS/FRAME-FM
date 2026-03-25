@@ -229,7 +229,7 @@ def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
         memMB=default_mem,
         capabilities={"gpu_type": "nvidia"} if default_gpu > 0 else {}
     )
-    #5. If docker or kunernetess: It i not supported yet.
+    #5. If docker or kunernetess: It is not supported yet.
     # Docker and K8s REQUIRE an image
     if scheduler in ["local_docker", "kubernetes"] and not image:
         raise click.UsageError(
