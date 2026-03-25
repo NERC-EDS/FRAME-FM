@@ -187,6 +187,7 @@ def get_torchx_config() -> dict:
         return {section: dict(config[section]) for section in config.sections()}
     except Exception as e:
         click.secho(f"Error parsing .torchxconfig: {e}", fg="red")
+        click.secho("Default configs will be used")
         return {}
 
 def train_run_with_local_hydra(verbose: bool, overrides: tuple[str, ...]) -> None:
@@ -239,7 +240,7 @@ def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
         memMB=default_mem,
         capabilities={"gpu_type": "nvidia"} if default_gpu > 0 else {}
     )
-    #5. If docker or kunernetess: It i not supported yet.
+    #5. If docker or kunernetess: It is not supported yet.
     # Docker and K8s REQUIRE an image
     if scheduler in ["local_docker", "kubernetes"] and not image:
         raise click.UsageError(
@@ -272,7 +273,7 @@ def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
             scheduler_run_opts={
               "partition":partition,
                "time": time_limit,
-               "comment": f"framefm-train",          # optional
+               "comment": "framefm-train",          # optional
                "account":account,
                "job_dir": job_dir,
             }

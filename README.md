@@ -237,6 +237,7 @@ The torchx and hydra configs can be viewed and edited during runtime via the CLI
 
 ---
 # Running FRAME-FM Training on Slurm
+When using SLURM please ensure you have activate the env before scheduling the training.
 
 ## 1️⃣ Command to start a job
 
