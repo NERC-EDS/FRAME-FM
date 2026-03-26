@@ -30,7 +30,7 @@ CONFIG_DIR = os.getenv("CONFIG_DIR", DEFAULT_CONFIG_DIR)
 torchx_config = os.getenv("TORCHX_CONFIG", ".torchxconfig")
 
 def check_configs_directory():
-    """Check if the configs directory exists, and warn the user if not. This is only relevant if FRAME-FM is installed as a package."""
+    """Check if the configs directory exists, and warn the user if not."""
     if not Path(CONFIG_DIR).is_dir():
         # Tell the user to run the init command and then exit.
         click.secho(f"Configs directory not found at {CONFIG_DIR}. Please run 'framefm config init' to create the configs directory with the necessary config files.", fg="red")
