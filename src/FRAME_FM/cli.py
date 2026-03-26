@@ -1,6 +1,7 @@
 """Click entrypoint."""
 
 from collections import defaultdict
+import shutil
 from hydra import initialize_config_dir, compose
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import OmegaConf
@@ -20,9 +21,17 @@ from rich.syntax import Syntax
 
 
 console = Console()
-DEFAULT_CONFIG_DIR = str(Path(__file__).parents[2] / "configs")
+# Default configs directory is within the current working directory.
+DEFAULT_CONFIG_DIR = str(Path(os.getcwd()) / "configs")
 CONFIG_DIR = os.getenv("CONFIG_DIR", DEFAULT_CONFIG_DIR)
 torchx_config = os.getenv("TORCHX_CONFIG", ".torchxconfig")
+
+def check_configs_directory():
+    """Check if the configs directory exists, and warn the user if not."""
+    if not Path(CONFIG_DIR).is_dir():
+        # Tell the user to run the init command and then exit.
+        click.secho(f"Configs directory not found at {CONFIG_DIR}. Please run 'framefm config init' to create the configs directory with the necessary config files.", fg="red")
+        raise click.ClickException("Configs directory not found. Please run 'framefm config init' to create the configs directory with the necessary config files.")
 
 
 def _type_checker_and_conversion(data: Any, value: Any) -> Any:
@@ -191,8 +200,7 @@ def app():
 @click.group()
 def train():
     """Launch a model training run."""
-    click.echo("Training command invoked.")  # This is a placeholder for the time being.
-
+    check_configs_directory()
 
 @train.command(
     "run",
@@ -231,8 +239,32 @@ def train_run(verbose: bool, overrides: tuple[str, ...]):
 @click.group()
 def config():
     """Configuration entrypoint."""
-    pass
+    # Check if the configs directory exists, and warn the user if not.
+    # Exclude this for the init command, since that is what creates the configs directory.
+    if click.get_current_context().invoked_subcommand != "init":
+        check_configs_directory()
 
+@config.command(
+    "init", help=(
+        "Copy config files from the package into a local configs directory for editing and use."
+        "This only needs to be done once, and will not overwrite existing configs."
+    )
+)
+def init_configs():
+    """Copy config files from the package into a local configs directory for editing and use."""
+    # Source dir is the configs directory within the package
+    source_dir = Path(__file__).parent / "configs"
+    dest_dir = Path(CONFIG_DIR)
+
+    if dest_dir.exists():
+        click.secho(f"Destination directory already exists: {dest_dir.resolve()}", fg="red")
+        return
+
+    try:
+        shutil.copytree(source_dir, dest_dir)
+        click.secho(f"Config files successfully copied to: {dest_dir.resolve()}", fg="green")
+    except Exception as e:
+        click.secho(f"Error copying config files: {e}", fg="red")
 
 @config.command("list", help="This will recursively list all config files in the configs directory.")
 @click.option("--torchx", is_flag=True, help="Only show and verify the location for the torchx config.")
