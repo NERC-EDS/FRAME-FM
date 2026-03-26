@@ -247,7 +247,7 @@ def train_run(verbose: bool, overrides: tuple[str, ...]):
 @click.group()
 def config():
     """Configuration entrypoint."""
-    # Check if the configs directory exists, and warn the user if not. This is only relevant if FRAME-FM is installed as a package.
+    # Check if the configs directory exists, and warn the user if not.
     # Exclude this for the init command, since that is what creates the configs directory.
     if click.get_current_context().invoked_subcommand != "init":
         check_configs_directory()
