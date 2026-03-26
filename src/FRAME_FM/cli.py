@@ -26,12 +26,18 @@ DEFAULT_CONFIG_DIR = str(Path(os.getcwd()) / "configs")
 CONFIG_DIR = os.getenv("CONFIG_DIR", DEFAULT_CONFIG_DIR)
 torchx_config = os.getenv("TORCHX_CONFIG", ".torchxconfig")
 
+
 def check_configs_directory():
     """Check if the configs directory exists, and warn the user if not."""
     if not Path(CONFIG_DIR).is_dir():
         # Tell the user to run the init command and then exit.
-        click.secho(f"Configs directory not found at {CONFIG_DIR}. Please run 'framefm config init' to create the configs directory with the necessary config files.", fg="red")
-        raise click.ClickException("Configs directory not found. Please run 'framefm config init' to create the configs directory with the necessary config files.")
+        click.secho(
+            f"Configs directory not found at {CONFIG_DIR}. Please run 'framefm config init' to create the configs directory with the necessary config files.",
+            fg="red",
+        )
+        raise click.ClickException(
+            "Configs directory not found. Please run 'framefm config init' to create the configs directory with the necessary config files."
+        )
 
 
 def _type_checker_and_conversion(data: Any, value: Any) -> Any:
@@ -202,6 +208,7 @@ def train():
     """Launch a model training run."""
     check_configs_directory()
 
+
 @train.command(
     "run",
     context_settings=dict(ignore_unknown_options=True),
@@ -244,11 +251,13 @@ def config():
     if click.get_current_context().invoked_subcommand != "init":
         check_configs_directory()
 
+
 @config.command(
-    "init", help=(
+    "init",
+    help=(
         "Copy config files from the package into a local configs directory for editing and use."
         "This only needs to be done once, and will not overwrite existing configs."
-    )
+    ),
 )
 def init_configs():
     """Copy config files from the package into a local configs directory for editing and use."""
@@ -265,6 +274,7 @@ def init_configs():
         click.secho(f"Config files successfully copied to: {dest_dir.resolve()}", fg="green")
     except Exception as e:
         click.secho(f"Error copying config files: {e}", fg="red")
+
 
 @config.command("list", help="This will recursively list all config files in the configs directory.")
 @click.option("--torchx", is_flag=True, help="Only show and verify the location for the torchx config.")

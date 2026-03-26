@@ -5,9 +5,12 @@ from torch.utils.data import Dataset
 import xarray as xr
 
 from FRAME_FM.utils.data_utils import (
-    load_data_from_uri, unify_transforms, 
-    create_cache_path, hash_preprocessors,
-    cache_data_to_zarr, preprocessor_hash_key
+    load_data_from_uri,
+    unify_transforms,
+    create_cache_path,
+    hash_preprocessors,
+    cache_data_to_zarr,
+    preprocessor_hash_key,
 )
 
 from FRAME_FM.transforms import resolve_transform, apply_preprocessors
@@ -82,10 +85,10 @@ class BaseDataset(Dataset):
         return True
 
     def precache_data(self):
-        if not self.force_recache and self._detect_existing_cache():  # If cache exists and force_recache is False, we can skip the caching step
-            self.data = load_data_from_uri(
-                uri=self.cache_path
-            )
+        if (
+            not self.force_recache and self._detect_existing_cache()
+        ):  # If cache exists and force_recache is False, we can skip the caching step
+            self.data = load_data_from_uri(uri=self.cache_path)
         else:
             self.data = cache_data_to_zarr(
                 self.data_uri,

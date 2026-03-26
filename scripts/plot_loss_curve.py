@@ -11,8 +11,7 @@ import pandas as pd
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Create a loss curve plot from a FRAME-FM metrics.csv file.")
+    parser = argparse.ArgumentParser(description="Create a loss curve plot from a FRAME-FM metrics.csv file.")
     parser.add_argument(
         "--metrics",
         type=Path,

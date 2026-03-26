@@ -16,7 +16,6 @@ from .common import (
     COSMOSUK_DATA_URI,
 )
 
-from FRAME_FM.utils.common_utils import get_main_vars
 
 from FRAME_FM.datasets.chessmet_dataset import CHESSMetGriddedTimeSeriesDataset
 from FRAME_FM.datasets.era5_dataset import ERA5GriddedTimeSeriesDataset
@@ -57,8 +56,8 @@ def test_chessmet_dataset_with_transforms():
     preprocessors = [
         {
             "type": "subset",
-            "y": (400500., 405500.),
-            "x": (400500., 405500.),
+            "y": (400500.0, 405500.0),
+            "x": (400500.0, 405500.0),
             "time": ("1961-01-01T00:00:00", "1961-01-02T00:00:00"),
         }
     ]
@@ -75,7 +74,6 @@ def test_chessmet_dataset_with_transforms():
         chunks={"time": 2},
     )
 
-    ds = dataset.data
     sample = dataset[0]
     assert isinstance(sample, torch.Tensor)
 
@@ -197,9 +195,8 @@ def test_land_cover_map_with_transforms():
 
 # -------------------------------------------------
 # Soil Water Index specific checks
-#-------------------------------------------------
+# -------------------------------------------------
 def test_soil_water_index_dataset_structure():
-
     dataset = SoilWaterIndexGriddedTimeSeriesDataset(
         data_uri=SOIL_WATER_INDEX_FILE_URI, time_stride=1, chunks={"time": 1}
     )
@@ -208,9 +205,29 @@ def test_soil_water_index_dataset_structure():
     assert "time" in ds.coords
     assert "lat" in ds.coords
     assert "lon" in ds.coords
-    required_vars = set(['QFLAG_002', 'QFLAG_005', 'QFLAG_010', 'QFLAG_015', 'QFLAG_020', 'QFLAG_040', 'QFLAG_060', 'QFLAG_100', 'SSF', 'SWI_002', 'SWI_005', 'SWI_010', 'SWI_015', 'SWI_020', 'SWI_040', 'SWI_060', 'SWI_100', 'crs'])
+    required_vars = set(
+        [
+            "QFLAG_002",
+            "QFLAG_005",
+            "QFLAG_010",
+            "QFLAG_015",
+            "QFLAG_020",
+            "QFLAG_040",
+            "QFLAG_060",
+            "QFLAG_100",
+            "SSF",
+            "SWI_002",
+            "SWI_005",
+            "SWI_010",
+            "SWI_015",
+            "SWI_020",
+            "SWI_040",
+            "SWI_060",
+            "SWI_100",
+            "crs",
+        ]
+    )
     assert required_vars == set(ds.data_vars), "Dataset must contain the required variables"
-
 
 
 def test_cosmosuk_dataset():

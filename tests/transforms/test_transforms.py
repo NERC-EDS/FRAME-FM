@@ -21,6 +21,7 @@ import pandas as pd
 
 from FRAME_FM.transforms import FillMissingValueTransform, VarsToDimensionTransform
 from FRAME_FM.transforms.transforms import (
+    FillNaNTransform,
     NormalizeTransform,
     RenameTransform,
     ResampleTransform,
@@ -28,6 +29,7 @@ from FRAME_FM.transforms.transforms import (
     ReverseAxisTransform,
     RollTransform,
     SortAxisTransform,
+    StandardizeTransform,
     SubsetTransform,
     TiledIndexMapper,
     TilerTransform,
@@ -84,13 +86,17 @@ def _general_fill_missing_test(transform_class, strategy):
         # Run the fill missing value transform with constant strategy
         fill_transform_constant = transform_class(strategy="constant", fill_value=0.0)
         filled_ds_constant = fill_transform_constant(ds_with_nans)
-        assert not filled_ds_constant[var_id].isnull().any(), f"{transform_class} with constant strategy did not work as expected (there are still NaN values)."
+        assert not filled_ds_constant[var_id].isnull().any(), (
+            f"{transform_class} with constant strategy did not work as expected (there are still NaN values)."
+        )
 
     elif strategy == "interpolate":
         # Run the fill missing value transform with interpolate strategy
         fill_transform_interpolate = transform_class(strategy="interpolate", method="linear", fill_value="extrapolate")
         filled_ds_interpolate = fill_transform_interpolate(ds_with_nans)
-        assert not filled_ds_interpolate[var_id].isnull().any(), f"{transform_class} with interpolate strategy did not work as expected (there are still NaN values)."
+        assert not filled_ds_interpolate[var_id].isnull().any(), (
+            f"{transform_class} with interpolate strategy did not work as expected (there are still NaN values)."
+        )
 
 
 def test_FillMissingValueTransform_invalid_strategy():
@@ -107,39 +113,50 @@ def test_FillMissingValueTransform_invalid_strategy():
         fill_transform_invalid(ds_with_nans)
         assert False, f"{transform_class} did not raise an error for an unsupported strategy."
     except ValueError as e:
-        assert str(e) == "Unsupported fill strategy: unsupported_strategy", f"FillMissingValueTransform raised an unexpected error message: {str(e)}"
+        assert str(e) == "Unsupported fill strategy: unsupported_strategy", (
+            f"FillMissingValueTransform raised an unexpected error message: {str(e)}"
+        )
 
 
 def test_FillMissingValueTransform_constant():
     _general_fill_missing_test(FillMissingValueTransform, strategy="constant")
 
+
 @pytest.mark.xfail(reason="This test is currently failing due the `.interpolate_na()` method needing investigation.")
 def test_FillNaNTransform():
-    # Identical to the FillMissingValueTransform test but with the FillNaNTransform instead 
-    return test_FillMissingValueTransform()
+    # Identical to the FillMissingValueTransform test but with the FillNaNTransform instead
+    return  # test_FillMissingValueTransform()
 
-@pytest.mark.xfail(reason="This test is currently failing due to an issue with the interpolate strategy, which needs further investigation.")
+
+@pytest.mark.xfail(
+    reason="This test is currently failing due to an issue with the interpolate strategy, which needs further investigation."
+)
 def test_FillNaNTransform_interpolate():
     # Identical to the FillMissingValueTransform test but with the FillNaNTransform instead
     _general_fill_missing_test(FillNaNTransform, strategy="interpolate")
 
+
 def test_StandardizeTransform():
-    da,_ = _load_data(response_type="DataArray")  # type: ignore
+    da, _ = _load_data(response_type="DataArray")  # type: ignore
 
     standardize_transform = StandardizeTransform(mean=float(da.mean()), std=float(da.std()))
     standardized_da = standardize_transform(da)
-    assert np.isclose(float(standardized_da.mean()), 0, atol=1e-5), "Standardize transform did not work as expected (mean is not close to 0)."
-    assert np.isclose(float(standardized_da.std()), 1, atol=1e-5), "Standardize transform did not work as expected (std is not close to 1)."
+    assert np.isclose(float(standardized_da.mean()), 0, atol=1e-5), (
+        "Standardize transform did not work as expected (mean is not close to 0)."
+    )
+    assert np.isclose(float(standardized_da.std()), 1, atol=1e-5), (
+        "Standardize transform did not work as expected (std is not close to 1)."
+    )
+
 
 def test_NormalizeTransform():
-    data = xr.DataArray([2,4,6,8,10])
+    data = xr.DataArray([2, 4, 6, 8, 10])
 
     transform = NormalizeTransform()
     out = transform(data)
-    assert np.allclose(out, np.array([0, 0.25, 0.5, 0.75, 1])), "Normalize transform did not produce the expected values."
-
-
-
+    assert np.allclose(out, np.array([0, 0.25, 0.5, 0.75, 1])), (
+        "Normalize transform did not produce the expected values."
+    )
 
 
 def test_RenameTransform():
@@ -322,7 +339,9 @@ def test_TilerTransform_time_series_data():
 
     # Check that the tiled array has the expected shape (should have new dimensions for tiles)
     expected_shape = (10512, 3, step, step)  # (batch_dim[=n_tiles], time, latitude_fine, longitude_fine)
-    assert tiled.shape == expected_shape, f"Tiler transform did not work as expected (shape is {tiled.shape} instead of {expected_shape})"
+    assert tiled.shape == expected_shape, (
+        f"Tiler transform did not work as expected (shape is {tiled.shape} instead of {expected_shape})"
+    )
 
     assert tiled.dims[0] == "batch_dim", f"Expected first dimension to be 'batch_dim', but got {tiled.dims[0]}"
     # Check values of first tile versus original dataset
@@ -333,9 +352,9 @@ def test_TilerTransform_time_series_data():
     assert np.array_equal(first_tile, original_subset), "First tile does not match expected subset of original dataset"
 
     # Check the last tile (which has shape: (3, 10, 10) so cuts across three time slices)
-    # At the moment this is failing because the last tile is not matching the expected subset of the original dataset, 
-    # even though the first tile is correct. This may be due to an issue with how the tiler is handling the padding for 
-    # the last tile, or it may be an issue with how the test is checking the values of the last tile. This needs further 
+    # At the moment this is failing because the last tile is not matching the expected subset of the original dataset,
+    # even though the first tile is correct. This may be due to an issue with how the tiler is handling the padding for
+    # the last tile, or it may be an issue with how the test is checking the values of the last tile. This needs further
     # investigation.
     last_tile = tiled[-1]
     original_subset = da.isel(latitude=slice(-step - 1, -1), longitude=slice(-step, None))
@@ -347,7 +366,9 @@ def test_TilerTransform_time_series_data():
         f"Expected tile sizes in metadata to be {{'latitude': {step}, 'longitude': {step}}}, but got {tiled.attrs['tiler_tile_sizes']}"
     )
     assert "tiler_boundary" in tiled.attrs, "Expected 'tiler_boundary' in tiled.attrs, but not found"
-    assert tiled.attrs["tiler_boundary"] == "pad", f"Expected boundary in metadata to be 'pad', but got {tiled.attrs['tiler_boundary']}"
+    assert tiled.attrs["tiler_boundary"] == "pad", (
+        f"Expected boundary in metadata to be 'pad', but got {tiled.attrs['tiler_boundary']}"
+    )
     assert "tiler_original_sizes" in tiled.attrs, "Expected 'tiler_original_sizes' in tiled.attrs, but not found"
 
     original_sizes = {"latitude": da.latitude.size, "longitude": da.longitude.size}
@@ -363,9 +384,11 @@ def test_TilerTransform_time_series_data():
     )
 
     # Now test that the index mapper helper function works as expected
-    raise NotImplementedError("This test is currently failing due to an issue with the last tile matching "
-    "the original data, so the rest of the test has not been implemented yet. "
-    "This needs further investigation before it can be implemented.")
+    raise NotImplementedError(
+        "This test is currently failing due to an issue with the last tile matching "
+        "the original data, so the rest of the test has not been implemented yet. "
+        "This needs further investigation before it can be implemented."
+    )
 
 
 def test_tiled_coordinate_utilities_static_grid():

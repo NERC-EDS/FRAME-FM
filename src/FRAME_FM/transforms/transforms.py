@@ -61,7 +61,6 @@ class NormalizeTransform(BaseTransform):
         return (sample - sample_min) / (sample.max() - sample_min + 1e-8)
 
 
-
 class StandardizeTransform(BaseTransform):
     def __init__(self, mean: float, std: float):
         self.mean = mean
@@ -73,7 +72,6 @@ class StandardizeTransform(BaseTransform):
     def __call__(self, sample: DA) -> DA:
         check_object_type(sample, allowed_types=DA, caller=self.__class__.__name__)
         return (sample - self.mean) / self.std
-
 
 
 class ScaleTransform(NormalizeTransform):
@@ -251,9 +249,7 @@ class TilerTransform(BaseTransform):
         self.tile_sizes = dim_tile_sizes
 
         if self.boundary not in {"pad", "trim"}:
-            raise ValueError(
-                f"Unsupported tile boundary='{self.boundary}'. Expected one of: ['pad', 'trim']"
-            )
+            raise ValueError(f"Unsupported tile boundary='{self.boundary}'. Expected one of: ['pad', 'trim']")
 
     def _validate_axis_order(self, sample: DA) -> None:
         for dim in self.tile_sizes:
@@ -404,10 +400,7 @@ class ToValuesBoundsTransform(BaseTransform):
         # Ensure any datetimes are converted to float seconds for the coordinate tensors
         sample = datetime_coords_to_float(sample)
 
-        pixel_halfwidths = [
-            (sample[coord][1].values - sample[coord][0].values) / 2
-            for coord in self.coords
-            ]
+        pixel_halfwidths = [(sample[coord][1].values - sample[coord][0].values) / 2 for coord in self.coords]
         bounds = torch.from_numpy(
             np.array(
                 [

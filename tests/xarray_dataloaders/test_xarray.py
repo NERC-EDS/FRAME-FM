@@ -8,7 +8,6 @@ def import_fixture(): ...
 
 
 def test_dataset():
-
     assert True
 
 
