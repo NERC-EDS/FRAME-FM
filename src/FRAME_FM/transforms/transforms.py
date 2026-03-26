@@ -54,14 +54,28 @@ class FillNaNTransform(FillMissingValueTransform):
 
 
 class NormalizeTransform(BaseTransform):
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, sample: DA) -> DA:
+        check_object_type(sample, allowed_types=DA, caller=self.__class__.__name__)
+        sample_min = sample.min()
+        return (sample - sample_min) / (sample.max() - sample_min + 1e-8)
+
+
+
+class StandardizeTransform(BaseTransform):
     def __init__(self, mean: float, std: float):
         self.mean = mean
         self.std = std
 
+        if self.std == 0:
+            raise ValueError("Standard deviation cannot be zero.")
+
     def __call__(self, sample: DA) -> DA:
-        # Implement normalization logic here
         check_object_type(sample, allowed_types=DA, caller=self.__class__.__name__)
         return (sample - self.mean) / self.std
+
 
 
 class ScaleTransform(NormalizeTransform): 
@@ -683,6 +697,7 @@ transform_mapping = {
     "fill_missing": FillMissingValueTransform,
     "fill_nan": FillNaNTransform,
     "normalize": NormalizeTransform,
+    "standardize": StandardizeTransform,
     "rename": RenameTransform,
     "resample": ResampleTransform,
     "reshape": ReshapeTransform,
