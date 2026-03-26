@@ -159,8 +159,9 @@ Below are the steps to run *train.py* using the default configuration:
 
 6. **Initialise configs**
 
-    FRAME-FM expects a `configs` directory to be present in your current working directory. Run the following command
-    to initialise a configs directory if one does not already exist:
+    By default, FRAME-FM expects a `configs` directory to be present in your current working directory.
+    Run the following command to initialise a configs directory if one does not already exist.
+    (Note that you can override this location by setting the `CONFIG_DIR` environment variable. If set, the init command will use this path instead):
 
     ```bash
     uv run framefm config init
