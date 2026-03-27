@@ -1,7 +1,6 @@
-# Publish to the test PyPI repository on tagged releases (v*.*.*)
+# Build package and publish to the test PyPI repository.
 # Using pypi-publish action with trusted publishing to avoid the need for a secret token
 # https://github.com/marketplace/actions/pypi-publish
-# Only run on tagged commits.
 
 name: Publish to test PyPI
 on:
@@ -26,6 +25,8 @@ jobs:
         uv build --out-dir dist
     - name: Store distribution artifacts
       uses: actions/upload-artifact@v6
+      # Only upload artifacts for tagged releases.
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
       with:
         name: package-distribution
         path: dist/
