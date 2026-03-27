@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 2026 FRAME-FM Contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # src/FRAME_FM/dataloaders/ERA5_dataloader.py
 #
 # A time-aware ERA5 dataloader for FRAME-FM.

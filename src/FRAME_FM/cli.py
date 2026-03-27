@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 2026 FRAME-FM Contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
 """Click entrypoint."""
 
 from collections import defaultdict

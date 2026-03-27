@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 2026 FRAME-FM Contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # src/FRAME_FM/training/logger.py
 
 #AK: had to rename this from logging as it was creating a circular import issue

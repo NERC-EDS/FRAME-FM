@@ -1,4 +1,7 @@
-# Copyright (c) Matt Arran.
+# SPDX-FileCopyrightText: 2026 2026 FRAME-FM Contributors
+# Copyright (C) Matt Arran.
+#
+# SPDX-License-Identifier: Apache-2.0
 
 # This source code is adapted from code (c) Meta Platforms, Inc. and affiliates,
 # licensed under the licence in the licences/LICENSE_MAE.txt file.

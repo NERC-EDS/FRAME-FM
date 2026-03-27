@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 2026 FRAME-FM Contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # src/FRAME_FM/datasets/ImageLabel_Dataset.py
 """
 Lightweight Dataset wrapper that applies transforms to images only,

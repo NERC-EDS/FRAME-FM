@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 2026 FRAME-FM Contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # src/FRAME_FM/dataloaders/gridded_dataloader.py
 from __future__ import annotations
 from typing import Optional, Any, Sequence

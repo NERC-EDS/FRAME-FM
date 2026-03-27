@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 2026 FRAME-FM Contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
 from typing import Sequence
 from FRAME_FM.utils.embedders import BaseEmbedder, PatchEmbed
 from FRAME_FM.utils.LightningModuleWrapper import BaseModule

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 2026 FRAME-FM Contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
 """
 This demo shows the application of convolutional autoencoder to a stack of
 geospatial tiles. Two classes are defined - ConvAutoencoder and

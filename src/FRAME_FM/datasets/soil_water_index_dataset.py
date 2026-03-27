@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 2026 FRAME-FM Contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
 from pathlib import Path
 
 from FRAME_FM.datasets.base_gridded_dataset import BaseGriddedTimeSeriesDataset
