@@ -2,7 +2,7 @@
 # Using pypi-publish action with trusted publishing to avoid the need for a secret token
 # https://github.com/marketplace/actions/pypi-publish
 
-name: Publish to test PyPI
+name: Build package / publish to test PyPI
 on:
   push:
     branches:
@@ -12,6 +12,7 @@ on:
   pull_request:
 jobs:
   # Build job runs for all pushes to main and pull requests.
+  # This allows us to verify that the package builds correctly before we attempt to publish it.
   build-distribution:
     name: Build package distribution
     runs-on: ubuntu-latest
