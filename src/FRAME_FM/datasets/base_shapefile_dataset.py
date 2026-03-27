@@ -39,7 +39,7 @@ class BaseShapefileDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx: int) -> torch.Tensor:
-        # Return the data sample at the specified index
+        """Returns the data sample at the specified index"""
         sample = self.data.isel(band=idx)
 
         # Apply runtime transforms if any
@@ -48,9 +48,6 @@ class BaseShapefileDataset(Dataset):
 
         return sample  # type: ignore
 
-    # ----------------------------------------------------------
-    # 1. LOAD SHAPEFILES
-    # ----------------------------------------------------------
     def proc_shapefiles(
         self,
         file_list: list[str],
@@ -60,7 +57,7 @@ class BaseShapefileDataset(Dataset):
         """Load a list of shapefiles into GeoDataFrames.
         file_list - the list of shapefiles to process
         parent_grd - the file to use as the parent grid who's boundaries will be used for all other files
-        categorical_columns - the list of columns to se
+        categorical_columns - a dict of columns to process
         """
         self.gdfs = {}
 
@@ -167,8 +164,8 @@ class BaseShapefileDataset(Dataset):
 
         self.dataset_out = ds
 
-    # Code to read in and decode the config yaml file.
     def load_yaml_ordered(self, path):
+        """read in and decode the config yaml file."""
         with open(path, "r") as f:
             return yaml.safe_load(f) or {}
 
