@@ -291,11 +291,14 @@ def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
             # Step 4: overwrite the script in dryrun_info and submit
             job_id = runner.schedule(dryrun_info)
             slurm_job_id = job_id
+            numeric_id = slurm_job_id.split('/')[-1]
             click.secho(f"Job submitted successfully!", fg="green")
             click.echo(f"Scheduler: {scheduler}")
             click.echo(f"Job ID:    {slurm_job_id}")
-            click.echo(f"Check status: squeue -j {slurm_job_id.split('//')[-1]}")
-            click.echo(f"View logs:    tail -f slurm-{slurm_job_id.split('//')[-1]}.out")
+            click.echo(f"Check status: squeue -j {numeric_id}")
+            log_prefix = f"{job_dir}/" if job_dir else ""
+            click.echo(f"View logs:    tail -f {log_prefix}slurm-{numeric_id}-worker-0.out")
+            click.echo(f"All workers:  tail -f {log_prefix}slurm-{numeric_id}-*.out")
     except Exception as e:
         click.secho(f"Failed to submit job to {scheduler}: {e}", fg="red")
         raise click.Abort()
