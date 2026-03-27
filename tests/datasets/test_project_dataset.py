@@ -4,6 +4,7 @@ import glob
 # import dask
 # dask.config.set(scheduler='single-threaded')
 
+import numpy as np
 import torch
 import pytest
 
@@ -11,15 +12,17 @@ from .common import (
     CHESS_URI,
     ERA5_URI,
     LAND_COVER_URI,
-    SOIL_WATER_INDEX_URI as SOIL_WATER_INDEX_GLOB_URI
+    SOIL_WATER_INDEX_URI as SOIL_WATER_INDEX_GLOB_URI,
+    COSMOSUK_DATA_URI,
 )
 
-from FRAME_FM.utils.data_utils import get_main_vars
+from FRAME_FM.utils.common_utils import get_main_vars
 
 from FRAME_FM.datasets.chessmet_dataset import CHESSMetGriddedTimeSeriesDataset
 from FRAME_FM.datasets.era5_dataset import ERA5GriddedTimeSeriesDataset
 from FRAME_FM.datasets.land_cover_map_dataset import LandCoverMapGriddedDataset
 from FRAME_FM.datasets.soil_water_index_dataset import SoilWaterIndexGriddedTimeSeriesDataset
+from FRAME_FM.datasets.cosmosuk_dataset import CosmosUKDataset
 
 
 # Override Glob Pattern for Soil Water Index dataset to use a smaller subset of files for testing
@@ -45,67 +48,72 @@ def test_dataset_wrappers_basic(dataset_cls, uri):
     assert isinstance(sample, torch.Tensor)
     assert sample.ndim >= 2
 
-@pytest.mark.xfail(reason="Current issue with chunking - need to investigate further")
-def test_chessmet_dataset_with_transforms():
-    transforms = [
-        {
-            "type": "subset",
-            "variables": ["precip"],
-            "y": (100500.0, 257500.0),
-            "x": (156500.0, 200500.0),
-            "time": ("2016-01-01", "2016-02-01"),
-        },
-        {"type": "vars_to_dimension", "variables": "__all__", "new_dim": "variable"},
-        {"type": "to_tensor"},
-    ]
-
-    dataset = CHESSMetGriddedTimeSeriesDataset(
-        data_uri=CHESS_URI,
-        transforms=transforms,
-        # time_range=("2016-01-01", "2018-10-20"),
-        time_stride=1,
-        chunks={"time": 64},
-    )
-
-    # Preprocessing checks
-    assert get_main_vars(dataset.data) == ["precip"], f"Expected dataset to have only 'precip' variable after subset transform, but got {dataset.data.data_vars}"
-
-    # Sampling and transform checks
-    assert len(dataset) == 21549, f"Expected dataset length to be 21549 but got {len(dataset)}"
-    sample = dataset[0]
-    assert isinstance(sample, torch.Tensor)
-    assert sample.ndim >= 2
-
 
 # ------------------------------------------------
 # CHESSMet specific checks
 # ------------------------------------------------
-def test_chessmet_dataset_retains_2d_coordinate_variables():
-    transforms = [
+def test_chessmet_dataset_with_transforms():
+    preprocessors = [
         {
             "type": "subset",
-            "variables": ["precip"],
-            "y": (100500.0, 257500.0),
-            "x": (200500.0, 156500.0),
-            "time": ("2016-01-27", "2016-01-02"),
-        },
+            "y": (400500., 405500.),
+            "x": (400500., 405500.),
+            "time": ("1961-01-01T00:00:00", "1961-01-02T00:00:00"),
+        }
+    ]
+    transforms = [
         {"type": "vars_to_dimension", "variables": "__all__", "new_dim": "variable"},
         {"type": "to_tensor"},
     ]
 
     dataset = CHESSMetGriddedTimeSeriesDataset(
         data_uri=CHESS_URI,
+        preprocessors=preprocessors,
         transforms=transforms,
-        # time_range=("2016-01-01", "2018-10-20"),
         time_stride=1,
-        chunks={"time": 64},
+        chunks={"time": 2},
+    )
+
+    ds = dataset.data
+    sample = dataset[0]
+    assert isinstance(sample, torch.Tensor)
+
+
+def test_chessmet_dataset_retains_2d_coordinate_variables():
+    preprocessors = [
+        {
+            "type": "subset",
+            "y": (400500., 405500.),
+            "x": (400500., 405500.),
+            "time": ("1961-01-01T00:00:00", "1961-01-02T00:00:00"),
+        }
+    ]
+    transforms = [
+        {"type": "vars_to_dimension", "variables": "__all__", "new_dim": "variable"},
+        {"type": "to_tensor"},
+    ]
+
+    dataset = CHESSMetGriddedTimeSeriesDataset(
+        data_uri=CHESS_URI,
+        preprocessors=preprocessors,
+        transforms=transforms,
+        time_stride=1,
+        chunks={"time": 2},
     )
 
     # Check that 2D coordinate variables are retained in the dataset
     ds = dataset.data
-    assert "lat" in ds and "lon" in ds, "Expected 'lat' and 'lon' to be ancillary 2d coordinate variables in the dataset, but they were not found in the coordinates"
+
+    assert "lat" in ds and "lon" in ds, "Expected 'lat' and 'lon' to be ancinllary 2d coordinate variables in the dataset, but they were not found in the coordinates"
     assert ds["lat"].ndim == 2 and ds["lon"].ndim == 2, f"Expected 'lat' and 'lon' to be 2D coordinate variables, but got dimensions {ds['lat'].dims} and {ds['lon'].dims} respectively"
     assert list(ds["lat"].coords.keys()) == ["x", "y"] and list(ds["lon"].coords.keys()) == ["x", "y"], f"Expected 'lat' and 'lon' to have dimensions ['x', 'y'], but got: {ds['lat'].coords.keys()} and {ds['lon'].coords.keys()}"
+
+    sample = dataset[0]
+    assert isinstance(sample, torch.Tensor)
+
+    # Assert that the subset has some valid data points (i.e. not all NaN) - this is to check that the spatial subset is working correctly and not resulting in an empty dataset
+    assert not np.isnan(sample.numpy()).all(), "Expected subsetted dataset to contain some valid data points, but all values were NaN - this may indicate an issue with the spatial subset transform resulting in an empty dataset"
+
 
 # ------------------------------------------------
 # ERA5 specific checks
@@ -113,7 +121,6 @@ def test_chessmet_dataset_retains_2d_coordinate_variables():
 def test_era5_dataset_structure():
     dataset = ERA5GriddedTimeSeriesDataset(
         data_uri=ERA5_URI,
-        # time_range=("2010-05-01", "2012-10-05"),
         time_stride=4,
     )
 
@@ -126,7 +133,6 @@ def test_era5_dataset_structure():
 def test_era5_dataset_sampling():
     dataset = ERA5GriddedTimeSeriesDataset(
         data_uri=ERA5_URI,
-        # time_range=("2010-05-01", "2012-10-05"),
         time_stride=4,
     )
 
@@ -177,12 +183,10 @@ def test_land_cover_map_with_transforms():
 #-------------------------------------------------
 # Soil Water Index specific checks
 #-------------------------------------------------
-@pytest.mark.xfail(reason="Problem with NCA file parsing/loading - need to investigate further")
 def test_soil_water_index_dataset_structure():
     
     dataset = SoilWaterIndexGriddedTimeSeriesDataset(
         data_uri=SOIL_WATER_INDEX_FILE_URI,
-        # time_range=("2020-02-01", "2020-02-05"),
         time_stride=1,
         chunks={"time": 1}
     )
@@ -191,20 +195,24 @@ def test_soil_water_index_dataset_structure():
     assert "time" in ds.coords
     assert "lat" in ds.coords
     assert "lon" in ds.coords
-    required_vars = {"swvl1", "swvl2", "swvl3", "swvl4"}
-    assert required_vars.issubset(set(ds.data_vars)), "Dataset must contain the required variables"
-
-# @pytest.mark.xfail(reason="Problem with NCA file parsing/loading - need to investigate further")
-# def test_soil_water_index_dataset_sampling():
-#     dataset = SoilWaterIndexGriddedTimeSeriesDataset(
-#         data_uri=SOIL_WATER_INDEX_FILE_URI,
-#         time_stride=1,
-#         chunks={"time": 1}
-#     )
-
-#     assert len(dataset) > 0
-#     sample = dataset[0]
-#     assert isinstance(sample, torch.Tensor)
-#     assert sample.ndim >= 2
+    required_vars = set(['QFLAG_002', 'QFLAG_005', 'QFLAG_010', 'QFLAG_015', 'QFLAG_020', 'QFLAG_040', 'QFLAG_060', 'QFLAG_100', 'SSF', 'SWI_002', 'SWI_005', 'SWI_010', 'SWI_015', 'SWI_020', 'SWI_040', 'SWI_060', 'SWI_100', 'crs'])
+    assert required_vars == set(ds.data_vars), "Dataset must contain the required variables"
 
 
+def test_cosmosuk_dataset():
+    dataset = CosmosUKDataset(
+        data_uri=COSMOSUK_DATA_URI,
+        qc_bitmask=0b0000000001,  # Mask missing data
+        drop_qc_flags=["M", "U", "I", "E"],
+    )
+
+    data = dataset.data
+    assert type(data) == list, f"Expected dataset.data to be a list of xarray Datasets (one per site), but got {type(data)}"
+    # Test data has one site, so assert length of dataset is 1
+    assert len(dataset) == 1, f"Expected dataset length to be 1 since there is only one site"
+    
+    sample = dataset[0]
+    assert len(sample) == 8
+    assert set(sample.data_vars.keys()) == {'TDT1_VWC', 'TDT2_VWC', 'TDT3_VWC', 'TDT4_VWC', 'TDT5_VWC', 'TDT6_VWC', 'TDT7_VWC', 'TDT8_VWC'}, f"Expected sample to contain the 8 TDT_VWC variables, but got {sample.data_vars.keys()}"
+    assert "time" in sample.coords, f"Expected sample to have 'time' coordinate, but it was not found in the coordinates"
+    assert sample.TDT1_VWC.max().item() == 323.6, f"Expected max value of TDT1_VWC to be 323.6 after applying QC mask, but got {sample.TDT1_VWC.max().item()}"

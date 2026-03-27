@@ -1,0 +1,46 @@
+# configs/data/spatial_land_cover.yml
+_target_: FRAME_FM.dataloaders.combined_dataloader.CombinedDataModule
+
+# Component data modules
+datamodules:
+  # Landcover Geotiff
+  - _target_: FRAME_FM.dataloaders.demo_geotiff_dataloader.GeotiffSpatialDataModule
+    data_root: /gws/ssde/j25b/eds_ai/frame-fm/data/inputs/land_cover_map_2015/data/LCM2015_GB_1km_percent_cover_aggregate_class.tif
+    tile_size: 64
+
+    # --- Transforms: config-driven, per split ---
+    train_transforms:
+      _target_: torchvision.transforms.Compose
+      transforms:
+          # Scale each of 10 bands from [0,100] to [0,1], since ToTensor assumes max value of 255
+        - _target_: torchvision.transforms.Normalize
+          mean: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+          std: [100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+
+    val_transforms:
+      _target_: torchvision.transforms.Compose
+      transforms:
+          # Scale each of 10 bands from [0,100] to [0,1], since ToTensor assumes max value of 255
+        - _target_: torchvision.transforms.Normalize
+          mean: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+          std: [100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+
+    test_transforms:
+      _target_: torchvision.transforms.Compose
+      transforms:
+          # Scale each of 10 bands from [0,100] to [0,1], since ToTensor assumes max value of 255
+        - _target_: torchvision.transforms.Normalize
+          mean: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+          std: [100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+
+# Data loading
+batch_size: 8
+num_workers: 4
+pin_memory: true
+persistent_workers: true
+
+# BaseDataModule split logic
+split_strategy: fraction      # "fraction" | "indices" | "none"
+train_split: 0.85
+val_split: 0.15
+test_split: 0.0

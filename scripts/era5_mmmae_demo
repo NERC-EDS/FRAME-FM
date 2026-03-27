@@ -1,0 +1,16 @@
+#!/bin/bash
+#SBATCH --job-name="ERA5 MMMAE demo"
+#SBATCH --time=0:10:00
+#SBATCH --mem=8G
+#SBATCH --partition=orchid
+#SBATCH --account=orchid
+#SBATCH --qos=orchid
+#SBATCH --gres=gpu:1
+#SBATCH -o %j.out
+#SBATCH -e %j.err
+
+source .venv/bin/activate
+export HYDRA_FULL_ERROR=1
+export PYTHONPATH="$PWD/src:$PYTHONPATH"
+
+python src/FRAME_FM/training/era5_mmmae_demo.py data=era5_spatial_pixels_demo model=era5_demo_mmmae
