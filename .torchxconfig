@@ -1,7 +1,0 @@
-[scheduler]
-name = "local_cwd"
-
-[defaults]
-cpu = 4
-gpu = 4
-image = "pytorch/pytorch:2.2.0-cuda11.8-cudnn8-runtime"
