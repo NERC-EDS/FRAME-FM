@@ -95,7 +95,7 @@ class MultimodalMaskedAutoencoder(BaseModule):
                 are positioned, if this is concrete (or None, default, for the alternative).
                 For example, for coords x (X-periodic) and y (aperiodic with minimum Y, range ΔY):
                 {'x': (0, X), 'y': (Y, Y + 2ΔY)}
-            pos_embed_ratio (dict[str, float] | None): Relative sizes of position embedding dim.s,
+            pos_embed_ratio (dict[str, float] | None): Relative sizes of position embedding dims,
                 or None if no input has positions. Defaults to None.
             encoder_embed_dim (int): Dimensions into which to embed each patch. Defaults to 16.
             encoder_depth (int, optional): Number of attention layers for encoding. Defaults to 24.

@@ -67,12 +67,25 @@ class FillNaNTransform(FillMissingValueTransform):
 
 
 class NormalizeTransform(BaseTransform):
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, sample: DA) -> DA:
+        check_object_type(sample, allowed_types=DA, caller=self.__class__.__name__)
+        sample_min = sample.min()
+        return (sample - sample_min) / (sample.max() - sample_min + 1e-8)
+
+
+
+class StandardizeTransform(BaseTransform):
     def __init__(self, mean: float, std: float):
         self.mean = mean
         self.std = std
 
+        if self.std == 0:
+            raise ValueError("Standard deviation cannot be zero.")
+
     def __call__(self, sample: DA) -> DA:
-        # Implement normalization logic here
         check_object_type(sample, allowed_types=DA, caller=self.__class__.__name__)
         return (sample - self.mean) / self.std
 
@@ -250,6 +263,11 @@ class TilerTransform(BaseTransform):
         self.discontinuity_periods = discontinuity_periods or {"longitude": 360.0, "lon": 360.0}
         self.tile_sizes = dim_tile_sizes
 
+        if self.boundary not in {"pad", "trim"}:
+            raise ValueError(
+                f"Unsupported tile boundary='{self.boundary}'. Expected one of: ['pad', 'trim']"
+            )
+
     def _validate_axis_order(self, sample: DA) -> None:
         for dim in self.tile_sizes:
             if dim not in sample.coords:
@@ -303,8 +321,26 @@ class TilerTransform(BaseTransform):
                     f"(period={period}). Affected coarse tile ids: {bad_tiles[:10]}"
                 )
 
+    def _check_tile_sizes(self, sample: DA) -> None:
+        """
+        Check that tiles are not larger than the original data along any dimension, and that tile sizes are positive integers.
+        """
+        for dim, tile_size in self.tile_sizes.items():
+            if not isinstance(tile_size, int) or tile_size <= 0:
+                raise ValueError(f"Tile size for dimension '{dim}' must be a positive integer. Got: {tile_size}")
+
+            arr_size = sample.sizes.get(dim)
+            if arr_size < tile_size:
+                raise ValueError(
+                    f"Total grid is smaller than the requested tile size along dimension '{dim}': "
+                    f"{arr_size} < {tile_size}"
+                )
+
     def __call__(self, sample: DA) -> DA:
         check_object_type(sample, allowed_types=DA, caller=self.__class__.__name__)
+
+        # Check tile sizes are not bigger than the original data and are valid positive integers
+        self._check_tile_sizes(sample)
 
         if self.validate_axis_order:
             self._validate_axis_order(sample)
@@ -682,6 +718,7 @@ transform_mapping = {
     "fill_missing": FillMissingValueTransform,
     "fill_nan": FillNaNTransform,
     "normalize": NormalizeTransform,
+    "standardize": StandardizeTransform,
     "rename": RenameTransform,
     "resample": ResampleTransform,
     "reshape": ReshapeTransform,

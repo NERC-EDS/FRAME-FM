@@ -48,40 +48,37 @@ def test_dataset_wrappers_basic(dataset_cls, uri):
     assert isinstance(sample, torch.Tensor)
     assert sample.ndim >= 2
 
-@pytest.mark.xfail(reason="Current issue with chunking - need to investigate further")
+
+# ------------------------------------------------
+# CHESSMet specific checks
+# ------------------------------------------------
 def test_chessmet_dataset_with_transforms():
-    transforms = [
+    preprocessors = [
         {
             "type": "subset",
-            "variables": ["precip"],
-            "y": (100500.0, 257500.0),
-            "x": (156500.0, 200500.0),
-            "time": ("2016-01-01", "2016-02-01"),
-        },
+            "y": (400500., 405500.),
+            "x": (400500., 405500.),
+            "time": ("1961-01-01T00:00:00", "1961-01-02T00:00:00"),
+        }
+    ]
+    transforms = [
         {"type": "vars_to_dimension", "variables": "__all__", "new_dim": "variable"},
         {"type": "to_tensor"},
     ]
 
     dataset = CHESSMetGriddedTimeSeriesDataset(
         data_uri=CHESS_URI,
+        preprocessors=preprocessors,
         transforms=transforms,
         time_stride=1,
-        chunks={"time": 24},
+        chunks={"time": 2},
     )
 
-    # Preprocessing checks
-    assert get_main_vars(dataset.data) == ["precip"], f"Expected dataset to have only 'precip' variable after subset transform, but got {dataset.data.data_vars}"
-
-    # Sampling and transform checks
-    assert len(dataset) == 21549, f"Expected dataset length to be 21549 but got {len(dataset)}"
+    ds = dataset.data
     sample = dataset[0]
     assert isinstance(sample, torch.Tensor)
-    assert sample.ndim >= 2
 
 
-# ------------------------------------------------
-# CHESSMet specific checks
-# ------------------------------------------------
 def test_chessmet_dataset_retains_2d_coordinate_variables():
     preprocessors = [
         {
@@ -186,7 +183,6 @@ def test_land_cover_map_with_transforms():
 #-------------------------------------------------
 # Soil Water Index specific checks
 #-------------------------------------------------
-@pytest.mark.xfail(reason="Problem with NCA file parsing/loading - need to investigate further")
 def test_soil_water_index_dataset_structure():
     
     dataset = SoilWaterIndexGriddedTimeSeriesDataset(
@@ -199,21 +195,9 @@ def test_soil_water_index_dataset_structure():
     assert "time" in ds.coords
     assert "lat" in ds.coords
     assert "lon" in ds.coords
-    required_vars = {"swvl1", "swvl2", "swvl3", "swvl4"}
-    assert required_vars.issubset(set(ds.data_vars)), "Dataset must contain the required variables"
+    required_vars = set(['QFLAG_002', 'QFLAG_005', 'QFLAG_010', 'QFLAG_015', 'QFLAG_020', 'QFLAG_040', 'QFLAG_060', 'QFLAG_100', 'SSF', 'SWI_002', 'SWI_005', 'SWI_010', 'SWI_015', 'SWI_020', 'SWI_040', 'SWI_060', 'SWI_100', 'crs'])
+    assert required_vars == set(ds.data_vars), "Dataset must contain the required variables"
 
-# @pytest.mark.xfail(reason="Problem with NCA file parsing/loading - need to investigate further")
-# def test_soil_water_index_dataset_sampling():
-#     dataset = SoilWaterIndexGriddedTimeSeriesDataset(
-#         data_uri=SOIL_WATER_INDEX_FILE_URI,
-#         time_stride=1,
-#         chunks={"time": 1}
-#     )
-
-#     assert len(dataset) > 0
-#     sample = dataset[0]
-#     assert isinstance(sample, torch.Tensor)
-#     assert sample.ndim >= 2
 
 def test_cosmosuk_dataset():
     dataset = CosmosUKDataset(

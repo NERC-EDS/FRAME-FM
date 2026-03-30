@@ -19,13 +19,13 @@ Within the ``FRAME_FM`` package, transforms are all children of the
 
 .. code-block:: python
 
-   from FRAME_FM.transforms import NormalizeTransform
+   from FRAME_FM.transforms import StandardizeTransform
 
    ds = xr.load_dataset(<some_dataset>)
    da = ds["d2m"].isel(time=0)
 
-   normalize_transform = NormalizeTransform()
-   normalized_da = normalize_transform(
+   standardize_transform = StandardizeTransform()
+   standardized_da = standardize_transform(
        da,
        mean=float(da.mean()),
        std=float(da.std())
