@@ -22,9 +22,7 @@ class BaseShapefileDataset(Dataset):
         override_transforms: bool = False,
     ):
         self.data_uri = data_uri
-        self.transforms = unify_transforms(
-            transforms, self._transforms, override_transforms
-        )
+        self.transforms = unify_transforms(transforms, self._transforms, override_transforms)
 
         self.category_mappings = {}  # Stores category→integer mappings for each shapefile/column
 
@@ -91,9 +89,7 @@ class BaseShapefileDataset(Dataset):
 
         # Coordinates
         self.x = np.arange(xmin, xmin + (self.nx * res), res)
-        self.y = np.flip(
-            np.arange(ymin, ymin + (self.ny * res), res)
-        )  # flipped for raster orientation
+        self.y = np.flip(np.arange(ymin, ymin + (self.ny * res), res))  # flipped for raster orientation
         # self.y = np.arange(ymin, ymin + (self.ny * res), res)
 
     def encode_categories(self, gdf, categorical_columns: list[str], file_path: str):
@@ -108,8 +104,7 @@ class BaseShapefileDataset(Dataset):
 
         integer_values = enc.fit_transform(gdf[categorical_columns])
         mapping = {
-            col: {cat: i for i, cat in enumerate(enc.categories_[j])}
-            for j, col in enumerate(categorical_columns)
+            col: {cat: i for i, cat in enumerate(enc.categories_[j])} for j, col in enumerate(categorical_columns)
         }
 
         # Store mapping
@@ -219,9 +214,7 @@ class BaseShapefileDataset(Dataset):
             elif isinstance(cat_cols, list):
                 self.cat_cols_map[file_path] = cat_cols
             else:
-                raise ValueError(
-                    f"'categorical_columns' for '{src_name}' must be a list or null."
-                )
+                raise ValueError(f"'categorical_columns' for '{src_name}' must be a list or null.")
 
             # Finally build the variable map.
             var_cols = s.get("variables", None)
@@ -231,15 +224,13 @@ class BaseShapefileDataset(Dataset):
             elif isinstance(var_cols, list):
                 self.var_out_map[file_path] = var_cols
             else:
-                raise ValueError(
-                    f"'variables' for '{src_name}' must be a list or null."
-                )
+                raise ValueError(f"'variables' for '{src_name}' must be a list or null.")
 
         # Final check to ensure only one parent grid is defined and define that grid.
         if all(x == "NO" for x in parent_grd_list):
-            raise ValueError(f"No parent grid defined. Please correct config.")
+            raise ValueError("No parent grid defined. Please correct config.")
         elif parent_grd_list.count("YES") > 1:
-            raise ValueError(f"More the one parent grid defined. Please correct config")
+            raise ValueError("More the one parent grid defined. Please correct config")
         else:
             self.parent_grd = self.file_list[parent_grd_list.index("YES")]
 

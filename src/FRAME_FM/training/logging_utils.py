@@ -1,6 +1,6 @@
 # src/FRAME_FM/training/logger.py
 
-from pytorch_lightning.loggers import MLFlowLogger
+from pytorch_lightning.loggers import CSVLogger, MLFlowLogger
 from typing import Any, Optional
 
 
@@ -16,7 +16,6 @@ def create_mlflow_logger(
         run_name=run_name,
         tags=tags or {},
     )
-
 
 
 def create_csv_logger(

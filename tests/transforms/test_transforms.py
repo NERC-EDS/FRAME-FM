@@ -39,7 +39,7 @@ from FRAME_FM.transforms import (
     tiled_to_coordinate_bounds,
     tiled_to_pixel_coordinates,
 )
-from FRAME_FM.transforms.transforms import transform_mapping
+from FRAME_FM.transforms.transforms import FillNaNTransform, StandardizeTransform, transform_mapping
 from FRAME_FM.utils.data_utils import load_data_from_uri
 
 from tests.datasets.common import CHESS_URI, ERA5_URI
@@ -75,23 +75,23 @@ def _load_data(source: str = "era5", response_type: str = "Dataset") -> xr.Datas
 
 
 def test_add_fixed_coordinate():
-    da = xr.DataArray(np.arange(5), dims=('x'), coords={'x': np.arange(5)})
-    da_with_y = AddFixedCoordinates({'y': 1})(da)
-    assert 'y' in da_with_y.coords, \
-        f"AddFixedCoordinates failing: dims {da_with_y.coords.dims} != ('x', 'y')"
-    assert da_with_y['y'].values == 1, \
-        f"AddFixedCoordinates failing: coords {da_with_y['y'].values} != 1"
-    da_with_t = AddFixedCoordinates({'t': "2000-01-01"})(da)
-    assert 't' in da_with_t.coords, \
-        f"AddFixedCoordinates failing: dims {da_with_t.coords.dims} != ('x', 't')"
-    assert da_with_t['t'].values == pd.to_datetime("2000-01-01"), \
+    da = xr.DataArray(np.arange(5), dims=("x"), coords={"x": np.arange(5)})
+    da_with_y = AddFixedCoordinates({"y": 1})(da)
+    assert "y" in da_with_y.coords, f"AddFixedCoordinates failing: dims {da_with_y.coords.dims} != ('x', 'y')"
+    assert da_with_y["y"].values == 1, f"AddFixedCoordinates failing: coords {da_with_y['y'].values} != 1"
+    da_with_t = AddFixedCoordinates({"t": "2000-01-01"})(da)
+    assert "t" in da_with_t.coords, f"AddFixedCoordinates failing: dims {da_with_t.coords.dims} != ('x', 't')"
+    assert da_with_t["t"].values == pd.to_datetime("2000-01-01"), (
         f"AddFixedCoordinates failing: coords {da_with_t['t'].values} != Timestamp('2000-01-01')"
+    )
 
 
 # Mark this test as failing in second stage
 @pytest.mark.xfail(reason="This test is currently failing due the `.interpolate_na()` method needing investigation.")
 def test_FillMissingValueTransform():
     ds, var_id = _load_data().isel(time=slice(0, 3))
+
+
 def _general_fill_missing_test(transform_class, strategy):
     ds, var_id = _load_data()
 
@@ -446,24 +446,29 @@ def test_tile_locations_bounds():
     )
     tiled = TilerTransform(y=2, x=2, boundary="trim")(da)
     _, first_tile_locations = ToValuesLocationsTransform(dims=["x", "y"])(tiled[0])
-    assert torch.equal(first_tile_locations, torch.tensor([[[105., 105.], [115., 115.]], [[5., 15.], [5., 15.]]]))
+    assert torch.equal(
+        first_tile_locations, torch.tensor([[[105.0, 105.0], [115.0, 115.0]], [[5.0, 15.0], [5.0, 15.0]]])
+    )
     _, last_tile_locations = ToValuesLocationsTransform(dims=["x", "y"])(tiled[-1])
-    assert torch.equal(last_tile_locations, torch.tensor([[[145., 145.], [155., 155.]], [[25., 35.], [25., 35.]]]))
+    assert torch.equal(
+        last_tile_locations, torch.tensor([[[145.0, 145.0], [155.0, 155.0]], [[25.0, 35.0], [25.0, 35.0]]])
+    )
     _, first_tile_locations = ToValuesLocationsTransform(
-        dims=["x", "y"],
-        crs_conversion_spec=((4326, {'Lat': 'y', 'Lon': 'x'}), (32649, {'E': 'x', 'N': 'y'}))
-        )(tiled[0])
+        dims=["x", "y"], crs_conversion_spec=((4326, {"Lat": "y", "Lon": "x"}), (32649, {"E": "x", "N": "y"}))
+    )(tiled[0])
     assert torch.equal(
         first_tile_locations,
-        torch.tensor([
-            [[-166334.5938,  943774.9375], [-146074.8594,  930334.7500]],
-            [[555713.5625,  554016.0625], [1667104.7500, 1662218.5000]]
-            ])
-        )
+        torch.tensor(
+            [
+                [[-166334.5938, 943774.9375], [-146074.8594, 930334.7500]],
+                [[555713.5625, 554016.0625], [1667104.7500, 1662218.5000]],
+            ]
+        ),
+    )
     _, first_tile_bounds = ToValuesBoundsTransform(dims=["x", "y"])(tiled[0])
-    assert torch.equal(first_tile_bounds, torch.tensor([[100., 120.], [0., 20.]]))
+    assert torch.equal(first_tile_bounds, torch.tensor([[100.0, 120.0], [0.0, 20.0]]))
     _, last_tile_bounds = ToValuesBoundsTransform(dims=["x", "y"])(tiled[-1])
-    assert torch.equal(last_tile_bounds, torch.tensor([[140., 160.], [20., 40.]]))
+    assert torch.equal(last_tile_bounds, torch.tensor([[140.0, 160.0], [20.0, 40.0]]))
 
 
 def test_tiled_index_mapper_roundtrip():
@@ -479,7 +484,7 @@ def test_tiled_index_mapper_roundtrip():
     tiled = TilerTransform(y=2, x=2, boundary="pad")(da)
     mapper = TiledIndexMapper.from_tiled_array(tiled)
 
-    tile_id = mapper.tile_id_from_coordinates({'y': 30.0, 'x': 120.0})
+    tile_id = mapper.tile_id_from_coordinates({"y": 30.0, "x": 120.0})
     assert tile_id == 3
 
     coarse_ids = mapper.coordinates_from_tile_id(tile_id)

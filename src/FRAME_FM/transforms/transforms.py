@@ -37,8 +37,7 @@ class AddFixedCoordinates(BaseTransform):
 
 
 class FillMissingValueTransform(BaseTransform):
-    def __init__(self, strategy: str = "constant", fill_value: None | float = None,
-                 method: None | str = "linear"):
+    def __init__(self, strategy: str = "constant", fill_value: None | float = None, method: None | str = "linear"):
         self.strategy = strategy
         self.fill_value = fill_value
         self.method = method
@@ -612,25 +611,23 @@ class ToValuesBoundsTransform(BaseTransform):
     def __call__(self, sample: DA) -> tuple[TT, TT]:
         sample = datetime_coords_to_float(sample)
         pixel_halfwidths = [
-            (sample[dim][1].values - sample[dim][0].values) / 2 if sample[dim].size > 1 else None
-            for dim in self.dims
+            (sample[dim][1].values - sample[dim][0].values) / 2 if sample[dim].size > 1 else None for dim in self.dims
+        ]
+        bounds = np.array(
+            [
+                [sample[dim][0].values - halfwidth, sample[dim][-1].values + halfwidth]
+                if sample[dim].ndim > 0
+                else [sample[dim].values, sample[dim].values]
+                for dim, halfwidth in zip(self.dims, pixel_halfwidths)
             ]
-        bounds = np.array([
-            [sample[dim][0].values - halfwidth, sample[dim][-1].values + halfwidth]
-            if sample[dim].ndim > 0 else [sample[dim].values, sample[dim].values]
-            for dim, halfwidth in zip(self.dims, pixel_halfwidths)
-            ])
+        )
         return torch.from_numpy(sample.values), torch.from_numpy(bounds)
 
 
 class ToValuesLocationsTransform(BaseTransform):
-    def __init__(self,
-                 dims: list[str],
-                 crs_conversion_spec: CRS_conversion_spec | tuple | list | None = None):
+    def __init__(self, dims: list[str], crs_conversion_spec: CRS_conversion_spec | tuple | list | None = None):
         self.dims = dims
-        self.crs_conversion = (
-            None if crs_conversion_spec is None else CRS_convertor(crs_conversion_spec)
-            )
+        self.crs_conversion = None if crs_conversion_spec is None else CRS_convertor(crs_conversion_spec)
 
     def __call__(self, sample: DA) -> tuple[TT, TT]:
         check_object_type(sample, allowed_types=(DA), caller=self.__class__.__name__)
@@ -643,10 +640,7 @@ class ToValuesLocationsTransform(BaseTransform):
             raise ValueError(f"dims {missing_dims} must be in sample.dims {sample.dims}")
         sample = datetime_coords_to_float(sample)
         coord_array = xr.broadcast(*[sample[dim] for dim in self.dims])
-        locations = torch.stack(
-            [torch.tensor(coords.values, dtype=torch.float32) for coords in coord_array],
-            dim=0
-            )
+        locations = torch.stack([torch.tensor(coords.values, dtype=torch.float32) for coords in coord_array], dim=0)
         return torch.from_numpy(sample.values), locations
 
 
@@ -667,9 +661,19 @@ class VarsToDimensionTransform(BaseTransform):
     Since the purpose is to prepare the data for conversion to a Tensor, we assume
     that ancillary variables that are not genuine coordinates can be dropped.
     """
-    exclusion_vars = ["time_bounds", "lat_bounds", "lon_bounds",
-                      "time_bnds", "lat_bnds", "lon_bnds",
-                      "crs", "spatial_ref", "bounds", "bnds"]
+
+    exclusion_vars = [
+        "time_bounds",
+        "lat_bounds",
+        "lon_bounds",
+        "time_bnds",
+        "lat_bnds",
+        "lon_bnds",
+        "crs",
+        "spatial_ref",
+        "bounds",
+        "bnds",
+    ]
 
     def __init__(self, variables: list, new_dim: str, only_vars_with_time: bool = True):
         self.variables = variables
@@ -686,8 +690,7 @@ class VarsToDimensionTransform(BaseTransform):
             bounds_vars = set([b_list[0] for b_list in sample.cf.bounds.values()])
 
             if self.only_vars_with_time:
-                vars_without_time = set([var_id for var_id in sample.data_vars
-                                        if not hasattr(sample[var_id], "time")])
+                vars_without_time = set([var_id for var_id in sample.data_vars if not hasattr(sample[var_id], "time")])
             else:
                 vars_without_time = set()
 
