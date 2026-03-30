@@ -1,0 +1,18 @@
+# platform settings
+# Configuration for running a medium-sized model training on the JASMIN ORCHID cluster.
+
+# Settings that are specific to the user/project
+account: eds_ai
+
+# Common settings
+scheduler: slurm
+partition: orchid
+qos: orchid
+job_dir: job_logs
+
+# Resource allocation
+gres: "gpu:8"
+time: "12:00:00"
+nodes: 2
+ntasks_per_node: 1
+mem: 128G

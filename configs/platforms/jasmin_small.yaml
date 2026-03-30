@@ -1,0 +1,18 @@
+# Configuration for running a small model training on the JASMIN ORCHID cluster.
+# This is intended for testing that the training loop runs end-to-end on JASMIN, and to provide a template for future experiments.
+
+# Settings that are specific to the user/project
+account: eds_ai
+
+# Common settings
+scheduler: slurm
+partition: orchid
+qos: orchid
+job_dir: job_logs
+
+# Resource allocation
+gres: "gpu:1"
+time: "00:30:00"
+nodes: 1
+ntasks_per_node: 1
+mem: 16G

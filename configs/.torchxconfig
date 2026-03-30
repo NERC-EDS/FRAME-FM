@@ -5,18 +5,3 @@ name = "local_cwd"
 cpu = 6
 gpu = 4
 image = "pytorch/pytorch:2.2.0-cuda11.8-cudnn8-runtime"
-
-[slurm]
-partition = orchid 
-time = 04:00:00
-account = orchid
-nodes = 1
-ntasks_per_node = 1
-<<<<<<< HEAD
-gres = gpu:0
-mem = 16G
-=======
-gres = gpu:1
-mem = 32G
-qos = orchid
-job_dir = job_logs
