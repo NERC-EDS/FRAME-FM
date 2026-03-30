@@ -8,6 +8,7 @@ from dataclasses import dataclass
 import math
 
 from FRAME_FM.utils.common_utils import convert_subset_selectors_to_slices, check_object_type
+from FRAME_FM.utils.transform_utils import CRS_conversion_spec, CRS_convertor
 
 DA = xr.DataArray
 DS = xr.Dataset
@@ -22,8 +23,22 @@ class BaseTransform:
         raise NotImplementedError("Transform must implement the __call__ method.")
 
 
+def _parse_coordinate(coord: int | float | str) -> int | float | pd.Timestamp:
+    return pd.to_datetime(coord) if isinstance(coord, str) else coord
+
+
+class AddFixedCoordinates(BaseTransform):
+    def __init__(self, coords: dict[str, int | float | str]):
+        self.coords = {dim: _parse_coordinate(coord) for dim, coord in coords.items()}
+
+    def __call__(self, sample: DS | DA):
+        check_object_type(sample, allowed_types=(DS, DA), caller=self.__class__.__name__)
+        return sample.assign_coords(self.coords)
+
+
 class FillMissingValueTransform(BaseTransform):
-    def __init__(self, strategy: str = "constant", fill_value: None | float = None, method: None | str = "linear"):
+    def __init__(self, strategy: str = "constant", fill_value: None | float = None,
+                 method: None | str = "linear"):
         self.strategy = strategy
         self.fill_value = fill_value
         self.method = method
@@ -370,48 +385,6 @@ class TilerTransform(BaseTransform):
         return tiled
 
 
-def datetime_coords_to_float(da: DA) -> DA:
-    datetime_coords = {
-        name: (coord.dims, coord.values.astype("datetime64[ns]").astype("float64"))
-        for name, coord in da.coords.items()
-        if pd.api.types.is_datetime64_any_dtype(coord)
-    }
-    return da.assign_coords(datetime_coords)
-
-
-class ToValuesLocationsTransform(BaseTransform):
-    def __init__(self, coords):
-        self.coords = coords
-
-    def __call__(self, sample: DA) -> tuple[TT, TT]:
-        # Ensure any datetimes are converted to float seconds for the coordinate tensors
-        sample = datetime_coords_to_float(sample)
-
-        coord_array = xr.broadcast(*[sample[coord] for coord in self.coords])
-        locations = torch.stack([torch.tensor(coords.values, dtype=torch.float32) for coords in coord_array], dim=0)
-        return torch.from_numpy(sample.values), locations
-
-
-class ToValuesBoundsTransform(BaseTransform):
-    def __init__(self, coords):
-        self.coords = coords
-
-    def __call__(self, sample: DA) -> tuple[TT, TT]:
-        # Ensure any datetimes are converted to float seconds for the coordinate tensors
-        sample = datetime_coords_to_float(sample)
-
-        pixel_halfwidths = [(sample[coord][1].values - sample[coord][0].values) / 2 for coord in self.coords]
-        bounds = torch.from_numpy(
-            np.array(
-                [
-                    [sample[coord][0].values - halfwidth, sample[coord][-1].values + halfwidth]
-                    for coord, halfwidth in zip(self.coords, pixel_halfwidths)
-                ]
-            )
-        )
-        return torch.from_numpy(sample.values), bounds
-
-
 def _as_tiler_dict(value: dict | None, field_name: str) -> dict:
     if value is None:
         raise ValueError(f"Missing required tiler metadata field: '{field_name}'.")
@@ -549,7 +522,7 @@ class TiledIndexMapper:
         max_idx = self._n_coarse_for_dim(dim) - 1
         return int(min(max(coarse_idx, 0), max_idx))
 
-    def tile_id_from_coordinates(self, **coords: float | int | np.datetime64) -> int:
+    def tile_id_from_coordinates(self, coords: dict[str, float | int | np.datetime64]) -> int:
         """
         Map real-world coordinates to a tile id in batch_dim.
 
@@ -623,6 +596,60 @@ class ToTensorTransform(BaseTransform):
         return torch.from_numpy(sample)
 
 
+def datetime_coords_to_float(da: DA) -> DA:
+    datetime_coords = {
+        name: (coord.dims, coord.values.astype("datetime64[ns]").astype("float64"))
+        for name, coord in da.coords.items()
+        if pd.api.types.is_datetime64_any_dtype(coord)
+    }
+    return da.assign_coords(datetime_coords)
+
+
+class ToValuesBoundsTransform(BaseTransform):
+    def __init__(self, dims):
+        self.dims = dims
+
+    def __call__(self, sample: DA) -> tuple[TT, TT]:
+        sample = datetime_coords_to_float(sample)
+        pixel_halfwidths = [
+            (sample[dim][1].values - sample[dim][0].values) / 2 if sample[dim].size > 1 else None
+            for dim in self.dims
+            ]
+        bounds = np.array([
+            [sample[dim][0].values - halfwidth, sample[dim][-1].values + halfwidth]
+            if sample[dim].ndim > 0 else [sample[dim].values, sample[dim].values]
+            for dim, halfwidth in zip(self.dims, pixel_halfwidths)
+            ])
+        return torch.from_numpy(sample.values), torch.from_numpy(bounds)
+
+
+class ToValuesLocationsTransform(BaseTransform):
+    def __init__(self,
+                 dims: list[str],
+                 crs_conversion_spec: CRS_conversion_spec | tuple | list | None = None):
+        self.dims = dims
+        self.crs_conversion = (
+            None if crs_conversion_spec is None else CRS_convertor(crs_conversion_spec)
+            )
+
+    def __call__(self, sample: DA) -> tuple[TT, TT]:
+        check_object_type(sample, allowed_types=(DA), caller=self.__class__.__name__)
+        if self.crs_conversion is not None:
+            new_dims = set(self.dims) & set(self.crs_conversion.target_dims)
+            sample = self.crs_conversion.add_converted_coords(sample, new_dims)
+        missing_dims = set(self.dims) - set(sample.coords)  # type: ignore
+        # (sample.dims may in theory be Hashable, but in practice are str)
+        if len(missing_dims) > 0:
+            raise ValueError(f"dims {missing_dims} must be in sample.dims {sample.dims}")
+        sample = datetime_coords_to_float(sample)
+        coord_array = xr.broadcast(*[sample[dim] for dim in self.dims])
+        locations = torch.stack(
+            [torch.tensor(coords.values, dtype=torch.float32) for coords in coord_array],
+            dim=0
+            )
+        return torch.from_numpy(sample.values), locations
+
+
 class TransposeTransform(BaseTransform):
     def __call__(self, sample):
         # Implement transposing logic here
@@ -640,19 +667,9 @@ class VarsToDimensionTransform(BaseTransform):
     Since the purpose is to prepare the data for conversion to a Tensor, we assume
     that ancillary variables that are not genuine coordinates can be dropped.
     """
-
-    exclusion_vars = [
-        "time_bounds",
-        "lat_bounds",
-        "lon_bounds",
-        "time_bnds",
-        "lat_bnds",
-        "lon_bnds",
-        "crs",
-        "spatial_ref",
-        "bounds",
-        "bnds",
-    ]
+    exclusion_vars = ["time_bounds", "lat_bounds", "lon_bounds",
+                      "time_bnds", "lat_bnds", "lon_bnds",
+                      "crs", "spatial_ref", "bounds", "bnds"]
 
     def __init__(self, variables: list, new_dim: str, only_vars_with_time: bool = True):
         self.variables = variables
@@ -669,7 +686,8 @@ class VarsToDimensionTransform(BaseTransform):
             bounds_vars = set([b_list[0] for b_list in sample.cf.bounds.values()])
 
             if self.only_vars_with_time:
-                vars_without_time = set([var_id for var_id in sample.data_vars if not hasattr(sample[var_id], "time")])
+                vars_without_time = set([var_id for var_id in sample.data_vars
+                                        if not hasattr(sample[var_id], "time")])
             else:
                 vars_without_time = set()
 
@@ -694,6 +712,7 @@ class VarsToDimensionTransform(BaseTransform):
 
 
 transform_mapping = {
+    "add_fixed_coordinates": AddFixedCoordinates,
     "fill_missing": FillMissingValueTransform,
     "fill_nan": FillNaNTransform,
     "normalize": NormalizeTransform,
@@ -709,9 +728,9 @@ transform_mapping = {
     "subset": SubsetTransform,
     "tiler": TilerTransform,
     "to_dataarray": ToDataArray,
-    "to_values_locations_tensors": ToValuesLocationsTransform,
-    "to_values_bounds_tensors": ToValuesBoundsTransform,
     "to_tensor": ToTensorTransform,
+    "to_values_bounds_tensors": ToValuesBoundsTransform,
+    "to_values_locations_tensors": ToValuesLocationsTransform,
     "transpose": TransposeTransform,
     "vars_to_dimension": VarsToDimensionTransform,
 }

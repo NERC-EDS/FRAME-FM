@@ -14,7 +14,7 @@ def main(cfg: DictConfig) -> None:
     pl.seed_everything(cfg.get("seed", 42), workers=True)
     # Instantiate Data + Model from config
     data = instantiate(cfg.data, _convert_="partial")
-    model = instantiate(cfg.model)
+    model = instantiate(cfg.model, _convert_="partial")
 
     # Configure MLflow logger (if provided)
     logger = None

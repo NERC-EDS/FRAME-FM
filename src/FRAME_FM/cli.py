@@ -1,30 +1,32 @@
 """Click entrypoint."""
 
-from collections import defaultdict
-import shutil
-from hydra import initialize_config_dir, compose
-from hydra.core.hydra_config import HydraConfig
-from omegaconf import OmegaConf
-
-from FRAME_FM.training.train import main as train_main
-from pathlib import Path
+import configparser
 import os
+import shutil
+from collections import defaultdict
+from pathlib import Path
 from typing import Any
 
 import click
 import toml
 import yaml
+from hydra import compose, initialize_config_dir
+from hydra.core.hydra_config import HydraConfig
+from omegaconf import OmegaConf
 from rich.console import Console
 from rich.panel import Panel
 from rich.pretty import Pretty
 from rich.syntax import Syntax
+from torchx import specs
+from torchx.runner import get_runner
 
+from FRAME_FM.training.train import main as train_main
 
 console = Console()
 # Default configs directory is within the current working directory.
 DEFAULT_CONFIG_DIR = str(Path(os.getcwd()) / "configs")
 CONFIG_DIR = os.getenv("CONFIG_DIR", DEFAULT_CONFIG_DIR)
-torchx_config = os.getenv("TORCHX_CONFIG", ".torchxconfig")
+torchx_config = os.getenv("TORCHX_CONFIG", f"{DEFAULT_CONFIG_DIR}/.torchxconfig")
 
 
 def check_configs_directory():
@@ -49,6 +51,7 @@ def _type_checker_and_conversion(data: Any, value: Any) -> Any:
 
     Returns:
         The value, with a potential conversion to match the source.
+
     """
     if isinstance(data, float):
         value = float(value)
@@ -64,6 +67,7 @@ def show_config_files(torchx_only: bool) -> None:
 
     Args:
         torchx_only: If True, only locate and show the full path to the torchx config.
+
     """
     if torchx_only:
         if not (config_location := Path(torchx_config)).is_file():
@@ -87,6 +91,7 @@ def display_contents_of_config_file(torchx_only: bool, config_file: str) -> None
     Args:
         torchx_only: If True, only display the contents of the torchx config.
         config_file: The file to search for within the config directory.
+
     """
     if torchx_only:
         torchx_file = Path(torchx_config)
@@ -106,7 +111,9 @@ def display_contents_of_config_file(torchx_only: bool, config_file: str) -> None
         console.print(f"File: {file}")
         with file.open() as f:
             contents = f.read()
-        console.print(Syntax(contents, "yaml", theme="monokai", line_numbers=True))
+        console.print(
+            Syntax(contents, "yaml", theme="monokai", line_numbers=True),
+        )
 
 
 def view_hydra_defaults() -> None:
@@ -115,7 +122,9 @@ def view_hydra_defaults() -> None:
         contents = yaml.safe_load(f.read())
 
     if (defaults := contents.get("defaults")) is not None:
-        console.print(Panel(Pretty(defaults), title="Hydra Defaults", expand=False))
+        console.print(
+            Panel(Pretty(defaults), title="Hydra Defaults", expand=False),
+        )
     else:
         click.secho("Unable to find Hydra config file: configs/config.yaml", fg="red")
 
@@ -154,8 +163,8 @@ def edit_torch_config_file(key_value_pairs: str) -> None:
 
     Args:
         key_value_pairs: String representations of keys and their new values to be edited.
-    """
 
+    """
     split_items = key_value_pairs.split(",")
 
     if not Path(torchx_config).is_file():
@@ -173,7 +182,7 @@ def edit_torch_config_file(key_value_pairs: str) -> None:
 
         if table not in toml_file:
             raise click.ClickException(f"Table '{table}' is not present in the torchx config.")
-        elif key not in toml_file[table]:
+        if key not in toml_file[table]:
             raise click.ClickException(f"Key '{key}' is not present in the {table} table in the torchx config.")
 
         toml_file[table][key] = _type_checker_and_conversion(data=toml_file[table][key], value=value)
@@ -182,10 +191,148 @@ def edit_torch_config_file(key_value_pairs: str) -> None:
         toml.dump(toml_file, file)
 
 
+def check_torchx_config():
+    """Ensure .torchxconfig exists to avoid TorchX initialization errors."""
+    if not Path(torchx_config).exists():
+        console.print("[yellow]Creating default .torchxconfig...[/yellow]")
+        with open(torchx_config, "w") as f:
+            f.write("[no_warn]\n")
+        click.secho("Created default .torchxconfig", fg="yellow")
+
+
+def get_torchx_config() -> dict:
+    """Reads .torchxconfig manually to avoid import errors."""
+    torch_config = Path(torchx_config)
+    config = configparser.ConfigParser()
+    if not torch_config.exists():
+        click.secho(f"Unable to find torch config file:{torchx_config}", fg="red")
+        return {}
+    try:
+        config.read(torch_config)
+        return {section: dict(config[section]) for section in config.sections()}
+    except Exception as e:
+        click.secho(f"Error parsing .torchxconfig: {e}", fg="red")
+        click.secho("Default configs will be used")
+        return {}
+
+
+def train_run_with_local_hydra(verbose: bool, overrides: tuple[str, ...]) -> None:
+    with initialize_config_dir(config_dir=CONFIG_DIR, version_base=None):
+        cfg = compose(config_name="config", overrides=list(overrides), return_hydra_config=True)
+        HydraConfig.instance().set_config(cfg)
+        if verbose:
+            console.print(Panel(OmegaConf.to_yaml(cfg), title="Resolved config"))
+        train_main(cfg)
+
+
+def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
+    """Dispatches the command to TorchX."""
+    # 1. Load defaults from .torchxconfig
+    # defaults section
+    torchx_config = get_torchx_config()
+    default_image = torchx_config.get("image", "pytorch/pytorch: latest")
+    default_cpu = int(torchx_config.get("cpu", 2))
+    default_gpu = int(torchx_config.get("gpu", 1))
+    default_mem = int(torchx_config.get("memMB", 32768))
+
+    # Slurm-specific section
+    slurm_cfg = torchx_config.get("slurm", {})
+    partition = slurm_cfg.get("partition", "partition")
+    account = slurm_cfg.get("account", "account")
+    time_limit = slurm_cfg.get("time", "time")
+    qos = slurm_cfg.get("qos", account)
+    ntasks_per_node = slurm_cfg.get("ntasks_per_node", 1)
+    job_dir_config = slurm_cfg.get("job_dir", None)
+
+    if job_dir_config:
+        # Expand ~ to the actual home directory
+        job_dir = os.path.expanduser(job_dir_config)
+        os.makedirs(job_dir, exist_ok=True)
+    else:
+        job_dir = None
+    # 2. Resolve Hydra config to find the Docker image or resource requirements
+    # We do this so we can pass metadata (like image name) to TorchX
+    with initialize_config_dir(config_dir=CONFIG_DIR, version_base=None):
+        cfg = compose(config_name="config", overrides=list(overrides))
+
+    # 3. Extract Image
+    # This can be ovveriden as follows: framefm train run torchx.image=any-repo/image:tag
+    image = cfg.get("torchx", {}).get("image", default_image)
+
+    # 4. Define Resources
+    # Note: 'capabilities' is often required by Slurm schedulers to find GPUs
+    resource = specs.Resource(
+        cpu=default_cpu,
+        gpu=default_gpu,
+        memMB=default_mem,
+        capabilities={"gpu_type": "nvidia"} if default_gpu > 0 else {},
+    )
+    # 5. If docker or kunernetess: It is not supported yet.
+    # Docker and K8s REQUIRE an image
+    if scheduler in ["local_docker", "kubernetes"] and not image:
+        raise click.UsageError(
+            f"Scheduler '{scheduler}' requires a Docker image.\n"
+            "Please provide one in your config or via CLI: 'torchx.image=your_image_name'",
+        )
+
+    # 6. Define the TorchX App
+    # The entrypoint is 'framefm'
+
+    app = specs.AppDef(
+        name="framefm-train",
+        roles=[
+            specs.Role(
+                name="worker",
+                image=image,
+                entrypoint="framefm",
+                args=["train", "run"] + list(overrides),
+                num_replicas=1,
+                resource=resource,
+            ),
+        ],
+    )
+
+    # 4. Run the job
+    runner = get_runner()
+    try:
+        # For Slurm, we pass scheduler-specific arguments here
+        if scheduler == "slurm":
+            scheduler_run_opts = {
+                "partition": partition,
+                "time": time_limit,
+                "comment": "framefm-train",  # optional
+                "account": account,
+                "job_dir": job_dir,
+            }
+
+            # Step 1: dryrun — generates the sbatch script without submitting
+            dryrun_info = runner.dryrun(app, scheduler=scheduler, cfg=scheduler_run_opts)
+            # replicas is a dict of {name: SlurmReplicaRequest}
+            # inject account into sbatch_opts on each replica
+            for name, replica in dryrun_info.request.replicas.items():
+                replica.sbatch_opts["account"] = account
+                replica.sbatch_opts["qos"] = qos
+                replica.sbatch_opts["ntasks"] = ntasks_per_node
+
+            # Step 4: overwrite the script in dryrun_info and submit
+            job_id = runner.schedule(dryrun_info)
+            slurm_job_id = job_id
+            numeric_id = slurm_job_id.split("/")[-1]
+            click.secho("Job submitted successfully!", fg="green")
+            click.echo(f"Scheduler: {scheduler}")
+            click.echo(f"Job ID:    {slurm_job_id}")
+            click.echo(f"Check status: squeue -j {numeric_id}")
+            log_prefix = f"{job_dir}/" if job_dir else ""
+            click.echo(f"View logs:    tail -f {log_prefix}slurm-{numeric_id}-worker-0.out")
+            click.echo(f"All workers:  tail -f {log_prefix}slurm-{numeric_id}-*.out")
+    except Exception as e:
+        click.secho(f"Failed to submit job to {scheduler}: {e}", fg="red")
+        raise click.Abort()
+
+
 @click.group()
 def app():
-    """
-    FRAME-FM is an open-source software framework designed to enable the fast,
+    """FRAME-FM is an open-source software framework designed to enable the fast,
     scalable, and accessible development of Foundation Models (FMs) for large-scale
     environmental datasets, including petabyte-scale archives held by the UK’s NERC
     Environmental Data Service (EDS).
@@ -202,7 +349,6 @@ def app():
     """
     pass
 
-
 @click.group()
 def train():
     """Launch a model training run."""
@@ -214,6 +360,13 @@ def train():
     context_settings=dict(ignore_unknown_options=True),
 )  # Registers train_run as a subcommand of the train group. Names it "run" so the CLI sees it as frame-fm train run
 @click.option(
+    "--scheduler",
+    "-s",
+    type=click.Choice(["local_cwd", "local_docker", "slurm", "kubernetes"]),
+    default="local_cwd",
+    help="The TorchX scheduler to use for running the training job.'local_cwd' runs immediately, others submit jobs.",
+)
+@click.option(
     "--verbose",
     "-v",
     is_flag=True,
@@ -221,26 +374,25 @@ def train():
     help="Print the resolved Hydra config to screen before training starts.",
 )
 @click.argument("overrides", nargs=-1, type=click.UNPROCESSED)
-def train_run(verbose: bool, overrides: tuple[str, ...]):
-    """
-    Start a training run.
+def train_run(scheduler: str, verbose: bool, overrides: tuple[str, ...]):
+    """Start a training run via TorchX.
+
+    Schedulers:
+      local_cwd: Run on the current machine in the current directory.
+      local_docker: Run inside a Docker container.
+      slurm: Submit a job to a Slurm cluster.
+      kubernetes: Launch a job on a K8s cluster.
+
     Pass any positional arguments to Hydra to override the config.
     This will not modify the YAML files directly, but can modify the configs.
-    \b
-    Hydra override syntax:
-      key=value   overrides an existing value. Raises an error if the key does not exist.
-      +key=value  Append new key. Raises an error if the key already exists.
-      ++key=value Override or append.
-      ~key=value  Remove a key from the config.
-    \b
-    Examples:
-      framefm train run
-      framefm train run model=convAE --- overrides an existing value in config.yaml. will swap demo_autoencoder to convAE
-      framefm train run data=land_cover_map --- tells Hydra to override the existing key called data with a value 'land_cover_map'.
-      framefm train run +experiment=baseline --- tells Hydra to append a new key called experiment to the config with the value baseline.
-      framefm train run --verbose model=convAE
     """
-    train_run_with_options(verbose, overrides)
+    check_torchx_config()
+    if scheduler == "local_cwd":
+        # Direct execution via your existing Hydra logic
+        train_run_with_local_hydra(verbose, overrides)
+    else:
+        # TorchX Execution logic
+        launch_torchx_job(scheduler, overrides)
 
 
 @click.group()
@@ -276,7 +428,10 @@ def init_configs():
         click.secho(f"Error copying config files: {e}", fg="red")
 
 
-@config.command("list", help="This will recursively list all config files in the configs directory.")
+@config.command(
+    "list",
+    help="This will recursively list all config files in the configs directory.",
+)
 @click.option("--torchx", is_flag=True, help="Only show and verify the location for the torchx config.")
 def list_configs(torchx):
     """List available config files."""
@@ -290,13 +445,18 @@ def list_configs(torchx):
         "Pass the full path to a config file, or use the --torchx flag to display only the torchx config."
     ),
 )
-@click.option("--torchx", is_flag=True, help="Display only the contents of the torchx config file.")
-@click.argument("config_file", type=click.Path(dir_okay=False), required=False)
+@click.option(
+    "--torchx",
+    is_flag=True,
+    help="Display only the contents of the torchx config file.",
+)
+@click.argument(
+    "config_file",
+    type=click.Path(dir_okay=False),
+    required=False,
+)
 def display(torchx, config_file):
-    """
-    Display the contents of either the torchx config file, or a specific config file provided by the user.
-    """
-
+    """Display the contents of either the torchx config file, or a specific config file provided by the user."""
     # Require a config file if not using the torchx flag
     if not torchx and config_file is None:
         raise click.ClickException(message="No config file passed!")

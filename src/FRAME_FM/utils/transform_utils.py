@@ -1,0 +1,146 @@
+from dataclasses import dataclass
+from numpy import ndarray
+from pyproj import CRS, Transformer
+from xarray import broadcast, DataArray
+
+
+@dataclass
+class CRS_spec:
+    """Dataclass specifying a coordinate reference system for an xarray with general axis names.
+    Examples:
+    * for an xarray in OS National Grid with Easting and Northing axes 'x' and 'y'
+        `CRS_spec(27700, {'E': 'x', 'N': 'y'})`
+    * for an xarray with latitude and longitude specified in axes 'latitude' and 'longitude'
+        `CRS_spec(4326, {'Lat': 'latitude', 'Lon': 'longitude'})`
+    """
+    EPSG: int
+    dim_mapping: dict[str, str]
+
+
+def _parse_CRS_spec(spec: CRS_spec | tuple[int, dict[str, str]] | list):
+    if isinstance(spec, CRS_spec):
+        return spec
+    elif isinstance(spec, tuple | list):
+        if len(spec) != 2:
+            raise ValueError(
+                f"If a tuple or list, CRS spec {spec} must be of form (EPSG, dim_mapping_dict)."
+                )
+        return CRS_spec(spec[0], spec[1])
+    else:
+        raise TypeError(f"CRS spec {spec} must be a CRS_spec, tuple, or list.")
+
+
+class CRS_conversion_spec:
+    """Dataclass specifying an xarray CRS transformation, from source to target."""
+    def __init__(self,
+                 source: CRS_spec | tuple[int, dict[str, str]] | list,
+                 target: CRS_spec | tuple[int, dict[str, str]] | list):
+        self.source = _parse_CRS_spec(source)
+        self.target = _parse_CRS_spec(target)
+
+
+def _implement_crs_spec(crs_spec: CRS_spec) -> tuple[CRS, list[str]]:
+    crs = CRS.from_epsg(crs_spec.EPSG)
+    axis_abbrvs = []
+    for axis in crs.axis_info:
+        if axis.abbrev not in crs_spec.dim_mapping.keys():
+            raise ValueError(
+                f"CRS {crs_spec.EPSG} requires axis with abbreviation {axis.abbrev},"
+                f" with no corresponding xarray dim specified in mapping {crs_spec.dim_mapping}."
+                )
+        axis_abbrvs.append(axis.abbrev)
+    if len(crs_spec.dim_mapping) != len(set(crs_spec.dim_mapping.values())):
+        raise ValueError("xarray dims must be unique.")
+    missing_keys = set(crs_spec.dim_mapping.keys()) - set(axis_abbrvs)
+    if len(missing_keys) > 0:
+        raise ValueError(f"Mapping keys {missing_keys} are not in CRS axes.")
+    return crs, axis_abbrvs
+
+
+class CRS_convertor:
+    """Class to apply CRS conversion to xarrays.
+
+    Args:
+        conversion_spec (CRS_conversion_spec): Specifications of source and target CRSs.
+
+    Attributes:
+        self.source_axis_abbrvs (list[str]): Abbreviations of axes in source CRS.
+        source_dim_mapping (dict[str, str]): Mapping from source CRS axis names to xarray dims.
+        crs_transformer (pyproj.Transformer): Class to map coords from source to target CRS.
+        axis_id_mapping (dict[str, str]): Mapping from target xarray dims to CRS axis indices.
+    """
+    def __init__(self, conversion_spec: CRS_conversion_spec | tuple | list):
+        if isinstance(conversion_spec, tuple | list):
+            if len(conversion_spec) != 2:
+                raise ValueError(
+                    f"If a list or tuple, conversion_spec {conversion_spec} must be of form"
+                    " (source CRS_spec, target CRS_spec)."
+                    )
+            conversion_spec = CRS_conversion_spec(conversion_spec[0], conversion_spec[1])
+        elif not isinstance(conversion_spec, CRS_conversion_spec):
+            raise TypeError(
+                f"conversion_spec {conversion_spec} must be a list, tuple, or CRS_conversion_spec."
+                )
+        source_crs, self.source_axis_abbrvs = _implement_crs_spec(conversion_spec.source)
+        self.source_dims = [
+            conversion_spec.source.dim_mapping[abbrv] for abbrv in self.source_axis_abbrvs
+            ]
+        target_crs, target_abbrvs = _implement_crs_spec(conversion_spec.target)
+        self.target_dims = conversion_spec.target.dim_mapping.values()
+        self.crs_transformer = Transformer.from_crs(source_crs, target_crs)
+        self.axis_id_mapping = {
+            dim: target_abbrvs.index(abbrv)
+            for abbrv, dim in conversion_spec.target.dim_mapping.items()
+            }
+
+    def add_converted_coords(self, sample: DataArray, dims: set[str]) -> DataArray:
+        """Add coordinates in target CRS to a DataArray, based on source CRS coordinates.
+
+        Args:
+            sample (xarray.DataArray): Data array with coordinates to convert between CRSs.
+            dims (set[str]): xarray dims to add to data array.
+
+        Returns:
+            xarray.DataArray: Data array with additional coordinates in target CRS.
+        """
+        missing_dims = set(self.source_dims) - set(sample.dims)  # type: ignore
+        # (sample.dims may in theory be Hashable, but in practice are str)
+        if len(missing_dims) > 0:
+            raise ValueError(
+                f"Source CRS mapping dims {missing_dims} must be among sample.dims {sample.dims}"
+                )
+        missing_dims = set(dims) - set(self.target_dims)
+        if len(missing_dims) > 0:
+            raise ValueError(
+                f"Additional dims {missing_dims} must be among those generated by CRS conversion"
+                f" {tuple(self.target_dims)}."
+                )
+        coord_arrays = broadcast(*[sample[source_dim] for source_dim in self.source_dims])
+        coord_arrays = self.crs_transformer.transform(
+            *[coords.values for coords in coord_arrays]  # type: ignore
+            # (max. 4 ndarray args enforced by EPSG/dim_mapping consistency in _implement_crs_spec)
+            )
+        return sample.assign_coords(
+            {dim: (self.source_dims, coord_arrays[self.axis_id_mapping[dim]]) for dim in dims}
+            )
+
+    def transform(self, location: dict[str, ndarray], inverse: bool = False) -> dict[str, ndarray]:
+        """Tranform a location between coordinate reference systems.
+
+        Args:
+            location (dict[str, ndarray]): Coordinates to transform, by dim name.
+            inverse (bool, optional): Whether to enact inverse transform, from target CRS
+                to source CRS rather than from source CRS to target CRS. Defaults to False.
+        Returns:
+            dict[str, ndarray]: Transformed coordinates, by dim name.
+        """
+        if inverse:
+            source_dims, target_dims, direction = self.target_dims, self.source_dims, 'INVERSE'
+        else:
+            source_dims, target_dims, direction = self.source_dims, self.target_dims, 'FORWARD'
+        invar_location = {dim: location[dim] for dim in location.keys() if dim not in source_dims}
+        target_coords = self.crs_transformer.transform(
+            *[location[dim] for dim in source_dims], direction=direction  # type: ignore
+            # (max. 4 ndarray args enforced by EPSG/dim_mapping consistency in _implement_crs_spec)
+            )
+        return invar_location | {dim: coords for dim, coords in zip(target_dims, target_coords)}
