@@ -24,10 +24,11 @@ from torchx.runner import get_runner
 from FRAME_FM.training.train import main as train_main
 
 console = Console()
+_PROJECT_ROOT = Path(__file__).parent.parent.parent
 # Default configs directory is within the current working directory.
-DEFAULT_CONFIG_DIR = str(Path(Path.cwd()) / "configs")
+DEFAULT_CONFIG_DIR = str(_PROJECT_ROOT / "configs")
 CONFIG_DIR = os.getenv("CONFIG_DIR", DEFAULT_CONFIG_DIR)
-torchx_config = os.getenv("TORCHX_CONFIG", f"{DEFAULT_CONFIG_DIR}/.torchxconfig")
+torchx_config = os.getenv("TORCHX_CONFIG", str(_PROJECT_ROOT/"configs"/".torchxconfig"))
 
 
 def check_configs_directory():
@@ -236,14 +237,18 @@ def train_run_with_local_hydra(verbose: bool, overrides: tuple[str, ...]) -> Non
 
 def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
     """Dispatches the command to TorchX."""
-    # 1. Load defaults from .torchxconfig
+    # 1a. Initialise Hydra and compose config — must happen first
+    with initialize_config_dir(config_dir=CONFIG_DIR, version_base=None):
+        cfg = compose(config_name="config", overrides=list(overrides))
+
+    # 1b. Load defaults from .torchxconfig
     # defaults section
     torchx_config = get_torchx_config()
     default_image = torchx_config.get("image", "pytorch/pytorch: latest")
 
-    cfg = compose(config_name="config", overrides=list(overrides))
-    HydraConfig.instance().set_config(cfg)
-    cfg_dict = OmegaConf.to_container(cfg, resolve=True)
+    cfg_dict = OmegaConf.to_container(cfg, resolve=False, throw_on_missing=False)
+
+    #3. Extract platform info
     platform_cfg = cfg_dict.get("platform", {})
 
     # Slurm-specific section
@@ -259,8 +264,8 @@ def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
 
     if job_dir_config:
         # Expand ~ to the actual home directory
-        job_dir = Path.expanduser(job_dir_config)
-        Path.mkdir(job_dir, parents=True)
+        job_dir = Path(job_dir_config).expanduser()
+        Path.mkdir(job_dir, parents=True, exist_ok=True)
     else:
         job_dir = None
     # 2. Resolve Hydra config to find the Docker image or resource requirements
@@ -314,9 +319,8 @@ def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
                 "time": time_limit,
                 "comment": "framefm-train",  # optional
                 "account": account,
-                "job_dir": job_dir,
+                "job_dir": str(job_dir),
             }
-
             # Step 1: dryrun — generates the sbatch script without submitting
             dryrun_info = runner.dryrun(app, scheduler=scheduler, cfg=scheduler_run_opts)
             # replicas is a dict of {name: SlurmReplicaRequest}
