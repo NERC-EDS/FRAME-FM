@@ -16,22 +16,37 @@ from ..utils.embedders import BaseEmbedder, PatchEmbed, STPatchEmbed, BoundedPat
 from ..utils.LightningModuleWrapper import BaseModule
 
 
-def _select_embedder(input_shape: tuple[int, ...],
+def _make_int_dict(ints: dict[str, int] | list[int]) -> dict[str, int]:
+    if isinstance(ints, dict):
+        return {str(key): int(val) for key, val in ints.items()}
+    else:
+        return {str(index): int(val) for index, val in enumerate(ints)}
+
+
+def _make_dict(items: dict | list | None) -> dict | None:
+    return items if isinstance(items, dict) or items is None else dict(enumerate(items))
+
+
+def _select_embedder(input_shape: dict[str, int],
                      n_channel: int,
-                     patch_shape: tuple[int, ...],
+                     patch_shape: dict[str, int],
                      positioned: str = "",
-                     pos_space: tuple[tuple[float, float], ...] | None = None,
-                     embed_ratio: tuple[float, ...] | None = None,
+                     pos_space: dict[str, tuple[float, float]] | None = None,
+                     embed_ratio: dict[str, float] | None = None,
                      embed_dim: int = 16,
                      reconstruct_dim: int = 16) -> BaseEmbedder:
     if not positioned:
         return PatchEmbed(
             input_shape, patch_shape, n_channel, embed_dim, reconstruct_dim
             )
-    assert pos_space is not None, \
-        f"If inputs of shape {input_shape} have positions, position_space must not be None."
-    assert embed_ratio is not None, \
-        f"If inputs of shape {input_shape} have positions, pos_embed_ratio must not be None."
+    if pos_space is None:
+        raise ValueError(
+            f"If inputs of shape {input_shape} have positions, position_space must not be None."
+            )
+    if embed_ratio is None:
+        raise ValueError(
+            f"If inputs of shape {input_shape} have positions, pos_embed_ratio must not be None."
+            )
     if positioned == "pixels":
         return STPatchEmbed(
             input_shape, patch_shape, n_channel, pos_space, embed_dim, reconstruct_dim, embed_ratio
@@ -49,12 +64,13 @@ class MultimodalMaskedAutoencoder(BaseModule):
     input_embedders: list[BaseEmbedder]
 
     def __init__(self,
-                 input_shapes: list[tuple[int, ...]],
+                 input_shapes: list[dict[str, int] | list[int]],
                  n_channels: list[int],
-                 patch_shapes: list[tuple[int, ...]],
+                 patch_shapes: list[dict[str, int] | list[int]],
                  inputs_positioned: list[str] | str = "",
-                 position_space: tuple[tuple[float, float], ...] | None = None,
-                 pos_embed_ratio: tuple[float, ...] | None = None,
+                 position_space:
+                 dict[str, tuple[float, float]] | list[tuple[float, float]] | None = None,
+                 pos_embed_ratio: dict[str, float] | list[float] | None = None,
                  encoder_embed_dim: int = 16,
                  encoder_depth: int = 24,
                  encoder_num_heads: int = 16,
@@ -69,15 +85,17 @@ class MultimodalMaskedAutoencoder(BaseModule):
         """Instantiate Multimodal Masked Autoencoder
 
         Args:
-            input_shapes (list[tuple[int, ...]]): Shapes of each model input.
+            input_shapes (dict[str, int]): Sizes of input dimensions.
             n_channels (list[int]): Numbers of channels in each model input.
-            patch_shapes (list[tuple[int, ...]]): Sizes of patches into which to divide each input.
+            patch_shapes (dict[str, int]): Sizes of patches into which to divide each input.
             inputs_positioned (list[str] | str): How positions of model inputs are provided:
                 "": no position data, "pixels": pixel coordinates, "bounds": coordinate bounds.
                 Any single string is taken to apply to all inputs. Defaults to "".
-            position_space (tuple[tuple[float, float], ...] | None): Space in which positions lie,
-                or None if no input has positions. Defaults to None.
-            pos_embed_ratio (tuple[float, ...] | None): Relative sizes of position embedding dims,
+            position_space (dict[str, tuple[float, float]] | None): Space in which pixels
+                are positioned, if this is concrete (or None, default, for the alternative).
+                For example, for coords x (X-periodic) and y (aperiodic with minimum Y, range ΔY):
+                {'x': (0, X), 'y': (Y, Y + 2ΔY)}
+            pos_embed_ratio (dict[str, float] | None): Relative sizes of position embedding dims,
                 or None if no input has positions. Defaults to None.
             encoder_embed_dim (int): Dimensions into which to embed each patch. Defaults to 16.
             encoder_depth (int, optional): Number of attention layers for encoding. Defaults to 24.
@@ -101,12 +119,12 @@ class MultimodalMaskedAutoencoder(BaseModule):
         input_properties = zip(input_shapes, patch_shapes, n_channels, inputs_positioned)
         self.input_embedders = nn.ModuleList([
             _select_embedder(
-                input_shape,
+                _make_int_dict(input_shape),
                 n_channel,
-                patch_shape,
+                _make_int_dict(patch_shape),
                 positioned,
-                position_space,
-                pos_embed_ratio,
+                _make_dict(position_space),
+                _make_dict(pos_embed_ratio),
                 encoder_embed_dim,
                 decoder_embed_dim
                 )

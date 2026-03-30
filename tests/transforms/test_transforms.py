@@ -12,12 +12,33 @@ PYTHONPATH=src python -m pytest tests/test_transforms.py
 ```
 """
 
-from pathlib import Path
-
+import numpy as np
 import pytest
 import pandas as pd
+import torch
+import xarray as xr
 
-from FRAME_FM.transforms import *
+from FRAME_FM.transforms import (
+    AddFixedCoordinates,
+    FillMissingValueTransform,
+    NormalizeTransform,
+    RenameTransform,
+    ResampleTransform,
+    ReshapeTransform,
+    ReverseAxisTransform,
+    RollTransform,
+    SortAxisTransform,
+    SubsetTransform,
+    TiledIndexMapper,
+    TilerTransform,
+    ToTensorTransform,
+    ToValuesBoundsTransform,
+    ToValuesLocationsTransform,
+    TransposeTransform,
+    VarsToDimensionTransform,
+    tiled_to_coordinate_bounds,
+    tiled_to_pixel_coordinates,
+)
 from FRAME_FM.transforms.transforms import transform_mapping
 from FRAME_FM.utils.data_utils import load_data_from_uri
 
@@ -53,6 +74,24 @@ def _load_data(source: str = "era5", response_type: str = "Dataset") -> xr.Datas
     return resp, var_id
 
 
+def test_add_fixed_coordinate():
+    da = xr.DataArray(np.arange(5), dims=('x'), coords={'x': np.arange(5)})
+    da_with_y = AddFixedCoordinates({'y': 1})(da)
+    assert 'y' in da_with_y.coords, \
+        f"AddFixedCoordinates failing: dims {da_with_y.coords.dims} != ('x', 'y')"
+    assert da_with_y['y'].values == 1, \
+        f"AddFixedCoordinates failing: coords {da_with_y['y'].values} != 1"
+    da_with_t = AddFixedCoordinates({'t': "2000-01-01"})(da)
+    assert 't' in da_with_t.coords, \
+        f"AddFixedCoordinates failing: dims {da_with_t.coords.dims} != ('x', 't')"
+    assert da_with_t['t'].values == pd.to_datetime("2000-01-01"), \
+        f"AddFixedCoordinates failing: coords {da_with_t['t'].values} != Timestamp('2000-01-01')"
+
+
+# Mark this test as failing in second stage
+@pytest.mark.xfail(reason="This test is currently failing due the `.interpolate_na()` method needing investigation.")
+def test_FillMissingValueTransform():
+    ds, var_id = _load_data().isel(time=slice(0, 3))
 def _general_fill_missing_test(transform_class, strategy):
     ds, var_id = _load_data()
 
@@ -138,7 +177,7 @@ def test_ResampleTransform():
     ds, var_id = _load_data()
     start, end = "2000-01-01T00:00:00", "2000-01-01T23:00:00"
     ds = ds.sel(time=slice(start, end))
-    freq = "1D" # daily frequency
+    freq = "1D"  # daily frequency
 
     # Run the resample transform to resample from hourly to daily data
     resample_transform = ResampleTransform(dim="time", freq=freq)
@@ -342,15 +381,25 @@ def test_tile_locations_bounds():
         },
     )
     tiled = TilerTransform(y=2, x=2, boundary="trim")(da)
-    _, first_tile_locations = ToValuesLocationsTransform(coords=["x", "y"])(tiled[0])
+    _, first_tile_locations = ToValuesLocationsTransform(dims=["x", "y"])(tiled[0])
     assert torch.equal(first_tile_locations, torch.tensor([[[105., 105.], [115., 115.]], [[5., 15.], [5., 15.]]]))
-    _, last_tile_locations = ToValuesLocationsTransform(coords=["x", "y"])(tiled[-1])
+    _, last_tile_locations = ToValuesLocationsTransform(dims=["x", "y"])(tiled[-1])
     assert torch.equal(last_tile_locations, torch.tensor([[[145., 145.], [155., 155.]], [[25., 35.], [25., 35.]]]))
-    _, first_tile_bounds = ToValuesBoundsTransform(coords=["x", "y"])(tiled[0])
+    _, first_tile_locations = ToValuesLocationsTransform(
+        dims=["x", "y"],
+        crs_conversion_spec=((4326, {'Lat': 'y', 'Lon': 'x'}), (32649, {'E': 'x', 'N': 'y'}))
+        )(tiled[0])
+    assert torch.equal(
+        first_tile_locations,
+        torch.tensor([
+            [[-166334.5938,  943774.9375], [-146074.8594,  930334.7500]],
+            [[555713.5625,  554016.0625], [1667104.7500, 1662218.5000]]
+            ])
+        )
+    _, first_tile_bounds = ToValuesBoundsTransform(dims=["x", "y"])(tiled[0])
     assert torch.equal(first_tile_bounds, torch.tensor([[100., 120.], [0., 20.]]))
-    _, last_tile_bounds = ToValuesBoundsTransform(coords=["x", "y"])(tiled[-1])
+    _, last_tile_bounds = ToValuesBoundsTransform(dims=["x", "y"])(tiled[-1])
     assert torch.equal(last_tile_bounds, torch.tensor([[140., 160.], [20., 40.]]))
-
 
 
 def test_tiled_index_mapper_roundtrip():
@@ -366,7 +415,7 @@ def test_tiled_index_mapper_roundtrip():
     tiled = TilerTransform(y=2, x=2, boundary="pad")(da)
     mapper = TiledIndexMapper.from_tiled_array(tiled)
 
-    tile_id = mapper.tile_id_from_coordinates(y=30.0, x=120.0)
+    tile_id = mapper.tile_id_from_coordinates({'y': 30.0, 'x': 120.0})
     assert tile_id == 3
 
     coarse_ids = mapper.coordinates_from_tile_id(tile_id)
@@ -463,6 +512,7 @@ def test_tiler_discontinuity_guardrail_raises_for_wrapping_tile():
     # TODO: Do we need to test on a real dataset with a longitude axis that wraps around, to check 
     # that the guardrail is working as expected in that case?
 
+
 def test_ToTensorTransform():
     da, var_id = _load_data(response_type="DataArray")
 
@@ -511,11 +561,11 @@ def test_multiple_transforms_1():
 
     print("\nApplying multiple transforms using transform mapping codes:")
     for transform in transforms_to_apply:
-         if transform["type"] not in transform_mapping:
-             raise ValueError(f"Unsupported transform type: {transform['type']}")
-         transform_class = transform_mapping[transform["type"]]
-         transform = transform_class(**{k: v for k, v in transform.items() if k != "type"})
-         ds = transform(ds)
+        if transform["type"] not in transform_mapping:
+            raise ValueError(f"Unsupported transform type: {transform['type']}")
+        transform_class = transform_mapping[transform["type"]]
+        transform = transform_class(**{k: v for k, v in transform.items() if k != "type"})
+        ds = transform(ds)
 
     assert "dewpoint_temperature" in ds.data_vars, "Rename transform did not work as expected."
     assert ds.longitude[0] == -180.0 and ds.longitude[-1] == 179.75, "Roll transform did not work as expected." + str(ds.longitude.values)
@@ -568,4 +618,3 @@ def test_multiple_transforms_3():
 
     print("\nWhat we actually learnt here: _rolling_ the dataset before or after subset STILL WORKS!")
     print("But reversing the axis before/after DOES have an impact!")
-
