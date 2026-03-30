@@ -1,7 +1,15 @@
-# SPDX-FileCopyrightText: 2026 FRAME-FM Contributors
-# Copyright (C) Matt Arran.
 #
-# SPDX-License-Identifier: CC-BY-NC-4.0
+
+#
+
+#
+
+#
+
+#
+
+#
+
 
 # This source code is adapted from Masked Autoencoder (MAE) code, copyright
 # Meta Platforms, Inc. and affiliates, licensed under the licence found in the

@@ -1,7 +1,8 @@
-# SPDX-FileCopyrightText: 2026 FRAME-FM Contributors
+#
+
 # Copyright (C) Matt Arran.
 #
-# SPDX-License-Identifier: CC-BY-NC-4.0
+
 
 # --------------------------------------------------------
 # References:
