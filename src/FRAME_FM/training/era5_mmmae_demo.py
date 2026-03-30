@@ -1,6 +1,6 @@
-# SPDX-FileCopyrightText: 2026 2026 FRAME-FM Contributors
+# SPDX-FileCopyrightText: 2026 FRAME-FM Contributors
 #
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: CC-BY-NC-4.0
 
 from __future__ import annotations
 

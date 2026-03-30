@@ -1,0 +1,44 @@
+version = 1
+
+
+[[annotations]]
+path = [
+    "src/FRAME_FM/training/logger.py",
+]
+SPDX-FileCopyrightText = "2026 FRAME-FM Contributors"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = [
+    "src/FRAME_FM/models/mmmae.py",
+    "src/FRAME_FM/training/era5_mmmae_demo.py",
+    "src/FRAME_FM/utils/embedders.py"
+]
+SPDX-FileCopyrightText = "2026 FRAME-FM Contributors"
+SPDX-License-Identifier = "CC-BY-NC-4.0"
+
+[[annotations]]
+path = ["scripts/*",
+        "configs/**/*",
+        "docs/**/*",
+        "notebooks/*",
+        "tests/**/*.csv",
+        "tests/**/*.nc",
+        "tests/**/*.asc",
+        "tests/**/*.zip",
+        "notebooks/**/*",
+        "src/FRAME_FM/**/*.ipynb",
+        "src/FRAME_FM/**/*.md",
+        ".github/**",
+        "README.md",
+        "CITATION.cff",
+        ".gitignore",
+        "CODE_OF_CONDUCT.md",
+        "CONTRIBUTING.md",
+        ".python-version",
+        "CONTRIBUTORS",
+        "poetry.lock",
+        "pyproject.toml",
+        "uv.lock"]
+SPDX-License-Identifier = "NOASSERTION"
+SPDX-FileCopyrightText = "NONE"

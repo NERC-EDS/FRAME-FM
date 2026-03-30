@@ -1,11 +1,11 @@
-# SPDX-FileCopyrightText: 2026 2026 FRAME-FM Contributors
+# SPDX-FileCopyrightText: 2026 FRAME-FM Contributors
 # Copyright (C) Matt Arran.
 #
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: CC-BY-NC-4.0
 
 # This source code is adapted from Masked Autoencoder (MAE) code, copyright
 # Meta Platforms, Inc. and affiliates, licensed under the licence found in the
-# licences/LICENSE_MAE.txt file.
+# LICENSES/CC-BY-NC-4.0.txt file.
 # PatchEmbed is inspired by the equivalent class in PyTorch Image Models (timm).
 # --------------------------------------------------------
 # Embedding utils
