@@ -167,19 +167,15 @@ Below are the steps to run *train.py* using the default configuration:
     uv run framefm config init
     ```
 
+7. ** Configure Training **
 
-7. **Running the training model**
+   Edit the file configs/
 
-    At this point, all of your dependencies are installed and your environment is set up. Run the
-    default config with:
+8. ** Run a Training Job **
 
     ```bash
-    python src/FRAME_FM/training/train.py
+    framefm train run
     ```
-
-    If you would like to use Mlflow to record the training output, follow the
-    [Logging README](./src/FRAME_FM/docs/logging_README.md). Note that this runs 4 epochs, so could
-    take 2+ hours to complete. For a quick run, you can decrease the epochs in "configs/trainer/*default.yaml*".
 
 ---
 
@@ -330,6 +326,17 @@ defaults:
 seed: 42
 ```
 
+## Running with Python
+
+If you would like to run FRAME-FM without using the CLI then you can run `train.py` directly with Python.
+
+```bash
+python src/FRAME_FM/training/train.py
+```
+
+If you would like to use Mlflow to record the training output, follow the
+[Logging README](./src/FRAME_FM/docs/logging_README.md). Note that this runs 4 epochs, so could
+take 2+ hours to complete without a GPU. For a quick run, you can decrease the epochs in "configs/trainer/*default.yaml*".
 
 
 
