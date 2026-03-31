@@ -151,13 +151,11 @@ def edit_config_file(config_file: str, key_value_pairs: str) -> None:
         edited_file.write(yaml.dump(data, sort_keys=False))
 
 
-def train_run_with_options(verbose: bool, overrides: tuple[str, ...]) -> None:
-    with initialize_config_dir(config_dir=CONFIG_DIR, version_base=None):
-        cfg = compose(config_name="config", overrides=list(overrides), return_hydra_config=True)
-        HydraConfig.instance().set_config(cfg)
-        if verbose:
-            console.print(Panel(OmegaConf.to_yaml(cfg), title="Resolved config"))
-        train_main(cfg)
+#def train_run_with_options(cfg, verbose: bool, overrides: tuple[str, ...]) -> None:
+#    HydraConfig.instance().set_config(cfg)
+#    if verbose:
+#        console.print(Panel(OmegaConf.to_yaml(cfg), title="Resolved config"))
+#    train_main(cfg)
 
 
 def edit_torch_config_file(key_value_pairs: str) -> None:
@@ -227,6 +225,9 @@ def get_torchx_config() -> dict:
 
 
 def train_run_with_local_hydra(verbose: bool, overrides: tuple[str, ...]) -> None:
+    # Using the Hydra config slightly differently to how we used it in train_run()
+    # so we need to reinitialise it.
+    GlobalHydra.instance().clear()
     with initialize_config_dir(config_dir=CONFIG_DIR, version_base=None):
         cfg = compose(config_name="config", overrides=list(overrides), return_hydra_config=True)
         HydraConfig.instance().set_config(cfg)
@@ -234,27 +235,12 @@ def train_run_with_local_hydra(verbose: bool, overrides: tuple[str, ...]) -> Non
             console.print(Panel(OmegaConf.to_yaml(cfg), title="Resolved config"))
         train_main(cfg)
 
-
-def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
+def launch_torchx_job(cfg, platform_cfg, scheduler: str, overrides: tuple[str, ...]):
     """Dispatches the command to TorchX."""
-    # 1a. Initialise Hydra and compose config — must happen first
-    with initialize_config_dir(config_dir=CONFIG_DIR, version_base=None):
-        cfg = compose(config_name="config", overrides=list(overrides))
-
-    # 1b. Load defaults from .torchxconfig
-    # defaults section
-    torchx_config = get_torchx_config()
-    default_image = torchx_config.get("image", "pytorch/pytorch: latest")
-
-    cfg_dict = OmegaConf.to_container(cfg, resolve=False, throw_on_missing=False)
-
-    #3. Extract platform info
-    platform_cfg = cfg_dict.get("platform", {})
-
     # Slurm-specific section
     default_cpu = int(cfg.get("cpu", 2))
     default_gpu = int(cfg.get("gpu", 1))
-    default_mem = int(cfg.get("memMB", 32768))
+    default_mem = int(cfg.get("mem", "32768"))
     partition = platform_cfg.get("partition", "partition")
     account = platform_cfg.get("account", "account")
     time_limit = platform_cfg.get("time", "time")
@@ -268,16 +254,14 @@ def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
         Path.mkdir(job_dir, parents=True, exist_ok=True)
     else:
         job_dir = None
-    # 2. Resolve Hydra config to find the Docker image or resource requirements
-    # We do this so we can pass metadata (like image name) to TorchX
-    with initialize_config_dir(config_dir=CONFIG_DIR, version_base=None):
-        cfg = compose(config_name="config", overrides=list(overrides))
 
-    # 3. Extract Image
+    # Extract Image
     # This can be ovveriden as follows: framefm train run torchx.image=any-repo/image:tag
+    torchx_config = get_torchx_config()
+    default_image = torchx_config.get("image", "pytorch/pytorch: latest")
     image = cfg.get("torchx", {}).get("image", default_image)
 
-    # 4. Define Resources
+    # Define Resources
     # Note: 'capabilities' is often required by Slurm schedulers to find GPUs
     resource = specs.Resource(
         cpu=default_cpu,
@@ -285,16 +269,22 @@ def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
         memMB=default_mem,
         capabilities={"gpu_type": "nvidia"} if default_gpu > 0 else {},
     )
-    # 5. If docker or kunernetess: It is not supported yet.
+    # If docker or kunernetess: It is not supported yet.
     # Docker and K8s REQUIRE an image
     if scheduler in ["local_docker", "kubernetes"] and not image:
         err_text = f"Scheduler '{scheduler}' requires a Docker image.\n"
         "Please provide one in your config or via CLI: 'torchx.image=your_image_name'"
         raise click.UsageError(err_text)
 
-    # 6. Define the TorchX App
-    # The entrypoint is 'framefm'
+    # if the scheduler is slurm, we don't want the sub job to also use slurm or we'll get a recursive job
+    # set it to local_cwd instead. Otherwise just keep using the same scheduler (need to check that really works on kubernetes/docker).
+    if scheduler == "slurm":
+        job_scheduler = "local_cwd"
+    else:
+        job_scheduler = scheduler
 
+    # Define the TorchX App
+    # The entrypoint is 'framefm'
     app = specs.AppDef(
         name="framefm-train",
         roles=[
@@ -302,7 +292,7 @@ def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
                 name="worker",
                 image=image,
                 entrypoint="framefm",
-                args=["train", "run", *list(overrides)],
+                args=["train", "run", "-s", job_scheduler, *list(overrides)],
                 num_replicas=1,
                 resource=resource,
             ),
@@ -335,6 +325,7 @@ def launch_torchx_job(scheduler: str, overrides: tuple[str, ...]):
             slurm_job_id = job_id
             numeric_id = slurm_job_id.split("/")[-1]
             click.secho("Job submitted successfully!", fg="green")
+            click.echo(f"Job_dir: {job_dir}")
             click.echo(f"Scheduler: {scheduler}")
             click.echo(f"Job ID:    {slurm_job_id}")
             click.echo(f"Check status: squeue -j {numeric_id}")
@@ -378,8 +369,8 @@ def train():
 @click.option(
     "--scheduler",
     "-s",
-    type=click.Choice(["local_cwd", "local_docker", "slurm", "kubernetes"]),
-    default="local_cwd",
+    type=click.Choice(["use_config", "local_cwd", "local_docker", "slurm", "kubernetes"]),
+    default="use_config",
     help="The TorchX scheduler to use for running the training job.'local_cwd' runs immediately, others submit jobs.",
 )
 @click.option(
@@ -391,6 +382,7 @@ def train():
 )
 @click.argument("overrides", nargs=-1, type=click.UNPROCESSED)
 def train_run(scheduler: str, verbose: bool, overrides: tuple[str, ...]):
+#def train_run(verbose: bool, overrides: tuple[str, ...]):
     """Start a training run via TorchX.
 
     Schedulers:
@@ -403,12 +395,28 @@ def train_run(scheduler: str, verbose: bool, overrides: tuple[str, ...]):
     This will not modify the YAML files directly, but can modify the configs.
     """
     check_torchx_config()
-    if scheduler == "local_cwd":
-        # Direct execution via your existing Hydra logic
-        train_run_with_local_hydra(verbose, overrides)
-    else:
-        # TorchX Execution logic
-        launch_torchx_job(scheduler, overrides)
+
+    # Initialise Hydra and compose config — must happen first
+    with initialize_config_dir(config_dir=CONFIG_DIR, version_base=None):
+        cfg = compose(config_name="config", overrides=list(overrides))
+
+        # Load defaults from .torchxconfig
+        # defaults section
+        torchx_config = get_torchx_config()
+
+        cfg_dict = OmegaConf.to_container(cfg, resolve=False, throw_on_missing=False)
+
+        # Extract platform info
+        platform_cfg = cfg_dict.get("platform", {})
+        if scheduler == "use_config":
+            scheduler = platform_cfg.get("scheduler", {})
+
+        if scheduler == "local_cwd":
+            # Direct execution via your existing Hydra logic
+            train_run_with_local_hydra(verbose, overrides)
+        else:
+            # TorchX Execution logic
+            launch_torchx_job(cfg, platform_cfg, scheduler, overrides)
 
 
 @click.group()
