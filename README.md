@@ -254,13 +254,13 @@ Run your training via TorchX:
 framefm train run -s slurm model=demo_autoencoder
 ```
 
-** Where to check the Slurm wrapper logs **
+**Where to check the Slurm wrapper logs**
 
 TorchX generates a wrapper log when submitting via Slurm:
-if no job_dir was specified in config then 
+if no job_dir was specified in config then(look under the platforms config.) 
 /home/users/<username>/FRAME-FM/slurm-<jobid>.out
 
-** Where to check the actual training logs **
+**Where to check the actual training logs**
 The real training output is written by the worker:
 
 /home/users/<username>/FRAME-FM/slurm-<jobid>-worker-0.out
