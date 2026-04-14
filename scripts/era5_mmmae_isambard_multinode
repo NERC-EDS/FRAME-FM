@@ -1,0 +1,40 @@
+#!/bin/bash
+#SBATCH --job-name=era5_mmmae_multinode
+#SBATCH --output=era5_mmmae_2node_%j.out
+#SBATCH --nodes=10
+#SBATCH --ntasks-per-node=4
+#SBATCH --gpus-per-node=4
+#SBATCH --time=07:00:00
+
+set -euo pipefail
+
+# Log GPU utilization while the Python job runs.
+LOG="gpu_util_${SLURM_JOB_ID}.csv"
+echo "timestamp,util.gpu %,util.mem %,mem.used MiB,mem.total MiB,temp C,power W" > "$LOG"
+
+# Start a background sampler (5-second cadence) for the lifetime of the job.
+( while true; do
+      printf "%s," "$(date --iso-8601=seconds)"
+      nvidia-smi --query-gpu=utilization.gpu,utilization.memory,memory.used,memory.total,temperature.gpu,power.draw \
+                 --format=csv,noheader,nounits
+      sleep 5
+  done ) >> "$LOG" 2>/dev/null &
+
+LOGGER_PID=$!
+trap 'kill "$LOGGER_PID" 2>/dev/null || true; wait "$LOGGER_PID" 2>/dev/null || true' EXIT
+
+cd $HOME/FRAME-FM/
+source .venv/bin/activate
+export HYDRA_FULL_ERROR=1
+export PYTHONPATH="$PWD/src:${PYTHONPATH:-}"
+
+srun python src/FRAME_FM/training/train.py \
+  data=demonstrator_datasets_era5_isambard \
+  model=demonstrator_mmmae_era5 \
+  trainer=default \
+  logging=csv_lightweight \
+  trainer.accelerator=gpu \
+  trainer.devices=4 \
+  trainer.max_epochs=500 \
+  +trainer.num_nodes=10 \
+  +trainer.strategy=ddp

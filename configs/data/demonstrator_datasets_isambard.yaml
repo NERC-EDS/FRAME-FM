@@ -11,7 +11,7 @@ training:
       - {type: to_dataarray, var_id: band_data}
       - {type: subset, y: [0, 500000]}
       - {type: fill_missing, fill_value: 0}
-      - {type: normalize, mean: 0, std: 100}
+      - {type: standardize, mean: 0, std: 100}
       - {type: tiler, boundary: trim, x: 64, y: 64}
       transforms:
       - {type: to_values_bounds_tensors, coords: [x, y]}

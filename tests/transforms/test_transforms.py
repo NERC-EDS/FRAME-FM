@@ -16,12 +16,33 @@ PYTHONPATH=src python -m pytest tests/test_transforms.py
 ```
 """
 
-from pathlib import Path
-
+import numpy as np
 import pytest
 import pandas as pd
+import torch
+import xarray as xr
 
-from FRAME_FM.transforms import *
+from FRAME_FM.transforms import (
+    AddFixedCoordinates,
+    FillMissingValueTransform,
+    NormalizeTransform,
+    RenameTransform,
+    ResampleTransform,
+    ReshapeTransform,
+    ReverseAxisTransform,
+    RollTransform,
+    SortAxisTransform,
+    SubsetTransform,
+    TiledIndexMapper,
+    TilerTransform,
+    ToTensorTransform,
+    ToValuesBoundsTransform,
+    ToValuesLocationsTransform,
+    TransposeTransform,
+    VarsToDimensionTransform,
+    tiled_to_coordinate_bounds,
+    tiled_to_pixel_coordinates,
+)
 from FRAME_FM.transforms.transforms import transform_mapping
 from FRAME_FM.utils.data_utils import load_data_from_uri
 
@@ -57,48 +78,94 @@ def _load_data(source: str = "era5", response_type: str = "Dataset") -> xr.Datas
     return resp, var_id
 
 
+def test_add_fixed_coordinate():
+    da = xr.DataArray(np.arange(5), dims=('x'), coords={'x': np.arange(5)})
+    da_with_y = AddFixedCoordinates({'y': 1})(da)
+    assert 'y' in da_with_y.coords, \
+        f"AddFixedCoordinates failing: dims {da_with_y.coords.dims} != ('x', 'y')"
+    assert da_with_y['y'].values == 1, \
+        f"AddFixedCoordinates failing: coords {da_with_y['y'].values} != 1"
+    da_with_t = AddFixedCoordinates({'t': "2000-01-01"})(da)
+    assert 't' in da_with_t.coords, \
+        f"AddFixedCoordinates failing: dims {da_with_t.coords.dims} != ('x', 't')"
+    assert da_with_t['t'].values == pd.to_datetime("2000-01-01"), \
+        f"AddFixedCoordinates failing: coords {da_with_t['t'].values} != Timestamp('2000-01-01')"
+
+
 # Mark this test as failing in second stage
 @pytest.mark.xfail(reason="This test is currently failing due the `.interpolate_na()` method needing investigation.")
 def test_FillMissingValueTransform():
     ds, var_id = _load_data().isel(time=slice(0, 3))
+def _general_fill_missing_test(transform_class, strategy):
+    ds, var_id = _load_data()
 
     # Introduce some missing values into the dataset for testing
     ds_with_nans = ds.copy().isel(time=slice(0, 3))  # Take a small subset for testing
     ds_with_nans[var_id] = ds_with_nans[var_id].where(ds_with_nans[var_id] > 290)  # Set values <= 290 to NaN
 
-    # Run the fill missing value transform with constant strategy
-    fill_transform_constant = FillMissingValueTransform(strategy="constant", fill_value=0.0)
-    filled_ds_constant = fill_transform_constant(ds_with_nans)
-    assert not filled_ds_constant[var_id].isnull().any(), "FillMissingValueTransform with constant strategy did not work as expected (there are still NaN values)."
+    if strategy == "constant":
+        # Run the fill missing value transform with constant strategy
+        fill_transform_constant = transform_class(strategy="constant", fill_value=0.0)
+        filled_ds_constant = fill_transform_constant(ds_with_nans)
+        assert not filled_ds_constant[var_id].isnull().any(), f"{transform_class} with constant strategy did not work as expected (there are still NaN values)."
 
-    # Run the fill missing value transform with interpolate strategy
-    fill_transform_interpolate = FillMissingValueTransform(strategy="interpolate", method="linear")
-    filled_ds_interpolate = fill_transform_interpolate(ds_with_nans)
-    assert not filled_ds_interpolate[var_id].isnull().any(), "FillMissingValueTransform with interpolate strategy did not work as expected (there are still NaN values)."
+    elif strategy == "interpolate":
+        # Run the fill missing value transform with interpolate strategy
+        fill_transform_interpolate = transform_class(strategy="interpolate", method="linear", fill_value="extrapolate")
+        filled_ds_interpolate = fill_transform_interpolate(ds_with_nans)
+        assert not filled_ds_interpolate[var_id].isnull().any(), f"{transform_class} with interpolate strategy did not work as expected (there are still NaN values)."
+
+
+def test_FillMissingValueTransform_invalid_strategy():
+    ds, var_id = _load_data()
+
+    # Introduce some missing values into the dataset for testing
+    ds_with_nans = ds.copy().isel(time=slice(0, 3))  # Take a small subset for testing
+    ds_with_nans[var_id] = ds_with_nans[var_id].where(ds_with_nans[var_id] > 290)  # Set values <= 290 to NaN
 
     # Run the fill missing value transform with an unsupported strategy to check that it raises an error
+    transform_class = FillMissingValueTransform
     try:
-        fill_transform_invalid = FillMissingValueTransform(strategy="unsupported_strategy", fill_value=273.15)
+        fill_transform_invalid = transform_class(strategy="unsupported_strategy", fill_value=273.15)
         fill_transform_invalid(ds_with_nans)
-        assert False, "FillMissingValueTransform did not raise an error for an unsupported strategy."
+        assert False, f"{transform_class} did not raise an error for an unsupported strategy."
     except ValueError as e:
-        assert str(e) == "Unsupported fill strategy: unsupported_strategy", f"FillMissingValueTransform raised an unexpected error message: {str(e)}"
+        assert str(e) == "Unsupported fill strategy: unsupported_strategy", f"{transform_class} raised an unexpected error message: {str(e)}"
 
 
-@pytest.mark.xfail(reason="This test is currently failing due the `.interpolate_na()` method needing investigation.")
-def test_FillNaNTransform():
-    # Identical to the FillMissingValueTransform test but with the FillNaNTransform instead 
-    return test_FillMissingValueTransform()
+def test_FillMissingValueTransform_constant():
+    _general_fill_missing_test(FillMissingValueTransform, strategy="constant")
 
+@pytest.mark.xfail(reason="This test is currently failing due to an issue with the interpolate strategy, which needs further investigation.")
+def test_FillMissingValueTransform_interpolate():
+    _general_fill_missing_test(FillMissingValueTransform, strategy="interpolate")
+
+def test_FillNaNTransform_constant():
+    # Identical to the FillMissingValueTransform test but with the FillNaNTransform instead
+    _general_fill_missing_test(FillNaNTransform, strategy="constant")
+
+@pytest.mark.xfail(reason="This test is currently failing due to an issue with the interpolate strategy, which needs further investigation.")
+def test_FillNaNTransform_interpolate():
+    # Identical to the FillMissingValueTransform test but with the FillNaNTransform instead
+    _general_fill_missing_test(FillNaNTransform, strategy="interpolate")
+
+def test_StandardizeTransform():
+    da,_ = _load_data(response_type="DataArray")  # type: ignore
+
+    standardize_transform = StandardizeTransform(mean=float(da.mean()), std=float(da.std()))
+    standardized_da = standardize_transform(da)
+    assert np.isclose(float(standardized_da.mean()), 0, atol=1e-5), "Standardize transform did not work as expected (mean is not close to 0)."
+    assert np.isclose(float(standardized_da.std()), 1, atol=1e-5), "Standardize transform did not work as expected (std is not close to 1)."
 
 def test_NormalizeTransform():
-    da, var_id = _load_data(response_type="DataArray")  # type: ignore
+    data = xr.DataArray([2,4,6,8,10])
 
-    # Run the normalize transform
-    normalize_transform = NormalizeTransform(mean=float(da.mean()), std=float(da.std()))
-    normalized_da = normalize_transform(da)
-    assert np.isclose(float(normalized_da.mean()), 0, atol=1e-5), "Normalize transform did not work as expected (mean is not close to 0)."
-    assert np.isclose(float(normalized_da.std()), 1, atol=1e-5), "Normalize transform did not work as expected (std is not close to 1)."
+    transform = NormalizeTransform()
+    out = transform(data)
+    assert np.allclose(out, np.array([0, 0.25, 0.5, 0.75, 1])), "Normalize transform did not produce the expected values."
+
+
+
 
 
 def test_RenameTransform():
@@ -114,7 +181,7 @@ def test_ResampleTransform():
     ds, var_id = _load_data()
     start, end = "2000-01-01T00:00:00", "2000-01-01T23:00:00"
     ds = ds.sel(time=slice(start, end))
-    freq = "1D" # daily frequency
+    freq = "1D"  # daily frequency
 
     # Run the resample transform to resample from hourly to daily data
     resample_transform = ResampleTransform(dim="time", freq=freq)
@@ -238,17 +305,19 @@ def test_SubsetTransform_with_2d_coordinate_axes():
     assert np.array_equal(lon_y_values, precip_y_values), "Expected the y values of the lon variable to match the y values of the precip variable after subsetting, but they do not match."
 
 
-@pytest.mark.xfail(reason="This test is currently failing due to a check on the last tile matching the original data.")
 def test_TilerTransform_time_series_data():
     da, var_id = _load_data(response_type="DataArray")
+
+    # Reverse the latitude axis to check that the tiler can handle this case (since ERA5 has a descending latitude axis)
+    da = da.isel(latitude=slice(None, None, -1))
     step = 10
 
     # Run the tiler transform with tile sizes of step x step and "pad" boundary handling
-    tiler_transform = TilerTransform(latitude=step, longitude=step, boundary="pad")
+    tiler_transform = TilerTransform(latitude=step, longitude=step, boundary="trim")
     tiled = tiler_transform(da)
 
     # Check that the tiled array has the expected shape (should have new dimensions for tiles)
-    expected_shape = (10512, 3, step, step)  # (batch_dim[=n_tiles], time, latitude_fine, longitude_fine)
+    expected_shape = (10368, 3, step, step)  # (batch_dim[=n_tiles], time, latitude_fine, longitude_fine)
     assert tiled.shape == expected_shape, f"Tiler transform did not work as expected (shape is {tiled.shape} instead of {expected_shape})"
 
     assert tiled.dims[0] == "batch_dim", f"Expected first dimension to be 'batch_dim', but got {tiled.dims[0]}"
@@ -260,30 +329,23 @@ def test_TilerTransform_time_series_data():
     assert np.array_equal(first_tile, original_subset), "First tile does not match expected subset of original dataset"
 
     # Check the last tile (which has shape: (3, 10, 10) so cuts across three time slices)
-    # At the moment this is failing because the last tile is not matching the expected subset of the original dataset, 
-    # even though the first tile is correct. This may be due to an issue with how the tiler is handling the padding for 
-    # the last tile, or it may be an issue with how the test is checking the values of the last tile. This needs further 
-    # investigation.
+    # But note that the `trim` operation means the last latitude is lost, so need to use
+    # and offset of -1 when slicing the original dataset for comparison with the last tile
     last_tile = tiled[-1]
-    original_subset = da.isel(latitude=slice(-step, None), longitude=slice(-step, None))
+    original_subset = da.isel(latitude=slice(-step - 1, -1), longitude=slice(-step, None))
     assert np.array_equal(last_tile, original_subset), "Last tile does not match expected subset of original dataset"
 
     # Test that reverse-lookup metadata is stored in attrs
     assert "tiler_tile_sizes" in tiled.attrs, "Expected 'tiler_tile_sizes' in tiled.attrs, but not found"
     assert tiled.attrs["tiler_tile_sizes"] == {"latitude": step, "longitude": step}, f"Expected tile sizes in metadata to be {{'latitude': {step}, 'longitude': {step}}}, but got {tiled.attrs['tiler_tile_sizes']}"
     assert "tiler_boundary" in tiled.attrs, "Expected 'tiler_boundary' in tiled.attrs, but not found"
-    assert tiled.attrs["tiler_boundary"] == "pad", f"Expected boundary in metadata to be 'pad', but got {tiled.attrs['tiler_boundary']}"
+    assert tiled.attrs["tiler_boundary"] == "trim", f"Expected boundary in metadata to be 'trim', but got {tiled.attrs['tiler_boundary']}"
     assert "tiler_original_sizes" in tiled.attrs, "Expected 'tiler_original_sizes' in tiled.attrs, but not found"
 
     original_sizes = {"latitude": da.latitude.size, "longitude": da.longitude.size}
     assert tiled.attrs["tiler_original_sizes"] == original_sizes, f"Expected original sizes in metadata to be {original_sizes}, but got {tiled.attrs['tiler_original_sizes']}"
     assert "tiler_original_coords" in tiled.attrs, "Expected 'tiler_original_coords' in tiled.attrs, but not found"
     assert tiled.attrs["tiler_original_coords"] == {"latitude": da.latitude.values.tolist(), "longitude": da.longitude.values.tolist()}, f"Expected original coords in metadata to match original dataset coords, but got {tiled.attrs['tiler_original_coords']}"   
-
-    # Now test that the index mapper helper function works as expected
-    raise NotImplementedError("This test is currently failing due to an issue with the last tile matching "
-    "the original data, so the rest of the test has not been implemented yet. "
-    "This needs further investigation before it can be implemented.")
 
 
 def test_tiled_coordinate_utilities_static_grid():
@@ -323,15 +385,25 @@ def test_tile_locations_bounds():
         },
     )
     tiled = TilerTransform(y=2, x=2, boundary="trim")(da)
-    _, first_tile_locations = ToValuesLocationsTransform(coords=["x", "y"])(tiled[0])
+    _, first_tile_locations = ToValuesLocationsTransform(dims=["x", "y"])(tiled[0])
     assert torch.equal(first_tile_locations, torch.tensor([[[105., 105.], [115., 115.]], [[5., 15.], [5., 15.]]]))
-    _, last_tile_locations = ToValuesLocationsTransform(coords=["x", "y"])(tiled[-1])
+    _, last_tile_locations = ToValuesLocationsTransform(dims=["x", "y"])(tiled[-1])
     assert torch.equal(last_tile_locations, torch.tensor([[[145., 145.], [155., 155.]], [[25., 35.], [25., 35.]]]))
-    _, first_tile_bounds = ToValuesBoundsTransform(coords=["x", "y"])(tiled[0])
+    _, first_tile_locations = ToValuesLocationsTransform(
+        dims=["x", "y"],
+        crs_conversion_spec=((4326, {'Lat': 'y', 'Lon': 'x'}), (32649, {'E': 'x', 'N': 'y'}))
+        )(tiled[0])
+    assert torch.equal(
+        first_tile_locations,
+        torch.tensor([
+            [[-166334.5938,  943774.9375], [-146074.8594,  930334.7500]],
+            [[555713.5625,  554016.0625], [1667104.7500, 1662218.5000]]
+            ])
+        )
+    _, first_tile_bounds = ToValuesBoundsTransform(dims=["x", "y"])(tiled[0])
     assert torch.equal(first_tile_bounds, torch.tensor([[100., 120.], [0., 20.]]))
-    _, last_tile_bounds = ToValuesBoundsTransform(coords=["x", "y"])(tiled[-1])
+    _, last_tile_bounds = ToValuesBoundsTransform(dims=["x", "y"])(tiled[-1])
     assert torch.equal(last_tile_bounds, torch.tensor([[140., 160.], [20., 40.]]))
-
 
 
 def test_tiled_index_mapper_roundtrip():
@@ -347,7 +419,7 @@ def test_tiled_index_mapper_roundtrip():
     tiled = TilerTransform(y=2, x=2, boundary="pad")(da)
     mapper = TiledIndexMapper.from_tiled_array(tiled)
 
-    tile_id = mapper.tile_id_from_coordinates(y=30.0, x=120.0)
+    tile_id = mapper.tile_id_from_coordinates({'y': 30.0, 'x': 120.0})
     assert tile_id == 3
 
     coarse_ids = mapper.coordinates_from_tile_id(tile_id)
@@ -444,6 +516,7 @@ def test_tiler_discontinuity_guardrail_raises_for_wrapping_tile():
     # TODO: Do we need to test on a real dataset with a longitude axis that wraps around, to check 
     # that the guardrail is working as expected in that case?
 
+
 def test_ToTensorTransform():
     da, var_id = _load_data(response_type="DataArray")
 
@@ -492,11 +565,11 @@ def test_multiple_transforms_1():
 
     print("\nApplying multiple transforms using transform mapping codes:")
     for transform in transforms_to_apply:
-         if transform["type"] not in transform_mapping:
-             raise ValueError(f"Unsupported transform type: {transform['type']}")
-         transform_class = transform_mapping[transform["type"]]
-         transform = transform_class(**{k: v for k, v in transform.items() if k != "type"})
-         ds = transform(ds)
+        if transform["type"] not in transform_mapping:
+            raise ValueError(f"Unsupported transform type: {transform['type']}")
+        transform_class = transform_mapping[transform["type"]]
+        transform = transform_class(**{k: v for k, v in transform.items() if k != "type"})
+        ds = transform(ds)
 
     assert "dewpoint_temperature" in ds.data_vars, "Rename transform did not work as expected."
     assert ds.longitude[0] == -180.0 and ds.longitude[-1] == 179.75, "Roll transform did not work as expected." + str(ds.longitude.values)
@@ -549,4 +622,3 @@ def test_multiple_transforms_3():
 
     print("\nWhat we actually learnt here: _rolling_ the dataset before or after subset STILL WORKS!")
     print("But reversing the axis before/after DOES have an impact!")
-
