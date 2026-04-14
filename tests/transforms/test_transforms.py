@@ -25,6 +25,7 @@ import xarray as xr
 from FRAME_FM.transforms import (
     AddFixedCoordinates,
     FillMissingValueTransform,
+    FillNaNTransform,
     NormalizeTransform,
     RenameTransform,
     ResampleTransform,
@@ -32,6 +33,7 @@ from FRAME_FM.transforms import (
     ReverseAxisTransform,
     RollTransform,
     SortAxisTransform,
+    StandardizeTransform,
     SubsetTransform,
     TiledIndexMapper,
     TilerTransform,

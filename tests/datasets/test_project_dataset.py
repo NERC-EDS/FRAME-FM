@@ -2,6 +2,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+"""
+Tests for specific dataset loaders, using the base dataset classes.
+
+"""
+
 import glob
 
 # NOTE: potential fix for unit tests: single threading dask???
@@ -21,11 +26,11 @@ from .common import (
 )
 
 from FRAME_FM.utils.common_utils import get_main_vars
+from FRAME_FM.datasets.base_gridded_dataset import (
+    BaseGriddedDataset,
+    BaseGriddedTimeSeriesDataset
+)
 
-from FRAME_FM.datasets.chessmet_dataset import CHESSMetGriddedTimeSeriesDataset
-from FRAME_FM.datasets.era5_dataset import ERA5GriddedTimeSeriesDataset
-from FRAME_FM.datasets.land_cover_map_dataset import LandCoverMapGriddedDataset
-from FRAME_FM.datasets.soil_water_index_dataset import SoilWaterIndexGriddedTimeSeriesDataset
 from FRAME_FM.datasets.cosmosuk_dataset import CosmosUKDataset
 
 
@@ -38,10 +43,10 @@ SOIL_WATER_INDEX_FILE_URI = [fpath for fpath in glob.glob(SOIL_WATER_INDEX_GLOB_
 @pytest.mark.parametrize(
     "dataset_cls,uri",
     [
-        (CHESSMetGriddedTimeSeriesDataset, CHESS_URI),
-        (ERA5GriddedTimeSeriesDataset, ERA5_URI),
-        (LandCoverMapGriddedDataset, LAND_COVER_URI),
-#        (SoilWaterIndexGriddedTimeSeriesDataset, SOIL_WATER_INDEX_FILE_URI),
+        (BaseGriddedTimeSeriesDataset, CHESS_URI),
+        (BaseGriddedTimeSeriesDataset, ERA5_URI),
+        (BaseGriddedDataset, LAND_COVER_URI),
+        # (BaseGriddedTimeSeriesDataset, SOIL_WATER_INDEX_FILE_URI),
     ],
 )
 def test_dataset_wrappers_basic(dataset_cls, uri):
@@ -70,7 +75,7 @@ def test_chessmet_dataset_with_transforms():
         {"type": "to_tensor"},
     ]
 
-    dataset = CHESSMetGriddedTimeSeriesDataset(
+    dataset = BaseGriddedTimeSeriesDataset(
         data_uri=CHESS_URI,
         preprocessors=preprocessors,
         transforms=transforms,
@@ -97,7 +102,7 @@ def test_chessmet_dataset_retains_2d_coordinate_variables():
         {"type": "to_tensor"},
     ]
 
-    dataset = CHESSMetGriddedTimeSeriesDataset(
+    dataset = BaseGriddedTimeSeriesDataset(
         data_uri=CHESS_URI,
         preprocessors=preprocessors,
         transforms=transforms,
@@ -123,7 +128,7 @@ def test_chessmet_dataset_retains_2d_coordinate_variables():
 # ERA5 specific checks
 # ------------------------------------------------
 def test_era5_dataset_structure():
-    dataset = ERA5GriddedTimeSeriesDataset(
+    dataset = BaseGriddedTimeSeriesDataset(
         data_uri=ERA5_URI,
         time_stride=4,
     )
@@ -135,7 +140,7 @@ def test_era5_dataset_structure():
 
 
 def test_era5_dataset_sampling():
-    dataset = ERA5GriddedTimeSeriesDataset(
+    dataset = BaseGriddedTimeSeriesDataset(
         data_uri=ERA5_URI,
         time_stride=4,
     )
@@ -150,7 +155,7 @@ def test_era5_dataset_sampling():
 # Land Cover Map specific checks
 # ------------------------------------------------
 def test_land_cover_map_dataset_structure():
-    dataset = LandCoverMapGriddedDataset(
+    dataset = BaseGriddedDataset(
         data_uri=LAND_COVER_URI
     )
 
@@ -167,7 +172,7 @@ def test_land_cover_map_with_transforms():
         {"type": "to_tensor"},
     ]
 
-    dataset = LandCoverMapGriddedDataset(
+    dataset = BaseGriddedDataset(
         data_uri=LAND_COVER_URI,
         transforms=transforms,
         override_transforms=True
@@ -189,10 +194,10 @@ def test_land_cover_map_with_transforms():
 #-------------------------------------------------
 def test_soil_water_index_dataset_structure():
     
-    dataset = SoilWaterIndexGriddedTimeSeriesDataset(
+    dataset = BaseGriddedTimeSeriesDataset(
         data_uri=SOIL_WATER_INDEX_FILE_URI,
         time_stride=1,
-        chunks={"time": 1}
+        chunks="auto"
     )
 
     ds = dataset.data

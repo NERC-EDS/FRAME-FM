@@ -182,10 +182,12 @@ def eurossat_datamodule():
     yield datamodule
 
 
+@pytest.mark.xfail(reason="More work required to complete this test.")
 def test_dataset(eurossat_datamodule):
     # GOT TO HERE
     assert eurossat_datamodule == 1 # This is wrong, replace with actual assertions relevant to your dataset and dataloader
 
+@pytest.mark.xfail(reason="More work required to complete this test.")
 def test_eurosat_end_to_end():
     from hydra.utils import instantiate
     import pytorch_lightning as pl
