@@ -2,7 +2,8 @@
 
 # Copyright (C) Matt Arran.
 #
-
+# This source code is adapted from code (c) Meta Platforms, Inc. and affiliates,
+# licensed under the licence in the LICENSES/CC-BY-NC-4.0.txt file. 
 
 # --------------------------------------------------------
 # References:
