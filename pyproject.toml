@@ -3,11 +3,14 @@ name = "frame-fm"
 dynamic = ["version"]
 description = "A package for the simplification of training deep learning models for environmental data"
 readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSES\\Apache-2.0.txt", "AUTHORS.md"]
 requires-python = ">=3.11,<3.13"
 dependencies = [
     "cf-xarray>=0.10.11",
     "cfapyx>=2025.12.9",
     "dask>=2026.1.2",
+    "geopandas>=1.1.2",
     "hydra-core>=1.3.2",
     "kerchunk>=0.2.9",
     "mlflow>=3.6.0",
@@ -19,6 +22,12 @@ dependencies = [
     "torch>=2.9.1",
     "torchvision>=0.24.1",
     "xarray>=2025.11.0",
+    "zarr-parallel",
+    "click>=8.3.1",
+    "rich (>=14.3.3,<15.0.0)",
+    "pyyaml (>=6.0.3,<7.0.0)",
+    "toml (>=0.10.2,<0.11.0)",
+    "torchx>=0.7.0",
 ]
 [project.optional-dependencies]
 notebook = [
@@ -43,6 +52,7 @@ docs = [
     "IPython",
     "sphinx-autoapi",
     "sphinx_rtd_dark_mode",
+    "furo>=2025.12.19",
 ]
 data = [
     "torchgeo>=0.8.1",
@@ -51,6 +61,10 @@ test = [
     "pytest>=8",
     "pytest-cov",
     "pytest-xdist",
+]
+
+lint = [
+    "ruff>=0.15.7",
 ]
 
 [build-system]
@@ -63,9 +77,19 @@ package = true
 [tool.hatch.build.targets.wheel]
 packages = ["src/FRAME_FM"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"configs" = "src/FRAME_FM/configs"
+
 [tool.hatch.version]
 source = "vcs"
 fallback-version = "0.1.0"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+pythonpath = ["src"]
 
 [tool.uv.sources]
 torch = [
@@ -86,3 +110,6 @@ explicit = true
 name = "pytorch-cu126"
 url = "https://download.pytorch.org/whl/cu126"
 explicit = true
+
+[project.scripts]
+framefm = "FRAME_FM.cli:app"

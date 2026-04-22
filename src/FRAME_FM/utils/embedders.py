@@ -1,8 +1,19 @@
-# Copyright (c) Matt Arran.
+#
+
+#
+
+#
+
+#
+
+#
+
+#
+
 
 # This source code is adapted from Masked Autoencoder (MAE) code, copyright
 # Meta Platforms, Inc. and affiliates, licensed under the licence found in the
-# licences/LICENSE_MAE.txt file.
+# LICENSES/CC-BY-NC-4.0.txt file.
 # PatchEmbed is inspired by the equivalent class in PyTorch Image Models (timm).
 # --------------------------------------------------------
 # Embedding utils
@@ -17,6 +28,7 @@ from collections.abc import Callable
 from math import prod
 import numpy as np
 import torch
+from typing import Any
 
 _Conv_dim_dict: dict[int, type[torch.nn.modules.conv._ConvNd]] = {
     1: torch.nn.Conv1d, 2: torch.nn.Conv2d, 3: torch.nn.Conv3d
@@ -26,12 +38,12 @@ _conv_dim_dict: dict[int, Callable[..., torch.Tensor]] = {
     }
 
 
-def partition_embed_dim(embed_dim: int, dim_ratio: tuple[int | float, ...]) -> np.ndarray:
+def partition_embed_dim(embed_dim: int, dim_ratio: list[int | float]) -> np.ndarray:
     """Partitions integer embedding dimension into integer components.
 
     Args:
         embed_dim (int): Total number of dimensions.
-        dim_ratio (tuple[int | float, ...]): Target ratio of component sizes.
+        dim_ratio (list[int | float]): Target ratio of component sizes.
 
     Returns:
         numpy.ndarray: Array of integer components.
@@ -108,8 +120,8 @@ class PatchEmbed(BaseEmbedder):
     """ 1-3D Image to Patch Embedding
     """
     def __init__(self,
-                 input_shape: tuple[int, ...],
-                 patch_shape: tuple[int, ...],
+                 input_shape: dict[Any, int],
+                 patch_shape: dict[Any, int],
                  n_channels: int,
                  embed_dim: int,
                  reconstruct_dim: int,
@@ -119,9 +131,9 @@ class PatchEmbed(BaseEmbedder):
         """Instantiate embedder for patches in 1-3D, n-channel images.
 
         Args:
-            input_shape (tuple[int, ...]): Shape of input image.
-            patch_shape (tuple[int, ...]): Shape of patches into which image will be divided.
-            n_channels (int): Number of channels recorded in image.
+            input_shape (dict[Any, int]): Sizes of input dimensions.
+            patch_shape (dict[Any, int]): Shape of patches into which input will be divided.
+            n_channels (int): Number of channels recorded in input.
             embed_dim (int): Number of dimensions into which to embed each patch.
             reconstruct_dim (int): Number of embedding dimensions from which to reconstruct patch.
             bias (bool, optional): Whether to include bias in patch embedding. Defaults to True.
@@ -130,18 +142,25 @@ class PatchEmbed(BaseEmbedder):
             **conv_kwargs: Keyword arguments to pass for convolution layer instantiation.
         """
         super().__init__()
-        assert len(input_shape) in _Conv_dim_dict.keys(), \
-            f"{len(input_shape)}D input not supported"
-        self.input_shape, self.patch_shape = tuple(input_shape), tuple(patch_shape)
-        self.grid_shape, self.n_patches = self._count_patches(input_shape)
+        if len(input_shape) not in _Conv_dim_dict.keys():
+            raise ValueError(f"{len(input_shape)}D input not supported")
+        if input_shape.keys() != patch_shape.keys():
+            raise ValueError(
+                f"input_shape dims {input_shape.keys()}"
+                f" must equal patch_shape dims {patch_shape.keys()}."
+                )
+        self.input_shape = input_shape
+        self.patch_shape = patch_shape
+        self.grid_shape, self.n_patches = self._count_patches(self.input_shape)
         self.n_channels = n_channels
         self.embed_dim = embed_dim
         conv_class = _Conv_dim_dict[len(input_shape)]
+        kernel_size = tuple(patch_shape[dim] for dim in input_shape.keys())
         self.proj = conv_class(
             n_channels,
             embed_dim,
-            kernel_size=patch_shape,
-            stride=patch_shape,
+            kernel_size=kernel_size,
+            stride=kernel_size,
             bias=bias,
             **conv_kwargs
             )
@@ -151,12 +170,12 @@ class PatchEmbed(BaseEmbedder):
             self.norm = norm_layer(embed_dim)
         self.reconstruct_dim = reconstruct_dim
         self.reconstruct_layer = torch.nn.Linear(
-            reconstruct_dim, prod(patch_shape) * n_channels, bias=True
+            reconstruct_dim, prod(kernel_size) * n_channels, bias=True
             )
 
-    def _count_patches(self, input_shape):
-        grid_shape = tuple(s_i // s_p for s_i, s_p in zip(input_shape, self.patch_shape))
-        n_patches = prod(grid_shape)
+    def _count_patches(self, input_shape: dict[Any, int]) -> tuple[dict[Any, int], int]:
+        grid_shape = {dim: s_i // self.patch_shape[dim] for dim, s_i in input_shape.items()}
+        n_patches = prod(grid_shape.values())
         return grid_shape, n_patches
 
     def _define_position_embedding(self, embed_dim: int) -> torch.nn.Parameter:
@@ -169,10 +188,10 @@ class PatchEmbed(BaseEmbedder):
             torch.Parameter: Array with each row the sin-cos embedding of a grid position.
         """
         # Divide sin and cos embeddings according to size of grid in each dimension
-        embed_dims = partition_embed_dim(embed_dim, dim_ratio=self.grid_shape)
+        embed_dims = partition_embed_dim(embed_dim, dim_ratio=list(self.grid_shape.values()))
         # Define grid: len(grid_shape)-tuple of np.arrays of shape grid_shape
         grid = torch.meshgrid([
-            torch.arange(grid_s, dtype=torch.float32) for grid_s in self.grid_shape
+            torch.arange(grid_s, dtype=torch.float32) for grid_s in self.grid_shape.values()
             ], indexing='ij')
         # Create sincos embedding: np.array of shape (prod(grid_shape), 2 * sum(embed_dims))
         omegas = [calc_embed_omega(dim) for dim in embed_dims]
@@ -203,29 +222,35 @@ class PatchEmbed(BaseEmbedder):
         Returns:
             torch.Tensor: Batched sequences of patch tokens, shape e.g. [B, HW, hwC]
         """
-        patch_shape, n_dim = self.patch_shape, len(self.patch_shape)
-        assert len(inputs.shape) - 2 == n_dim, \
-            f"{len(inputs.shape) - 2}-D input not divisible into {n_dim}-D patches"
-        for dim, (s_i, s_p) in enumerate(zip(inputs.shape[2:], patch_shape)):
-            assert s_i % s_p == 0, \
-                f"Input dimension {dim} not divisible into patches ({s_i} % {s_p} != 0)"
-
-        grid_shape, n_patches = self._count_patches(inputs.shape[2:])
+        input_dims, n_dim = self.input_shape.keys(), len(self.input_shape)
+        if len(inputs.shape) - 2 != n_dim:
+            raise ValueError(
+                f"{len(inputs.shape) - 2}-D input not divisible into {n_dim}-D patches"
+                )
+        for dim, s_i in zip(input_dims, inputs.shape[2:]):
+            s_p = self.patch_shape[dim]
+            if s_i % s_p != 0:
+                raise ValueError(
+                    f"Input dimension {dim} not divisible into patches ({s_i} % {s_p} != 0)"
+                    )
+        input_shape = dict(zip(input_dims, inputs.shape[2:]))
+        grid_shape, n_patches = self._count_patches(input_shape)
         x = inputs.reshape(shape=(
             (inputs.shape[0], self.n_channels)
-            + sum([(s_g, s_p) for s_g, s_p in zip(grid_shape, patch_shape)], ())
+            + sum([(grid_shape[dim], self.patch_shape[dim]) for dim in input_dims], ())
             ))
         # (B, C, H, h, W, w) for 2D patches
         x = x.permute(
             0, *range(2, 2 + 2 * n_dim, 2), *range(3, 3 + 2 * n_dim, 2), 1
             )
         # (B, H, W, h, w, C) for 2D patches
-        x = x.reshape(shape=(inputs.shape[0], n_patches, prod(patch_shape) * self.n_channels))
+        patch_size = prod(self.patch_shape.values())
+        x = x.reshape(shape=(inputs.shape[0], n_patches, patch_size * self.n_channels))
         # (B, H W, h w C) for 2D patches
         return x
 
     def untokenify(self, x: torch.Tensor,
-                   output_shape: tuple[int, ...] | None = None) -> torch.Tensor:
+                   output_shape: dict[Any, int] | None = None) -> torch.Tensor:
         """Reshape batched sequences of patch tokens into n-D images.
 
         Shapes are given for the example of a batch of B, C-channel 2D images,
@@ -233,33 +258,47 @@ class PatchEmbed(BaseEmbedder):
 
         Args:
             x (torch.Tensor): Batched sequences of tokens, shape e.g. [B, HW, hwC]
-            output_shape (tuple[int, ...] | None, optional): Required image shape, if different
-                from input_shape in class instantiation. Defaults to None: use input_shape.
+            output_shape (dict[Any, int], optional): Sizes of output dimensions required,
+                if different from input_shape in class instantiation.
 
         Returns:
             torch.Tensor: Batched sequence of images, shape e.g. [B, C, Hh, Ww]
         """
-        patch_shape, n_dim = self.patch_shape, len(self.patch_shape)
-        n_channels = self.n_channels
+        input_dims, n_dim = self.input_shape.keys(), len(self.input_shape)
+        patch_shape = tuple(self.patch_shape[dim] for dim in input_dims)
         if output_shape is None:
             grid_shape, n_patches = self.grid_shape, self.n_patches
         else:
-            assert len(output_shape) == n_dim, \
-                f"{len(output_shape)}-D output not formable from {n_dim}-D patches"
+            if len(output_shape) != n_dim:
+                raise ValueError(
+                    f"{len(output_shape)}-D output not formable from {n_dim}-D patches"
+                    )
+            if self.input_shape.keys() != output_shape.keys():
+                raise ValueError(
+                    f"output_shape dims {output_shape.keys()}"
+                    f" must equal input_shape dims {self.input_shape.keys()}."
+                    )
+            output_shape = {dim: output_shape[dim] for dim in input_dims}
             grid_shape, n_patches = self._count_patches(output_shape)
-        assert x.shape[1] == n_patches, \
-            f"Grid shape {grid_shape} not formable from {x.shape[1]} patches"
-        assert x.shape[2] == prod(patch_shape) * self.n_channels, \
-            f"{n_channels}-channel {patch_shape} patch not formable from {x.shape[2]} values"
+        grid_shape = tuple(grid_shape[dim] for dim in input_dims)
+        if x.shape[1] != n_patches:
+            raise ValueError(
+                f"Grid shape {grid_shape} not formable from {x.shape[1]} patches"
+                )
+        if x.shape[2] != prod(patch_shape) * self.n_channels:
+            raise ValueError(
+                f"{self.n_channels}-channel {patch_shape} patch not formable"
+                f" from {x.shape[2]} values"
+                )
 
-        x = x.reshape(shape=(x.shape[0],) + grid_shape + patch_shape + (n_channels,))
+        x = x.reshape(shape=(x.shape[0],) + grid_shape + patch_shape + (self.n_channels,))
         # (N, H, W, h, w, C) for 2D patches
         x = x.permute(
             0, -1, *sum([(id, n_dim + id) for id in range(1, 1 + n_dim)], ())
             )
         # (N, C, H, h, W, w) for 2D patches
         imgs = x.reshape(shape=(
-            (x.shape[0], n_channels)
+            (x.shape[0], self.n_channels)
             + sum([(s_g * s_p,) for s_g, s_p in zip(grid_shape, patch_shape)], ())
             ))
         # (N, C, H h, W w) for 2D patches
@@ -279,9 +318,12 @@ class PatchEmbed(BaseEmbedder):
                 * Batched sequences of embeddings, shape e.g. [B, HW, D]
                 * Batched sequences of positions, shape e.g. [B, HW, D]
         """
-        for dim, (s_actual, s_expected) in enumerate(zip(x.shape[2:], self.input_shape)):
-            assert s_actual == s_expected, \
-                f"Input dimension {dim} ({s_actual}) doesn't match specification ({s_expected})"
+        for (dim, s_expected), s_actual in zip(self.input_shape.items(), x.shape[2:]):
+            if s_actual != s_expected:
+                raise ValueError(
+                    f"Input dimension {dim} ({s_actual}) doesn't match specification"
+                    f" ({s_expected})"
+                    )
         x = self.proj(x)  # Project each patch into embedding, by convolution
         x = x.flatten(start_dim=2).transpose(1, 2)  # (B, D, H, W) -> (B, HW, D) for 2D patches
         x = self.norm(x)
@@ -304,27 +346,28 @@ class STPatchEmbed(PatchEmbed):
     """ 1-3D spatiotemporally located input to Patch Embedding
     """
     def __init__(self,
-                 input_shape: tuple[int, ...],
-                 patch_shape: tuple[int, ...],
+                 input_shape: dict[Any, int],
+                 patch_shape: dict[Any, int],
                  n_channels: int,
-                 position_space: tuple[tuple[float, float], ...],
+                 position_space: dict[Any, tuple[float, float]],
                  embed_dim: int,
                  reconstruct_dim: int,
-                 pos_embed_ratio: tuple[float, ...],
+                 pos_embed_ratio: dict[Any, float],
                  bias: bool = True,
                  norm_layer: torch.nn.Module | None = None,
                  **conv_kwargs):
         """Instantiate embedder for patches in 1-3D, n-channel images.
 
         Args:
-            input_shape (tuple[int, ...]): Shape of input image.
-            patch_shape (tuple[int, ...]): Shape of patches into which image will be divided.
+            input_shape (dict[Any, int]): Sizes of input dimensions.
+            patch_shape (dict[Any, int]): Shape of patches into which input will be divided.
             n_channels (int): Number of channels recorded in image.
-            position_space (tuple[tuple[float, float], ...]): Space in which pixels are positioned.
-                (range(x_0), ...) for coordinates x_i.
+            position_space (dict[Any, tuple[float, float]]): Space in which pixels are positioned.
+                For example, for coords x (X-periodic) and y (aperiodic with minimum Y, range ΔY):
+                {'x': (0, X), 'y': (Y, Y + 2ΔY)}
             embed_dim (int): Number of dimensions into which to embed each patch.
             reconstruct_dim (int): Number of embedding dimensions from which to reconstruct patch.
-            pos_embed_ratio (tuple[float, ...]): Relative sizes of position embedding dimensions.
+            pos_embed_ratio (dict[Any, float]): Relative sizes of position embedding dimensions.
             bias (bool, optional): Whether to include bias in patch embedding. Defaults to True.
             norm_layer (torch.nn.Module | None, optional): Layer with which to normalise embedding.
                 Defaults to None: no normalisation.
@@ -341,7 +384,7 @@ class STPatchEmbed(PatchEmbed):
             **conv_kwargs,
             )
         self.position_space = position_space
-        self.pos_embed_ratio = pos_embed_ratio
+        self.pos_embed_ratio = [pos_embed_ratio[dim] for dim in self.position_space.keys()]
         self.encoder_omegas = torch.nn.ParameterList()
         self.decoder_omegas = torch.nn.ParameterList()
 
@@ -351,9 +394,9 @@ class STPatchEmbed(PatchEmbed):
         embed_dims = partition_embed_dim(embed_dim, dim_ratio=self.pos_embed_ratio)
         st_dim = len(self.position_space)
         conv_fn = _conv_dim_dict[len(self.input_shape)]
+        kernel_shape = tuple(self.patch_shape[dim] for dim in self.input_shape.keys())
         self.pos_conv_kernel = torch.nn.Parameter(
-            torch.ones((st_dim, 1) + self.patch_shape) / prod(self.patch_shape),
-            requires_grad=False,
+            torch.ones((st_dim, 1) + kernel_shape) / prod(kernel_shape), requires_grad=False,
             )
         omegas.extend([
             torch.nn.Parameter(calc_embed_omega(dim, period=x_max - x_min), requires_grad=False)
@@ -363,13 +406,18 @@ class STPatchEmbed(PatchEmbed):
         def embedding(pos: torch.Tensor) -> torch.Tensor:
             # pos shape B, 2, Hh, Ww for 2D patches
             batch_size = pos.shape[0]
-            assert pos.shape[1] == len(self.position_space), \
-                f"{pos.shape[1]}-D position space doesn't match spec. ({len(self.position_space)})"
-            for dim, (s_pos, s_spec) in enumerate(zip(pos.shape[2:], self.input_shape)):
-                assert s_pos == s_spec, \
-                    f"Input positions dimension {dim} ({s_pos}) doesn't match spec. ({s_spec})"
+            if pos.shape[1] != len(self.position_space):
+                raise ValueError(
+                    f"{pos.shape[1]}-D position space doesn't match spec."
+                    f" ({len(self.position_space)})"
+                    )
+            for (dim, s_spec), s_pos in zip(self.input_shape.items(), pos.shape[2:]):
+                if s_pos != s_spec:
+                    raise ValueError(
+                        f"Input positions dimension {dim} ({s_pos}) doesn't match spec. ({s_spec})"
+                        )
             pos = conv_fn(
-                pos, self.pos_conv_kernel, stride=self.patch_shape, groups=st_dim
+                pos, self.pos_conv_kernel, stride=kernel_shape, groups=st_dim
                 )  # B, 2, H, W for 2D patches
             pos = pos.transpose(0, 1).flatten(start_dim=1)  # 2, BHW for 2D patches
             embeddings = torch.cat([
@@ -406,11 +454,15 @@ class STPatchEmbed(PatchEmbed):
              * Batched sequences of position embeddings, shape e.g. [B, HW, D_d]
         """
         x, pos = st_input
-        assert x.shape[1] == self.n_channels, \
-            f"# of input channels ({x.shape[1]}) doesn't match spec. ({self.n_channels})"
-        for dim, (s_x, s_spec) in enumerate(zip(x.shape[2:], self.input_shape)):
-            assert s_x == s_spec, \
-                f"Input values dimension {dim} ({s_x}) doesn't match spec. ({s_spec})"
+        if x.shape[1] != self.n_channels:
+            raise ValueError(
+                f"# of input channels ({x.shape[1]}) doesn't match spec. ({self.n_channels})"
+                )
+        for (dim, s_spec), s_x in zip(self.input_shape.items(), x.shape[2:]):
+            if s_x != s_spec:
+                raise ValueError(
+                    f"Input values dimension {dim} ({s_x}) doesn't match spec. ({s_spec})"
+                    )
         x = self.proj(x)  # Project each patch into embedding, by convolution
         x = x.flatten(start_dim=2).transpose(1, 2)  # (B, D, H, W) -> (B, HW, D) for 2D patches
         x = self.norm(x)
@@ -440,21 +492,29 @@ class BoundedPatchEmbed(STPatchEmbed):
         # Divide sin and cos embeddings according to size of grid in each dimension
         embed_dims = partition_embed_dim(embed_dim, dim_ratio=self.pos_embed_ratio)
         self.patch_grid_coords = torch.nn.ParameterList([
-            torch.nn.Parameter(torch.arange(0.5, grid_s) / grid_s, requires_grad=False)
-            for grid_s in self.grid_shape
+            torch.nn.Parameter(
+                torch.arange(0.5, self.grid_shape[dim]) / self.grid_shape[dim]
+                if dim in self.grid_shape else torch.tensor([0.5]),
+                requires_grad=False
+                )
+            for dim in self.position_space.keys()
             ])
         omegas.extend([
-            torch.nn.Parameter(calc_embed_omega(dim, period=x_max - x_min), requires_grad=False)
-            for dim, (x_min, x_max) in zip(embed_dims, self.position_space)
+            torch.nn.Parameter(calc_embed_omega(ndim, period=x_max - x_min), requires_grad=False)
+            for ndim, (x_min, x_max) in zip(embed_dims, self.position_space.values())
             ])
 
         def embedding(bounds_batch: torch.Tensor) -> torch.Tensor:
             # [[[bottom, top], [left, right]], ...] for 2D patches
-            batch_size = bounds_batch.shape[0]
-            assert bounds_batch.shape[1] == len(self.position_space), \
-                f"{bounds_batch.shape[1]}-D position space doesn't match spec. ({len(self.position_space)})"
-            assert bounds_batch.shape[2] == 2, \
-                f"Input position bounds (e.g. {bounds_batch[0, 0]}) must be 2-element ranges."
+            batch_size, ndim = bounds_batch.shape[0], len(self.position_space)
+            if bounds_batch.shape[1] != ndim:
+                raise ValueError(
+                    f"{bounds_batch.shape[1]}-D position space doesn't match {ndim}-D spec."
+                    )
+            if bounds_batch.shape[2] != 2:
+                raise ValueError(
+                    f"Input position bounds (e.g. {bounds_batch[0, 0]}) must be 2-element ranges."
+                    )
             pos = torch.cat([
                 torch.cartesian_prod(*[
                     b_min + (b_max - b_min) * patch_coords

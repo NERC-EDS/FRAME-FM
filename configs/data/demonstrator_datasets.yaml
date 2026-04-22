@@ -1,0 +1,71 @@
+# configs/data/demonstrator_datasets.yml
+training:
+  _target_: torch.utils.data.DataLoader
+  dataset:
+    _target_: FRAME_FM.datasets.combined_dataset.CorrespondingTilesDataset
+    datasets:
+    # Daily sqkm average precipitation from 1961-2019, in British National Grid
+    - _target_: FRAME_FM.datasets.base_dataset.BaseDataset
+      data_uri: /gws/ssde/j25b/eds_ai/frame-fm/data/inputs/chess-met/aggregations/chess-met_precip_gb_1km_daily_19610101-20191231.nca
+      preprocessors:
+      - {type: vars_to_dimension, variables: [precip], new_dim: precip}
+      - {type: subset, y: [0, 500000]}  # Use data south of Kendal/Northallerton for training
+      - {type: fill_missing, fill_value: 0}
+      # Convert typical values of order 1 mm / day ~ 10^-5 kg / m^2 s to order 1
+      - {type: normalize, mean: 0, std: 1e-5}
+      # Divide into 128-km-by-128-km-by-32-day tiles
+      - {type: tiler, boundary: trim, x: 128, y: 128, time: 32}
+      transforms:
+      - {type: to_values_bounds_tensors, dims: [x, y, time]}
+    # Proportions of sqkm pixels in each of 10 land cover classes, in British National Grid
+    - _target_: FRAME_FM.datasets.base_dataset.BaseDataset
+      data_uri: /gws/ssde/j25b/eds_ai/frame-fm/data/inputs/land_cover_map_2015/data/LCM2015_GB_1km_percent_cover_aggregate_class.tif
+      preprocessors:
+      - {type: sort_axis, dim: y}  # Sort dataset indices, originally increasing from N to S
+      - {type: to_dataarray, var_id: band_data}
+      - {type: subset, y: [0, 500000]}  # Use data south of Kendal/Northallerton for training
+      - {type: fill_missing, fill_value: 0}
+      - {type: normalize, mean: 0, std: 100}  # Convert percentages to [0, 1]
+      - {type: tiler, boundary: trim, x: 64, y: 64}  # Divide into 64 km-by-64 km tiles
+      - {type: add_fixed_coordinates, coords: {t: "2015-01-01"}}
+      transforms:
+      - {type: to_values_bounds_tensors, dims: [x, y, t]}
+  batch_size: 8
+  shuffle: True
+  num_workers: 4
+validation:
+  _target_: torch.utils.data.DataLoader
+  dataset:
+    _target_: FRAME_FM.datasets.combined_dataset.CorrespondingTilesDataset
+    datasets:
+    # Daily sqkm average precipitation from 1961-2019, in British National Grid
+    - _target_: FRAME_FM.datasets.base_dataset.BaseDataset
+      data_uri: /gws/ssde/j25b/eds_ai/frame-fm/data/inputs/chess-met/aggregations/chess-met_precip_gb_1km_daily_19610101-20191231.nca
+      preprocessors:
+      - {type: vars_to_dimension, variables: [precip], new_dim: precip}
+      # Use data between Kendal/Northallerton & Kirkwall for validation
+      - {type: subset, y: [500000, 1000000]}
+      - {type: fill_missing, fill_value: 0}
+      # Convert typical values of order 1 mm / day ~ 10^-5 kg / m^2 s to order 1
+      - {type: normalize, mean: 0, std: 1e-5}
+      # Divide into 128-km-by-128-km-by-32-day tiles
+      - {type: tiler, boundary: trim, x: 128, y: 128, time: 32}
+      transforms:
+      - {type: to_values_bounds_tensors, dims: [x, y, time]}
+    # Proportions of sqkm pixels in each of 10 land cover classes, in British National Grid
+    - _target_: FRAME_FM.datasets.base_dataset.BaseDataset
+      data_uri: /gws/ssde/j25b/eds_ai/frame-fm/data/inputs/land_cover_map_2015/data/LCM2015_GB_1km_percent_cover_aggregate_class.tif
+      preprocessors:
+      - {type: sort_axis, dim: y}  # Sort dataset indices, originally increasing from N to S
+      - {type: to_dataarray, var_id: band_data}
+      # Use data between Kendal/Northallerton & Kirkwall for validation
+      - {type: subset, y: [500000, 1000000]}
+      - {type: fill_missing, fill_value: 0}
+      - {type: normalize, mean: 0, std: 100}  # Convert percentages to [0, 1]
+      - {type: tiler, boundary: trim, x: 64, y: 64}  # Divide into 64 km-by-64 km tiles
+      - {type: add_fixed_coordinates, coords: {t: "2015-01-01"}}
+      transforms:
+      - {type: to_values_bounds_tensors, dims: [x, y, t]}
+  batch_size: 8
+  shuffle: False
+  num_workers: 4
