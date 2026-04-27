@@ -28,12 +28,12 @@ def test_dimensions_and_attributes():
     ds = _create_dataset()
     
     assert ds.dataset_out.sizes["x"] == 604, (
-        f"Expected width of dataset is 604, got {r.dataset_out.sizes['x']}"
+        f"Expected width of dataset is 604, got {ds.dataset_out.sizes['x']}"
     )
     assert ds.dataset_out.sizes["y"] == 1212, (
-        f"Expected width of dataset is 1212, got {r.dataset_out.sizes['y']}"
+        f"Expected width of dataset is 1212, got {ds.dataset_out.sizes['y']}"
     )
     assert ds.resolution == 1000, (
-        f"Expected resolution is 1000, got {r.dataset_out.resolution}"
+        f"Expected resolution is 1000, got {ds.dataset_out.resolution}"
     )
-    assert ds.target_crs == "EPSG:27700", f"Expect CRS is ESPG:27700, got {r.target_crs}"
+    assert ds.target_crs == "EPSG:27700", f"Expect CRS is ESPG:27700, got {ds.target_crs}"

@@ -25,7 +25,6 @@ from .common import (
     COSMOSUK_DATA_URI,
 )
 
-from FRAME_FM.utils.common_utils import get_main_vars
 from FRAME_FM.datasets.base_gridded_dataset import (
     BaseGriddedDataset,
     BaseGriddedTimeSeriesDataset
