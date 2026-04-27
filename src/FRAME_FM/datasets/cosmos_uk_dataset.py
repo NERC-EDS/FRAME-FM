@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 FRAME-FM Contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
 from FRAME_FM.transforms.transforms import resolve_transform
 from FRAME_FM.utils.data_utils import load_data_from_uri
 import torch

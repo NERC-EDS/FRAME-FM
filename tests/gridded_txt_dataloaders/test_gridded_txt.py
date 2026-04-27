@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 FRAME-FM Contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
 import pytest
 from hydra.core.config_store import ConfigStore
 from typing import Any, List
@@ -192,6 +196,7 @@ def eurossat_datamodule():
     yield datamodule
 
 
+@pytest.mark.xfail(reason="More work required to complete this test.")
 def test_dataset(eurossat_datamodule):
     # GOT TO HERE
     assert (
@@ -199,6 +204,7 @@ def test_dataset(eurossat_datamodule):
     )  # This is wrong, replace with actual assertions relevant to your dataset and dataloader
 
 
+@pytest.mark.xfail(reason="More work required to complete this test.")
 def test_eurosat_end_to_end():
     from hydra.utils import instantiate
     import pytorch_lightning as pl

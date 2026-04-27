@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 FRAME-FM Contributors
+#
+
 # import rioxarray
 # import glob
 

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 FRAME-FM Contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # src/FRAME_FM/utils/LightningModuleWrapper.py
 from typing import Any, Dict
 import pytorch_lightning as pl

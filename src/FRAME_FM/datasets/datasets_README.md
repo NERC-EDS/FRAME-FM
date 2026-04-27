@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 FRAME-FM Contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # datasets
 
 A location for the FRAME-FM datasets, which are all sub-classes of `torch.utils.data.Dataset`.

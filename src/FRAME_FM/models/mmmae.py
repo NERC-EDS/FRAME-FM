@@ -1,7 +1,10 @@
-# Copyright (c) Matt Arran.
+#
 
+# Copyright (C) Matt Arran.
+#
 # This source code is adapted from code (c) Meta Platforms, Inc. and affiliates,
-# licensed under the licence in the licences/LICENSE_MAE.txt file.
+# licensed under the licence in the LICENSES/CC-BY-NC-4.0.txt file. 
+
 # --------------------------------------------------------
 # References:
 # MAE: https://github.com/facebookresearch/mae/tree/main
