@@ -281,9 +281,9 @@ def launch_torchx_job(cfg, platform_cfg, scheduler: str, overrides: tuple[str, .
         raise click.UsageError(err_text)
 
     # if the scheduler is slurm, we don't want the sub job to also use slurm or we'll get a recursive job
-    # set it to local_cwd instead. Otherwise just keep using the same scheduler (need to check that really works on kubernetes/docker).
+    # set it to local instead. Otherwise just keep using the same scheduler (need to check that really works on kubernetes/docker).
     if scheduler == "slurm":
-        job_scheduler = "local_cwd"
+        job_scheduler = "local"
     else:
         job_scheduler = scheduler
 
@@ -373,9 +373,9 @@ def train():
 @click.option(
     "--scheduler",
     "-s",
-    type=click.Choice(["use_config", "local_cwd", "local_docker", "slurm", "kubernetes"]),
+    type=click.Choice(["use_config", "local", "local_docker", "slurm", "kubernetes"]),
     default="use_config",
-    help="The TorchX scheduler to use for running the training job.'local_cwd' runs immediately, others submit jobs.",
+    help="The TorchX scheduler to use for running the training job. 'local' runs immediately, others submit jobs.",
 )
 @click.option(
     "--verbose",
@@ -386,11 +386,10 @@ def train():
 )
 @click.argument("overrides", nargs=-1, type=click.UNPROCESSED)
 def train_run(scheduler: str, verbose: bool, overrides: tuple[str, ...]):
-#def train_run(verbose: bool, overrides: tuple[str, ...]):
     """Start a training run via TorchX.
 
     Schedulers:
-      local_cwd: Run on the current machine in the current directory.
+      local: Run on the current machine in the current directory.
       local_docker: Run inside a Docker container.
       slurm: Submit a job to a Slurm cluster.
       kubernetes: Launch a job on a K8s cluster.
@@ -415,7 +414,7 @@ def train_run(scheduler: str, verbose: bool, overrides: tuple[str, ...]):
         if scheduler == "use_config":
             scheduler = platform_cfg.get("scheduler", {})
 
-        if scheduler == "local_cwd":
+        if scheduler == "local":
             # Direct execution via your existing Hydra logic
             train_run_with_local_hydra(verbose, overrides)
         else:
@@ -522,11 +521,11 @@ def edit(config_file, key_value_pairs):
     help=(
         "Edit values in the TorchX config file.\n\n"
         "Key values should take the form of <table>-<key>:<new_value>\n"
-        "Example: scheduler-name:new_local_cwd\n"
+        "Example: scheduler-name:new_local\n"
         "\nThis edits the 'name' key "
         "in the 'scheduler' table.\n\n"
         "Examples:\n"
-        "\nframefm config edit-torchx scheduler-name:new_local_cwd\n"
+        "\nframefm config edit-torchx scheduler-name:new_local\n"
         "\nframefm config edit-torchx defaults-cpu:4"
     ),
 )

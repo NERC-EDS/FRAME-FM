@@ -4,7 +4,7 @@ defaults:
   - model: demo_autoencoder
   - trainer: default
   - logging: demo_mlflow
-  - platform: jasmin_small
+  - platform: local_server
   - _self_
 
 seed: 42

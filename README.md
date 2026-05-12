@@ -209,7 +209,7 @@ The torchx and hydra configs can be viewed and edited during runtime via the CLI
 > | Option | Short | Description |
 > |--------|-------|-------------|
 > | `--verbose` | `-v` | Print the fully resolved Hydra config to screen before training starts. |
-> |` --scheduler` | `-s`| The TorchX scheduler to use for running the training job.'local_cwd' runs immediately, others submit jobs.Default is local_cwd
+> |` --scheduler` | `-s`| The TorchX scheduler to use for running the training job. 'local' runs immediately on the local server, others submit jobs. Default is 'local' |
 > | `--help` | | Show help and exit. |
 
 > ### Overrides

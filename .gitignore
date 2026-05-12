@@ -45,3 +45,4 @@ era5_stats
 generic-data-loader/MNIST
 notebooks/logs
 DATASET_CACHE*
+.torchx*

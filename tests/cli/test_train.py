@@ -20,12 +20,12 @@ def test_train_run_passes_overrides():
     runner = CliRunner()
 
     with patch("FRAME_FM.cli.train_main") as mock_train:
-        result = runner.invoke(app, ["train", "run", "model=convAE"])
+        result = runner.invoke(app, ["train", "run", "model=demo_convae"])
 
     assert result.exit_code == 0
     # confirm the cfg passed to train_main has the override applied
     cfg = mock_train.call_args[0][0]
-    assert cfg.model._target_ == "FRAME_FM.models.demo_convAE.ConvAutoencoder"
+    assert cfg.model._target_ == "FRAME_FM.models.convae.ConvAutoencoder"
 
 
 def test_train_run_verbose_prints_config():
