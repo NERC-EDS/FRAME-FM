@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 FRAME-FM Contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
 """
 # Unit tests for the transforms in FRAME_FM.transforms.
 
@@ -21,6 +25,7 @@ import xarray as xr
 from FRAME_FM.transforms import (
     AddFixedCoordinates,
     FillMissingValueTransform,
+    FillNaNTransform,
     NormalizeTransform,
     RenameTransform,
     ResampleTransform,
@@ -28,6 +33,7 @@ from FRAME_FM.transforms import (
     ReverseAxisTransform,
     RollTransform,
     SortAxisTransform,
+    StandardizeTransform,
     SubsetTransform,
     TiledIndexMapper,
     TilerTransform,

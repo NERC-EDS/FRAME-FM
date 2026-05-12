@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 FRAME-FM Contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
 from typing import Optional, Any
 from torch.utils.data import Dataset
 

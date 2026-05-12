@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+title: FRAME-FM
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Adam
+    family-names: Ward
+  - given-names: Ag
+    family-names: Stephens
+  - given-names: Anastasia
+    family-names: Kadochnikova
+  - given-names: Colin
+    family-names: Sauze
+  - given-names: Daniel
+    family-names: Westwood
+  - given-names: Elisabeth
+    family-names: Wetchy
+  - given-names: James
+    family-names: Clare
+  - given-names: Jeremy
+    family-names: Carter
+  - given-names: Matthew
+    family-names: Paice
+  - given-names: Robert
+    family-names: Jennings
+  - given-names: Thomas
+    family-names: Gardner
+  - given-names: Vidya
+    family-names: Krishnan
+repository-code: 'https://github.com/NERC-EDS/FRAME-FM'
+license: Apache-2.0
