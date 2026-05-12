@@ -2,10 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from pathlib import Path
-
 from FRAME_FM.datasets.base_gridded_dataset import BaseGriddedTimeSeriesDataset
-
 
 
 class SoilWaterIndexGriddedTimeSeriesDataset(BaseGriddedTimeSeriesDataset):
@@ -14,4 +11,3 @@ class SoilWaterIndexGriddedTimeSeriesDataset(BaseGriddedTimeSeriesDataset):
     This class inherits from the BaseGriddedTimeSeriesDataset and can be extended with 
     Soil Water Index-specific loading or preprocessing logic if needed.
     """
-
