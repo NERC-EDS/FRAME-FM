@@ -1,0 +1,37 @@
+# configs/data/demonstrator_datasets.yaml
+training:
+  _target_: torch.utils.data.DataLoader
+  dataset:
+    _target_: FRAME_FM.datasets.base_dataset.BaseDataset
+    data_uri: /gws/ssde/j25b/eds_ai/frame-fm/data/inputs/land_cover_map_2015/data/LCM2015_GB_1km_percent_cover_aggregate_class.tif
+    preprocessors:
+    - {type: sort_axis, dim: y}
+    - {type: to_dataarray, var_id: band_data}
+    - {type: subset, y: [0, 800000]}
+    - {type: fill_missing, fill_value: 0}
+    - {type: normalize, mean: 0, std: 100}
+    - {type: tiler, boundary: trim, x: 32, y: 32}
+    transforms:
+    - {type: to_tensor, coords: [x, y]}
+  batch_size: 8
+  shuffle: True
+  num_workers: 4
+  persistent_workers: True
+validation:
+  _target_: torch.utils.data.DataLoader
+  dataset:
+    _target_: FRAME_FM.datasets.base_dataset.BaseDataset
+    data_uri: /gws/ssde/j25b/eds_ai/frame-fm/data/inputs/land_cover_map_2015/data/LCM2015_GB_1km_percent_cover_aggregate_class.tif
+    preprocessors:
+    - {type: sort_axis, dim: y}
+    - {type: to_dataarray, var_id: band_data}
+    - {type: subset, y: [800000, 1000000]}
+    - {type: fill_missing, fill_value: 0}
+    - {type: normalize, mean: 0, std: 100}
+    - {type: tiler, boundary: trim, x: 32, y: 32}
+    transforms:
+    - {type: to_tensor, coords: [x, y]}
+  batch_size: 8
+  shuffle: False
+  num_workers: 4
+  persistent_workers: True
