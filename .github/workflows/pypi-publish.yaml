@@ -1,0 +1,56 @@
+# Build package and publish to the test PyPI repository.
+# Using pypi-publish action with trusted publishing to avoid the need for a secret token
+# https://github.com/marketplace/actions/pypi-publish
+
+name: Build package / publish to test PyPI
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*.*.*'  # Run on tags that look like version numbers, e.g. v1.2.3
+  pull_request:
+jobs:
+  # Build job runs for all pushes to main and pull requests.
+  # This allows us to verify that the package builds correctly before we attempt to publish it.
+  build-distribution:
+    name: Build package distribution
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v6
+    - name: Set Up Python
+      uses: astral-sh/setup-uv@v7.2.0
+    - name: Build package
+      run: |
+        uv build --out-dir dist
+    - name: Store distribution artifacts
+      uses: actions/upload-artifact@v6
+      # Only upload artifacts for tagged releases.
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+      with:
+        name: package-distribution
+        path: dist/
+  # Publish job only runs for tagged releases.
+  pypi-publish:
+    name: Upload release to test PyPI
+    runs-on: ubuntu-latest
+    needs: build-distribution
+    # Only run this job if it's a tagged release.
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/frame-fm/
+    permissions:
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+    steps:
+    - name: Download distribution artifacts
+      uses: actions/download-artifact@v6
+      with:
+        name: package-distribution
+        path: dist/
+    - name: Publish package distributions to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+        packages-dir: dist/
