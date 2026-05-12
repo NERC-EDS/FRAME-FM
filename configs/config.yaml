@@ -3,7 +3,8 @@ defaults:
   - data: demo_eurosat
   - model: demo_autoencoder
   - trainer: default
-  - logging: demo_mlflow 
+  - logging: demo_mlflow
+  - platform: local_server
   - _self_
 
 seed: 42

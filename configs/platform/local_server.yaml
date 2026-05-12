@@ -1,0 +1,3 @@
+# Configuration for running training on the local server (e.g. for development and testing).
+job_dir: job_logs
+scheduler: local
