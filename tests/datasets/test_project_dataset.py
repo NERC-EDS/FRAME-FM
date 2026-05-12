@@ -25,7 +25,6 @@ from .common import (
     COSMOSUK_DATA_URI,
 )
 
-from FRAME_FM.utils.common_utils import get_main_vars
 from FRAME_FM.datasets.base_gridded_dataset import (
     BaseGriddedDataset,
     BaseGriddedTimeSeriesDataset
@@ -83,7 +82,6 @@ def test_chessmet_dataset_with_transforms():
         chunks={"time": 2},
     )
 
-    ds = dataset.data
     sample = dataset[0]
     assert isinstance(sample, torch.Tensor)
 
@@ -216,12 +214,12 @@ def test_cosmosuk_dataset():
     )
 
     data = dataset.data
-    assert type(data) == list, f"Expected dataset.data to be a list of xarray Datasets (one per site), but got {type(data)}"
+    assert type(data) is list, f"Expected dataset.data to be a list of xarray Datasets (one per site), but got {type(data)}"
     # Test data has one site, so assert length of dataset is 1
-    assert len(dataset) == 1, f"Expected dataset length to be 1 since there is only one site"
+    assert len(dataset) == 1, "Expected dataset length to be 1 since there is only one site"
     
     sample = dataset[0]
     assert len(sample) == 8
     assert set(sample.data_vars.keys()) == {'TDT1_VWC', 'TDT2_VWC', 'TDT3_VWC', 'TDT4_VWC', 'TDT5_VWC', 'TDT6_VWC', 'TDT7_VWC', 'TDT8_VWC'}, f"Expected sample to contain the 8 TDT_VWC variables, but got {sample.data_vars.keys()}"
-    assert "time" in sample.coords, f"Expected sample to have 'time' coordinate, but it was not found in the coordinates"
+    assert "time" in sample.coords, "Expected sample to have 'time' coordinate, but it was not found in the coordinates"
     assert sample.TDT1_VWC.max().item() == 323.6, f"Expected max value of TDT1_VWC to be 323.6 after applying QC mask, but got {sample.TDT1_VWC.max().item()}"

@@ -4,17 +4,12 @@ geospatial tiles. A ConvAutoencoder class is defined to readh tiles form the
 input batch and pass them through the convolutional encoder-decodernetwork. 
 """
 
-from click.core import batch
 import matplotlib
 matplotlib.use("Agg") #Ensure a non-interactive Matplotlib backend
 import matplotlib.pyplot as plt
 import os
 import torch
 import torch.nn as nn
-import torch.optim as optim
-import pytorch_lightning as pl
-
-
 
 from FRAME_FM.utils.LightningModuleWrapper import BaseModule
 
@@ -153,7 +148,7 @@ class ConvAutoencoder(BaseModule):
         self.reconstructed_tile_buffer.clear()
 
 
-    def validation_step_body(self, batch, batch_idx):   
+    def validation_step_body(self, batch, batch_idx):
         reconstructed, _ = self(batch) #self(x) is equivalent to self.forward(x)
         loss = self.loss_fn(reconstructed, batch)
 

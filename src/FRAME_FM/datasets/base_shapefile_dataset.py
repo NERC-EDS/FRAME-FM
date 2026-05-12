@@ -241,9 +241,9 @@ class BaseShapefileDataset(Dataset):
 
         # Final check to ensure only one parent grid is defined and define that grid.
         if all(x == "NO" for x in parent_grd_list):
-            raise ValueError(f"No parent grid defined. Please correct config.")
+            raise ValueError("No parent grid defined. Please correct config.")
         elif parent_grd_list.count("YES") > 1:
-            raise ValueError(f"More the one parent grid defined. Please correct config")
+            raise ValueError("More than one parent grid defined. Please correct config")
         else:
             self.parent_grd = self.file_list[parent_grd_list.index("YES")]
 

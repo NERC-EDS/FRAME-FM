@@ -5,8 +5,6 @@
 import math
 import numpy as np
 
-import pytest
-
 import FRAME_FM.datasets.cosmosuk_dataset as cosmosuk
 from tests.datasets.common import COSMOSUK_DATA_URI
 

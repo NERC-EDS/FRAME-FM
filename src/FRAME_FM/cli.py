@@ -402,11 +402,6 @@ def train_run(scheduler: str, verbose: bool, overrides: tuple[str, ...]):
     # Initialise Hydra and compose config — must happen first
     with initialize_config_dir(config_dir=CONFIG_DIR, version_base=None):
         cfg = compose(config_name="config", overrides=list(overrides))
-
-        # Load defaults from .torchxconfig
-        # defaults section
-        torchx_config = get_torchx_config()
-
         cfg_dict = OmegaConf.to_container(cfg, resolve=False, throw_on_missing=False)
 
         # Extract platform info

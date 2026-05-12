@@ -5,6 +5,7 @@
 import torch
 
 from FRAME_FM.datasets.base_dataset import BaseDataset
+from FRAME_FM.transforms import resolve_transform
 
 
 class COSMOSUKSiteTimeSeriesDataset(BaseDataset):

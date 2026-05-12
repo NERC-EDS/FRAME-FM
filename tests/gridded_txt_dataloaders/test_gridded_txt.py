@@ -4,13 +4,11 @@
 
 import pytest
 from hydra.core.config_store import ConfigStore
-from typing import Any, List, Optional
+from typing import Any, List
 
 def hydra_config_fixture():
     from hydra import initialize, compose
-    from omegaconf import OmegaConf, DictConfig
     from dataclasses import dataclass, field, MISSING
-    import torchvision
 
     @dataclass(kw_only=True)
     class TrainTransformsConfig:
@@ -187,6 +185,7 @@ def test_dataset(eurossat_datamodule):
     # GOT TO HERE
     assert eurossat_datamodule == 1 # This is wrong, replace with actual assertions relevant to your dataset and dataloader
 
+
 @pytest.mark.xfail(reason="More work required to complete this test.")
 def test_eurosat_end_to_end():
     from hydra.utils import instantiate
@@ -225,15 +224,7 @@ def test_eurosat_end_to_end():
 
     # This test will run after the xarray_dataloader_test fixture has completed
     from gridded_txt_dataloaders import grid_txt_end_to_end
-    try:
-        grid_txt_end_to_end.main() # Call the main function to run the end-to-end test
-    except:
-        assert True==False  # Replace with actual assertions relevant to your tests
-
-
-
-
-
+    grid_txt_end_to_end.main() # Call the main function to run the end-to-end test
     
 
 # def test_simple():
