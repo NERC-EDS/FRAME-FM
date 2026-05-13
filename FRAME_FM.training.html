@@ -3,10 +3,10 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Configs" href="configs.html">
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="FRAME_FM.transforms package" href="FRAME_FM.transforms.html"><link rel="prev" title="FRAME_FM.models package" href="FRAME_FM.models.html">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
-        <title>FRAME-FM documentation</title>
+        <title>FRAME_FM.training package - FRAME-FM documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -161,7 +161,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="#"><div class="brand">FRAME-FM  documentation</div></a>
+      <a href="index.html"><div class="brand">FRAME-FM  documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -180,7 +180,7 @@
   <aside class="sidebar-drawer">
     <div class="sidebar-container">
       
-      <div class="sidebar-sticky"><a class="sidebar-brand" href="#">
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
   <span class="sidebar-brand-text">FRAME-FM  documentation</span>
   
@@ -195,13 +195,13 @@
 <li class="toctree-l1"><a class="reference internal" href="data_wrangling.html">Data Wrangling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transforms.html">Transforms</a></li>
 </ul>
-<ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="modules.html">FRAME_FM</a><input aria-label="Toggle navigation of FRAME_FM" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="FRAME_FM.html">FRAME_FM package</a><input aria-label="Toggle navigation of FRAME_FM package" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="modules.html">FRAME_FM</a><input aria-label="Toggle navigation of FRAME_FM" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="FRAME_FM.html">FRAME_FM package</a><input aria-label="Toggle navigation of FRAME_FM package" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="FRAME_FM.dataloaders.html">FRAME_FM.dataloaders package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="FRAME_FM.datasets.html">FRAME_FM.datasets package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="FRAME_FM.models.html">FRAME_FM.models package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="FRAME_FM.training.html">FRAME_FM.training package</a></li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">FRAME_FM.training package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="FRAME_FM.transforms.html">FRAME_FM.transforms package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="FRAME_FM.utils.html">FRAME_FM.utils package</a></li>
 </ul>
@@ -228,7 +228,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="_sources/index.rst.txt" title="View this page">
+  <a class="muted-link" href="_sources/FRAME_FM.training.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -246,61 +246,35 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="frame-fm-technical-documentation">
-<h1>FRAME-FM Technical Documentation<a class="headerlink" href="#frame-fm-technical-documentation" title="Link to this heading">¶</a></h1>
-<p>Framework for the Rapid Development of Environmental Foundation Models.</p>
-<p>FRAME-FM is an open-source framework for building scalable machine learning
-foundation models on large environmental datasets, including archives from
-the UK NERC Environmental Data Service (EDS).</p>
-<p>The framework provides structured pipelines for:</p>
-<ul class="simple">
-<li><p>Dataset Ingestion</p></li>
-<li><p>Data Transformation</p></li>
-<li><p>Model Training</p></li>
-<li><p>Experiment Tracking</p></li>
-<li><p>Configuration Management</p></li>
-</ul>
-<p>It is designed for both experienced machine learning practitioners and
-scientists who are new to ML but want to work with large environmental datasets.</p>
-<hr class="docutils" />
-<section id="architecture">
-<h2>Architecture<a class="headerlink" href="#architecture" title="Link to this heading">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="configs.html">Configs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="data_wrangling.html">Data Wrangling</a></li>
-<li class="toctree-l1"><a class="reference internal" href="transforms.html">Transforms</a></li>
-</ul>
-</div>
+          <section id="frame-fm-training-package">
+<h1>FRAME_FM.training package<a class="headerlink" href="#frame-fm-training-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
 </section>
-<section id="api-reference">
-<h2>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">¶</a></h2>
-<p>Autogenerated documentation for FRAME-FM modules.</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">FRAME_FM</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="FRAME_FM.html">FRAME_FM package</a></li>
-</ul>
-</li>
-</ul>
-</div>
+<section id="module-FRAME_FM.training.logging_utils">
+<span id="frame-fm-training-logging-utils-module"></span><h2>FRAME_FM.training.logging_utils module<a class="headerlink" href="#module-FRAME_FM.training.logging_utils" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="FRAME_FM.training.logging_utils.create_csv_logger">
+<span class="sig-prename descclassname"><span class="pre">FRAME_FM.training.logging_utils.</span></span><span class="sig-name descname"><span class="pre">create_csv_logger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'csv_logs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">CSVLogger</span></span></span><a class="reference internal" href="_modules/FRAME_FM/training/logging_utils.html#create_csv_logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.training.logging_utils.create_csv_logger" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="FRAME_FM.training.logging_utils.create_mlflow_logger">
+<span class="sig-prename descclassname"><span class="pre">FRAME_FM.training.logging_utils.</span></span><span class="sig-name descname"><span class="pre">create_mlflow_logger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tracking_uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">MLFlowLogger</span></span></span><a class="reference internal" href="_modules/FRAME_FM/training/logging_utils.html#create_mlflow_logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.training.logging_utils.create_mlflow_logger" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </section>
-<section id="project-links">
-<h2>Project Links<a class="headerlink" href="#project-links" title="Link to this heading">¶</a></h2>
-<ul class="simple">
-<li><p>GitHub Repository: <a class="reference external" href="https://github.com/NERC-EDS/FRAME-FM">https://github.com/NERC-EDS/FRAME-FM</a></p></li>
-<li><p>Technical Documentation: <a class="reference external" href="https://nerc-eds.github.io/FRAME-FM/">https://nerc-eds.github.io/FRAME-FM/</a></p></li>
-</ul>
+<section id="module-FRAME_FM.training.train">
+<span id="frame-fm-training-train-module"></span><h2>FRAME_FM.training.train module<a class="headerlink" href="#module-FRAME_FM.training.train" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="FRAME_FM.training.train.main">
+<span class="sig-prename descclassname"><span class="pre">FRAME_FM.training.train.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DictConfig</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/FRAME_FM/training/train.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#FRAME_FM.training.train.main" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </section>
+<section id="module-FRAME_FM.training">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-FRAME_FM.training" title="Link to this heading">¶</a></h2>
 </section>
-<hr class="docutils" />
-<section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">¶</a></h1>
-<ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
-</ul>
 </section>
 
         </article>
@@ -308,16 +282,26 @@ scientists who are new to ML but want to work with large environmental datasets.
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="configs.html">
+          <a class="next-page" href="FRAME_FM.transforms.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Configs</div>
+                <div class="title">FRAME_FM.transforms package</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          
+          <a class="prev-page" href="FRAME_FM.models.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">FRAME_FM.models package</div>
+                
+              </div>
+            </a>
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
@@ -348,13 +332,20 @@ scientists who are new to ML but want to work with large environmental datasets.
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">FRAME-FM Technical Documentation</a><ul>
-<li><a class="reference internal" href="#architecture">Architecture</a></li>
-<li><a class="reference internal" href="#api-reference">API Reference</a></li>
-<li><a class="reference internal" href="#project-links">Project Links</a></li>
+<li><a class="reference internal" href="#">FRAME_FM.training package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-FRAME_FM.training.logging_utils">FRAME_FM.training.logging_utils module</a><ul>
+<li><a class="reference internal" href="#FRAME_FM.training.logging_utils.create_csv_logger"><code class="docutils literal notranslate"><span class="pre">create_csv_logger()</span></code></a></li>
+<li><a class="reference internal" href="#FRAME_FM.training.logging_utils.create_mlflow_logger"><code class="docutils literal notranslate"><span class="pre">create_mlflow_logger()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+<li><a class="reference internal" href="#module-FRAME_FM.training.train">FRAME_FM.training.train module</a><ul>
+<li><a class="reference internal" href="#FRAME_FM.training.train.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-FRAME_FM.training">Module contents</a></li>
+</ul>
+</li>
 </ul>
 
           </div>

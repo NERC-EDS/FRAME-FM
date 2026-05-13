@@ -1,0 +1,869 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>FRAME_FM.utils.embedders - FRAME-FM documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #eeffcc;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand">FRAME-FM  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
+  
+  <span class="sidebar-brand-text">FRAME-FM  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../configs.html">Configs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../data_wrangling.html">Data Wrangling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../transforms.html">Transforms</a></li>
+</ul>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../modules.html">FRAME_FM</a><input aria-label="Toggle navigation of FRAME_FM" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../FRAME_FM.html">FRAME_FM package</a><input aria-label="Toggle navigation of FRAME_FM package" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../FRAME_FM.dataloaders.html">FRAME_FM.dataloaders package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../FRAME_FM.datasets.html">FRAME_FM.datasets package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../FRAME_FM.models.html">FRAME_FM.models package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../FRAME_FM.training.html">FRAME_FM.training package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../FRAME_FM.transforms.html">FRAME_FM.transforms package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../FRAME_FM.utils.html">FRAME_FM.utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <h1>Source code for FRAME_FM.utils.embedders</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+
+<span class="c1">#</span>
+
+<span class="c1">#</span>
+
+<span class="c1">#</span>
+
+<span class="c1">#</span>
+
+<span class="c1">#</span>
+
+
+<span class="c1"># This source code is adapted from Masked Autoencoder (MAE) code, copyright</span>
+<span class="c1"># Meta Platforms, Inc. and affiliates, licensed under the licence found in the</span>
+<span class="c1"># LICENSES/CC-BY-NC-4.0.txt file.</span>
+<span class="c1"># PatchEmbed is inspired by the equivalent class in PyTorch Image Models (timm).</span>
+<span class="c1"># --------------------------------------------------------</span>
+<span class="c1"># Embedding utils</span>
+<span class="c1"># --------------------------------------------------------</span>
+<span class="c1"># References:</span>
+<span class="c1"># MAE: https://github.com/facebookresearch/mae/tree/main</span>
+<span class="c1"># timm: https://github.com/rwightman/pytorch-image-models/tree/master/timm</span>
+<span class="c1"># --------------------------------------------------------</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">prod</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+
+<span class="n">_Conv_dim_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">_ConvNd</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">1</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv1d</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv3d</span>
+    <span class="p">}</span>
+<span class="n">_conv_dim_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">1</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">conv1d</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">conv2d</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">conv3d</span>
+    <span class="p">}</span>
+
+
+<div class="viewcode-block" id="partition_embed_dim">
+<a class="viewcode-back" href="../../../FRAME_FM.utils.html#FRAME_FM.utils.embedders.partition_embed_dim">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">partition_embed_dim</span><span class="p">(</span><span class="n">embed_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">dim_ratio</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Partitions integer embedding dimension into integer components.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        embed_dim (int): Total number of dimensions.</span>
+<span class="sd">        dim_ratio (list[int | float]): Target ratio of component sizes.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        numpy.ndarray: Array of integer components.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">embed_dims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span>
+        <span class="n">embed_dim</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dim_ratio</span><span class="p">)</span> <span class="o">/</span> <span class="nb">sum</span><span class="p">(</span><span class="n">dim_ratio</span><span class="p">)</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">embed_dims</span><span class="p">[</span><span class="n">embed_dims</span><span class="o">.</span><span class="n">argmin</span><span class="p">()]</span> <span class="o">+=</span> <span class="n">embed_dim</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">embed_dims</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">embed_dims</span></div>
+
+
+
+<div class="viewcode-block" id="calc_embed_omega">
+<a class="viewcode-back" href="../../../FRAME_FM.utils.html#FRAME_FM.utils.embedders.calc_embed_omega">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calc_embed_omega</span><span class="p">(</span><span class="n">embed_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">period</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">4e4</span><span class="p">,</span> <span class="n">res_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e4</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculates appropriate angular frequencies for sincos embedding</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        embed_dim (int): Number of dimensions in which to embed coordinates.</span>
+<span class="sd">        period (float, optional): Coordinate distance over which the embedding is periodic.</span>
+<span class="sd">            Defaults to 40,000.</span>
+<span class="sd">        res_ratio (float, optional): Ratio between maximum and minimum resolutions of embedding.</span>
+<span class="sd">            Defaults to 10,000.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: Array of angular frequencies</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_periods</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">res_ratio</span><span class="p">),</span> <span class="n">embed_dim</span><span class="p">))</span><span class="o">.</span><span class="n">round</span><span class="p">()</span>  <span class="c1"># (D,)</span>
+    <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">n_periods</span> <span class="o">/</span> <span class="n">period</span>  <span class="c1"># (D,)</span></div>
+
+
+
+<div class="viewcode-block" id="sincos_embed_coords">
+<a class="viewcode-back" href="../../../FRAME_FM.utils.html#FRAME_FM.utils.embedders.sincos_embed_coords">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">sincos_embed_coords</span><span class="p">(</span><span class="n">coordinates</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">omega</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a periodic sin-cos embedding of an array of 1D coordinates.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        coordinates (torch.Tensor): Coordinates to embed.</span>
+<span class="sd">        embed_dim (int): Number of dimensions in which to embed coordinates.</span>
+<span class="sd">        period (float, optional): Coordinate distance over which the embedding is periodic.</span>
+<span class="sd">            Defaults to 40,000.</span>
+<span class="sd">        res_ratio (float, optional): Ratio between maximum and minimum resolutions of embedding.</span>
+<span class="sd">            Defaults to 10,000.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: Array with each row the sin-cos embedding of a coordinate.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">phases</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;m,d-&gt;md&#39;</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">omega</span><span class="p">)</span>  <span class="c1"># (M, D), outer product</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phases</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phases</span><span class="p">)],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># (M, 2D)</span></div>
+
+
+
+<div class="viewcode-block" id="BaseEmbedder">
+<a class="viewcode-back" href="../../../FRAME_FM.utils.html#FRAME_FM.utils.embedders.BaseEmbedder">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BaseEmbedder</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+    <span class="n">n_patches</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">embed_dim</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">reconstruct_dim</span><span class="p">:</span> <span class="nb">int</span>
+
+<div class="viewcode-block" id="BaseEmbedder.initialize_weights">
+<a class="viewcode-back" href="../../../FRAME_FM.utils.html#FRAME_FM.utils.embedders.BaseEmbedder.initialize_weights">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">initialize_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="BaseEmbedder.tokenify">
+<a class="viewcode-back" href="../../../FRAME_FM.utils.html#FRAME_FM.utils.embedders.BaseEmbedder.tokenify">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tokenify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inpt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="BaseEmbedder.forward">
+<a class="viewcode-back" href="../../../FRAME_FM.utils.html#FRAME_FM.utils.embedders.BaseEmbedder.forward">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inpt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="BaseEmbedder.reconstruct_tokens">
+<a class="viewcode-back" href="../../../FRAME_FM.utils.html#FRAME_FM.utils.embedders.BaseEmbedder.reconstruct_tokens">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reconstruct_tokens</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">embedding</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="BaseEmbedder.untokenify">
+<a class="viewcode-back" href="../../../FRAME_FM.utils.html#FRAME_FM.utils.embedders.BaseEmbedder.untokenify">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">untokenify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inpt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PatchEmbed">
+<a class="viewcode-back" href="../../../FRAME_FM.utils.html#FRAME_FM.utils.embedders.PatchEmbed">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PatchEmbed</span><span class="p">(</span><span class="n">BaseEmbedder</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; 1-3D Image to Patch Embedding</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">input_shape</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+                 <span class="n">patch_shape</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+                 <span class="n">n_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">embed_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">reconstruct_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                 <span class="n">norm_layer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">conv_kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate embedder for patches in 1-3D, n-channel images.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input_shape (dict[Any, int]): Sizes of input dimensions.</span>
+<span class="sd">            patch_shape (dict[Any, int]): Shape of patches into which input will be divided.</span>
+<span class="sd">            n_channels (int): Number of channels recorded in input.</span>
+<span class="sd">            embed_dim (int): Number of dimensions into which to embed each patch.</span>
+<span class="sd">            reconstruct_dim (int): Number of embedding dimensions from which to reconstruct patch.</span>
+<span class="sd">            bias (bool, optional): Whether to include bias in patch embedding. Defaults to True.</span>
+<span class="sd">            norm_layer (torch.nn.Module | None, optional): Layer with which to normalise embedding.</span>
+<span class="sd">                Defaults to None: no normalisation.</span>
+<span class="sd">            **conv_kwargs: Keyword arguments to pass for convolution layer instantiation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_Conv_dim_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)</span><span class="si">}</span><span class="s2">D input not supported&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">input_shape</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">!=</span> <span class="n">patch_shape</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;input_shape dims </span><span class="si">{</span><span class="n">input_shape</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; must equal patch_shape dims </span><span class="si">{</span><span class="n">patch_shape</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span> <span class="o">=</span> <span class="n">input_shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">patch_shape</span> <span class="o">=</span> <span class="n">patch_shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid_shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_patches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count_patches</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span> <span class="o">=</span> <span class="n">n_channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embed_dim</span> <span class="o">=</span> <span class="n">embed_dim</span>
+        <span class="n">conv_class</span> <span class="o">=</span> <span class="n">_Conv_dim_dict</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)]</span>
+        <span class="n">kernel_size</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">patch_shape</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">input_shape</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proj</span> <span class="o">=</span> <span class="n">conv_class</span><span class="p">(</span>
+            <span class="n">n_channels</span><span class="p">,</span>
+            <span class="n">embed_dim</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="n">kernel_size</span><span class="p">,</span>
+            <span class="n">stride</span><span class="o">=</span><span class="n">kernel_size</span><span class="p">,</span>
+            <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">conv_kwargs</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">norm_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">norm_layer</span><span class="p">(</span><span class="n">embed_dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reconstruct_dim</span> <span class="o">=</span> <span class="n">reconstruct_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reconstruct_layer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span>
+            <span class="n">reconstruct_dim</span><span class="p">,</span> <span class="n">prod</span><span class="p">(</span><span class="n">kernel_size</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_channels</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_count_patches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="nb">int</span><span class="p">]:</span>
+        <span class="n">grid_shape</span> <span class="o">=</span> <span class="p">{</span><span class="n">dim</span><span class="p">:</span> <span class="n">s_i</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch_shape</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="k">for</span> <span class="n">dim</span><span class="p">,</span> <span class="n">s_i</span> <span class="ow">in</span> <span class="n">input_shape</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">n_patches</span> <span class="o">=</span> <span class="n">prod</span><span class="p">(</span><span class="n">grid_shape</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">grid_shape</span><span class="p">,</span> <span class="n">n_patches</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_define_position_embedding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">embed_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a sin-cos embedding of positions on an n-dimensional grid.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            embed_dim (int): Number of dimensions into which to embed grid positions.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Parameter: Array with each row the sin-cos embedding of a grid position.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Divide sin and cos embeddings according to size of grid in each dimension</span>
+        <span class="n">embed_dims</span> <span class="o">=</span> <span class="n">partition_embed_dim</span><span class="p">(</span><span class="n">embed_dim</span><span class="p">,</span> <span class="n">dim_ratio</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid_shape</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+        <span class="c1"># Define grid: len(grid_shape)-tuple of np.arrays of shape grid_shape</span>
+        <span class="n">grid</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">([</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">grid_s</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="k">for</span> <span class="n">grid_s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_shape</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+            <span class="p">],</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+        <span class="c1"># Create sincos embedding: np.array of shape (prod(grid_shape), 2 * sum(embed_dims))</span>
+        <span class="n">omegas</span> <span class="o">=</span> <span class="p">[</span><span class="n">calc_embed_omega</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">embed_dims</span><span class="p">]</span>
+        <span class="n">embedding</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span>
+            <span class="n">sincos_embed_coords</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">omega</span><span class="p">)</span> <span class="k">for</span> <span class="n">coords</span><span class="p">,</span> <span class="n">omega</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">omegas</span><span class="p">)</span>
+            <span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">embedding</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PatchEmbed.initialize_weights">
+<a class="viewcode-back" href="../../../FRAME_FM.utils.html#FRAME_FM.utils.embedders.PatchEmbed.initialize_weights">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">initialize_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up embedder weights and parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># define fixed sin-cos embeddings of patch position within image</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos_embed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_define_position_embedding</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">embed_dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder_pos_embed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_define_position_embedding</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reconstruct_dim</span><span class="p">)</span>
+        <span class="c1"># initialize projection like nn.Linear (instead of nn.Conv2d)</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">xavier_uniform_</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">view</span><span class="p">([</span><span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">]))</span></div>
+
+
+<div class="viewcode-block" id="PatchEmbed.tokenify">
+<a class="viewcode-back" href="../../../FRAME_FM.utils.html#FRAME_FM.utils.embedders.PatchEmbed.tokenify">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tokenify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reshape batched input n-D images into sequences of patch tokens.</span>
+
+<span class="sd">        Shapes are given for the example of a batch of B, C-channel 2D images,</span>
+<span class="sd">        with image size (Hh, Ww) and patch size (h, w).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (torch.Tensor): Batched sequence of images, shape e.g. [B, C, Hh, Ww]</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: Batched sequences of patch tokens, shape e.g. [B, HW, hwC]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">input_dims</span><span class="p">,</span> <span class="n">n_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">!=</span> <span class="n">n_dim</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">2</span><span class="si">}</span><span class="s2">-D input not divisible into </span><span class="si">{</span><span class="n">n_dim</span><span class="si">}</span><span class="s2">-D patches&quot;</span>
+                <span class="p">)</span>
+        <span class="k">for</span> <span class="n">dim</span><span class="p">,</span> <span class="n">s_i</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">input_dims</span><span class="p">,</span> <span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]):</span>
+            <span class="n">s_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch_shape</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">s_i</span> <span class="o">%</span> <span class="n">s_p</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Input dimension </span><span class="si">{</span><span class="n">dim</span><span class="si">}</span><span class="s2"> not divisible into patches (</span><span class="si">{</span><span class="n">s_i</span><span class="si">}</span><span class="s2"> % </span><span class="si">{</span><span class="n">s_p</span><span class="si">}</span><span class="s2"> != 0)&quot;</span>
+                    <span class="p">)</span>
+        <span class="n">input_shape</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">input_dims</span><span class="p">,</span> <span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]))</span>
+        <span class="n">grid_shape</span><span class="p">,</span> <span class="n">n_patches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count_patches</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span><span class="p">)</span>
+            <span class="o">+</span> <span class="nb">sum</span><span class="p">([(</span><span class="n">grid_shape</span><span class="p">[</span><span class="n">dim</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch_shape</span><span class="p">[</span><span class="n">dim</span><span class="p">])</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">input_dims</span><span class="p">],</span> <span class="p">())</span>
+            <span class="p">))</span>
+        <span class="c1"># (B, C, H, h, W, w) for 2D patches</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span>
+            <span class="mi">0</span><span class="p">,</span> <span class="o">*</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n_dim</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="o">*</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n_dim</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="mi">1</span>
+            <span class="p">)</span>
+        <span class="c1"># (B, H, W, h, w, C) for 2D patches</span>
+        <span class="n">patch_size</span> <span class="o">=</span> <span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">patch_shape</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">n_patches</span><span class="p">,</span> <span class="n">patch_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span><span class="p">))</span>
+        <span class="c1"># (B, H W, h w C) for 2D patches</span>
+        <span class="k">return</span> <span class="n">x</span></div>
+
+
+<div class="viewcode-block" id="PatchEmbed.untokenify">
+<a class="viewcode-back" href="../../../FRAME_FM.utils.html#FRAME_FM.utils.embedders.PatchEmbed.untokenify">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">untokenify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+                   <span class="n">output_shape</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reshape batched sequences of patch tokens into n-D images.</span>
+
+<span class="sd">        Shapes are given for the example of a batch of B, C-channel 2D images,</span>
+<span class="sd">        with image size (Hh, Ww) and patch size (h, w).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): Batched sequences of tokens, shape e.g. [B, HW, hwC]</span>
+<span class="sd">            output_shape (dict[Any, int], optional): Sizes of output dimensions required,</span>
+<span class="sd">                if different from input_shape in class instantiation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: Batched sequence of images, shape e.g. [B, C, Hh, Ww]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">input_dims</span><span class="p">,</span> <span class="n">n_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="p">)</span>
+        <span class="n">patch_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">patch_shape</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">input_dims</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">output_shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">grid_shape</span><span class="p">,</span> <span class="n">n_patches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_patches</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">output_shape</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n_dim</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">output_shape</span><span class="p">)</span><span class="si">}</span><span class="s2">-D output not formable from </span><span class="si">{</span><span class="n">n_dim</span><span class="si">}</span><span class="s2">-D patches&quot;</span>
+                    <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">!=</span> <span class="n">output_shape</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;output_shape dims </span><span class="si">{</span><span class="n">output_shape</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; must equal input_shape dims </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2">.&quot;</span>
+                    <span class="p">)</span>
+            <span class="n">output_shape</span> <span class="o">=</span> <span class="p">{</span><span class="n">dim</span><span class="p">:</span> <span class="n">output_shape</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">input_dims</span><span class="p">}</span>
+            <span class="n">grid_shape</span><span class="p">,</span> <span class="n">n_patches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count_patches</span><span class="p">(</span><span class="n">output_shape</span><span class="p">)</span>
+        <span class="n">grid_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">grid_shape</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">input_dims</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">n_patches</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Grid shape </span><span class="si">{</span><span class="n">grid_shape</span><span class="si">}</span><span class="s2"> not formable from </span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> patches&quot;</span>
+                <span class="p">)</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="n">prod</span><span class="p">(</span><span class="n">patch_shape</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span><span class="si">}</span><span class="s2">-channel </span><span class="si">{</span><span class="n">patch_shape</span><span class="si">}</span><span class="s2"> patch not formable&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; from </span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2"> values&quot;</span>
+                <span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],)</span> <span class="o">+</span> <span class="n">grid_shape</span> <span class="o">+</span> <span class="n">patch_shape</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span><span class="p">,))</span>
+        <span class="c1"># (N, H, W, h, w, C) for 2D patches</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span>
+            <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="nb">sum</span><span class="p">([(</span><span class="nb">id</span><span class="p">,</span> <span class="n">n_dim</span> <span class="o">+</span> <span class="nb">id</span><span class="p">)</span> <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">n_dim</span><span class="p">)],</span> <span class="p">())</span>
+            <span class="p">)</span>
+        <span class="c1"># (N, C, H, h, W, w) for 2D patches</span>
+        <span class="n">imgs</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span><span class="p">)</span>
+            <span class="o">+</span> <span class="nb">sum</span><span class="p">([(</span><span class="n">s_g</span> <span class="o">*</span> <span class="n">s_p</span><span class="p">,)</span> <span class="k">for</span> <span class="n">s_g</span><span class="p">,</span> <span class="n">s_p</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">grid_shape</span><span class="p">,</span> <span class="n">patch_shape</span><span class="p">)],</span> <span class="p">())</span>
+            <span class="p">))</span>
+        <span class="c1"># (N, C, H h, W w) for 2D patches</span>
+        <span class="k">return</span> <span class="n">imgs</span></div>
+
+
+<div class="viewcode-block" id="PatchEmbed.forward">
+<a class="viewcode-back" href="../../../FRAME_FM.utils.html#FRAME_FM.utils.embedders.PatchEmbed.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert batched input n-D images into sequences of patch embeddings.</span>
+
+<span class="sd">        Shapes are given for the example of a batch of B, C-channel 2D images,</span>
+<span class="sd">        with image size (Hh, Ww) and patch size (h, w), with a D-D embedding.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): Batched sequence of images, shape e.g. [B, C, Hh, Ww].</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[torch.Tensor, torch.Tensor]:</span>
+<span class="sd">                * Batched sequences of embeddings, shape e.g. [B, HW, D]</span>
+<span class="sd">                * Batched sequences of positions, shape e.g. [B, HW, D]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">s_expected</span><span class="p">),</span> <span class="n">s_actual</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]):</span>
+            <span class="k">if</span> <span class="n">s_actual</span> <span class="o">!=</span> <span class="n">s_expected</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Input dimension </span><span class="si">{</span><span class="n">dim</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">s_actual</span><span class="si">}</span><span class="s2">) doesn&#39;t match specification&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; (</span><span class="si">{</span><span class="n">s_expected</span><span class="si">}</span><span class="s2">)&quot;</span>
+                    <span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># Project each patch into embedding, by convolution</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">start_dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># (B, D, H, W) -&gt; (B, HW, D) for 2D patches</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_embed</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder_pos_embed</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PatchEmbed.reconstruct_tokens">
+<a class="viewcode-back" href="../../../FRAME_FM.utils.html#FRAME_FM.utils.embedders.PatchEmbed.reconstruct_tokens">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reconstruct_tokens</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reconstruct patch tokens from an embedding.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): Batched sequence of images, shape e.g. [B, C, Hh, Ww].</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[torch.Tensor, torch.Tensor]:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reconstruct_layer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="STPatchEmbed">
+<a class="viewcode-back" href="../../../FRAME_FM.utils.html#FRAME_FM.utils.embedders.STPatchEmbed">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">STPatchEmbed</span><span class="p">(</span><span class="n">PatchEmbed</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; 1-3D spatiotemporally located input to Patch Embedding</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">input_shape</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+                 <span class="n">patch_shape</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+                 <span class="n">n_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">position_space</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
+                 <span class="n">embed_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">reconstruct_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">pos_embed_ratio</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+                 <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                 <span class="n">norm_layer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">conv_kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate embedder for patches in 1-3D, n-channel images.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input_shape (dict[Any, int]): Sizes of input dimensions.</span>
+<span class="sd">            patch_shape (dict[Any, int]): Shape of patches into which input will be divided.</span>
+<span class="sd">            n_channels (int): Number of channels recorded in image.</span>
+<span class="sd">            position_space (dict[Any, tuple[float, float]]): Space in which pixels are positioned.</span>
+<span class="sd">                For example, for coords x (X-periodic) and y (aperiodic with minimum Y, range ΔY):</span>
+<span class="sd">                {&#39;x&#39;: (0, X), &#39;y&#39;: (Y, Y + 2ΔY)}</span>
+<span class="sd">            embed_dim (int): Number of dimensions into which to embed each patch.</span>
+<span class="sd">            reconstruct_dim (int): Number of embedding dimensions from which to reconstruct patch.</span>
+<span class="sd">            pos_embed_ratio (dict[Any, float]): Relative sizes of position embedding dimensions.</span>
+<span class="sd">            bias (bool, optional): Whether to include bias in patch embedding. Defaults to True.</span>
+<span class="sd">            norm_layer (torch.nn.Module | None, optional): Layer with which to normalise embedding.</span>
+<span class="sd">                Defaults to None: no normalisation.</span>
+<span class="sd">            **conv_kwargs: Keyword arguments to pass for convolution layer instantiation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">input_shape</span><span class="o">=</span><span class="n">input_shape</span><span class="p">,</span>
+            <span class="n">patch_shape</span><span class="o">=</span><span class="n">patch_shape</span><span class="p">,</span>
+            <span class="n">n_channels</span><span class="o">=</span><span class="n">n_channels</span><span class="p">,</span>
+            <span class="n">embed_dim</span><span class="o">=</span><span class="n">embed_dim</span><span class="p">,</span>
+            <span class="n">reconstruct_dim</span><span class="o">=</span><span class="n">reconstruct_dim</span><span class="p">,</span>
+            <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span>
+            <span class="n">norm_layer</span><span class="o">=</span><span class="n">norm_layer</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">conv_kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position_space</span> <span class="o">=</span> <span class="n">position_space</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos_embed_ratio</span> <span class="o">=</span> <span class="p">[</span><span class="n">pos_embed_ratio</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">position_space</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder_omegas</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ParameterList</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder_omegas</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ParameterList</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_define_position_embedding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">embed_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">omegas</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ParameterList</span>
+                                   <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+        <span class="c1"># Divide sin and cos embeddings according to size of grid in each dimension</span>
+        <span class="n">embed_dims</span> <span class="o">=</span> <span class="n">partition_embed_dim</span><span class="p">(</span><span class="n">embed_dim</span><span class="p">,</span> <span class="n">dim_ratio</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pos_embed_ratio</span><span class="p">)</span>
+        <span class="n">st_dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position_space</span><span class="p">)</span>
+        <span class="n">conv_fn</span> <span class="o">=</span> <span class="n">_conv_dim_dict</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="p">)]</span>
+        <span class="n">kernel_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">patch_shape</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos_conv_kernel</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">st_dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">kernel_shape</span><span class="p">)</span> <span class="o">/</span> <span class="n">prod</span><span class="p">(</span><span class="n">kernel_shape</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">omegas</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">calc_embed_omega</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="n">x_max</span> <span class="o">-</span> <span class="n">x_min</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">dim</span><span class="p">,</span> <span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">embed_dims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position_space</span><span class="p">)</span>
+            <span class="p">])</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">embedding</span><span class="p">(</span><span class="n">pos</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+            <span class="c1"># pos shape B, 2, Hh, Ww for 2D patches</span>
+            <span class="n">batch_size</span> <span class="o">=</span> <span class="n">pos</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">pos</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position_space</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pos</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-D position space doesn&#39;t match spec.&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position_space</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
+                    <span class="p">)</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">s_spec</span><span class="p">),</span> <span class="n">s_pos</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">pos</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]):</span>
+                <span class="k">if</span> <span class="n">s_pos</span> <span class="o">!=</span> <span class="n">s_spec</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Input positions dimension </span><span class="si">{</span><span class="n">dim</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">s_pos</span><span class="si">}</span><span class="s2">) doesn&#39;t match spec. (</span><span class="si">{</span><span class="n">s_spec</span><span class="si">}</span><span class="s2">)&quot;</span>
+                        <span class="p">)</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">conv_fn</span><span class="p">(</span>
+                <span class="n">pos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_conv_kernel</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">kernel_shape</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">st_dim</span>
+                <span class="p">)</span>  <span class="c1"># B, 2, H, W for 2D patches</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">pos</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">start_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># 2, BHW for 2D patches</span>
+            <span class="n">embeddings</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span>
+                <span class="n">sincos_embed_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">omega</span><span class="p">)</span> <span class="k">for</span> <span class="n">coords</span><span class="p">,</span> <span class="n">omega</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">omegas</span><span class="p">)</span>
+                <span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># BHW, D for 2D patches</span>
+            <span class="k">return</span> <span class="n">embeddings</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="n">batch_size</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">embed_dim</span><span class="p">])</span>  <span class="c1"># B, HW, D for 2D patches</span>
+        <span class="k">return</span> <span class="n">embedding</span>
+
+<div class="viewcode-block" id="STPatchEmbed.initialize_weights">
+<a class="viewcode-back" href="../../../FRAME_FM.utils.html#FRAME_FM.utils.embedders.STPatchEmbed.initialize_weights">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">initialize_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up embedder weights and parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># define fixed sin-cos embedding functions for patch positions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos_embed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_define_position_embedding</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">embed_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder_omegas</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder_pos_embed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_define_position_embedding</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reconstruct_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder_omegas</span><span class="p">)</span>
+        <span class="c1"># initialize projection like nn.Linear (instead of nn.Conv2d)</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">xavier_uniform_</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">view</span><span class="p">([</span><span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">]))</span></div>
+
+
+<div class="viewcode-block" id="STPatchEmbed.forward">
+<a class="viewcode-back" href="../../../FRAME_FM.utils.html#FRAME_FM.utils.embedders.STPatchEmbed.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">st_input</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
+                <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert batched spatiotemporal inputs into sequences of patch embeddings.</span>
+
+<span class="sd">        Shapes are given for the example of a batch of B, C-channel 2D inputs in N-D space,</span>
+<span class="sd">        with image size (Hh, Ww) and patch size (h, w), with a D-D embedding.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            st_input (tuple[torch.Tensor, torch.Tensor]): Spatiotemporal input, combining:</span>
+<span class="sd">             * Batched sequence of values, shape e.g. [B, C, Hh, Ww].</span>
+<span class="sd">             * Batched sequence of positions, shape e.g. [B, N, Hh, Ww].</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple[torch.Tensor, torch.Tensor]:</span>
+<span class="sd">             * Batched sequences of embeddings, shape e.g. [B, HW, D]</span>
+<span class="sd">             * Batched sequences of position embeddings, shape e.g. [B, HW, D_d]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">pos</span> <span class="o">=</span> <span class="n">st_input</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;# of input channels (</span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">) doesn&#39;t match spec. (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span><span class="si">}</span><span class="s2">)&quot;</span>
+                <span class="p">)</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">s_spec</span><span class="p">),</span> <span class="n">s_x</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_shape</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]):</span>
+            <span class="k">if</span> <span class="n">s_x</span> <span class="o">!=</span> <span class="n">s_spec</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Input values dimension </span><span class="si">{</span><span class="n">dim</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">s_x</span><span class="si">}</span><span class="s2">) doesn&#39;t match spec. (</span><span class="si">{</span><span class="n">s_spec</span><span class="si">}</span><span class="s2">)&quot;</span>
+                    <span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># Project each patch into embedding, by convolution</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">start_dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># (B, D, H, W) -&gt; (B, HW, D) for 2D patches</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_embed</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder_pos_embed</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="STPatchEmbed.tokenify">
+<a class="viewcode-back" href="../../../FRAME_FM.utils.html#FRAME_FM.utils.embedders.STPatchEmbed.tokenify">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tokenify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reshape batched n-D input values into sequences of patch tokens.</span>
+
+<span class="sd">        Shapes are given for the example of a batch of B, C-channel 2D images,</span>
+<span class="sd">        with image size (Hh, Ww) and patch size (h, w).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            st_input (tuple[torch.Tensor, torch.Tensor]): Spatiotemporal input, combining:</span>
+<span class="sd">             * Batched sequence of values, shape e.g. [B, C, Hh, Ww].</span>
+<span class="sd">             * Batched sequence of positions, shape e.g. [B, N, Hh, Ww].</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: Batched sequences of patch tokens, shape e.g. [B, HW, hwC]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">PatchEmbed</span><span class="o">.</span><span class="n">tokenify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="BoundedPatchEmbed">
+<a class="viewcode-back" href="../../../FRAME_FM.utils.html#FRAME_FM.utils.embedders.BoundedPatchEmbed">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BoundedPatchEmbed</span><span class="p">(</span><span class="n">STPatchEmbed</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_define_position_embedding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">embed_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">omegas</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ParameterList</span>
+                                   <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+        <span class="c1"># Divide sin and cos embeddings according to size of grid in each dimension</span>
+        <span class="n">embed_dims</span> <span class="o">=</span> <span class="n">partition_embed_dim</span><span class="p">(</span><span class="n">embed_dim</span><span class="p">,</span> <span class="n">dim_ratio</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pos_embed_ratio</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">patch_grid_coords</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ParameterList</span><span class="p">([</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_shape</span><span class="p">[</span><span class="n">dim</span><span class="p">])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_shape</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_shape</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.5</span><span class="p">]),</span>
+                <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span>
+                <span class="p">)</span>
+            <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">position_space</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="p">])</span>
+        <span class="n">omegas</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">calc_embed_omega</span><span class="p">(</span><span class="n">ndim</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="n">x_max</span> <span class="o">-</span> <span class="n">x_min</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">ndim</span><span class="p">,</span> <span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">embed_dims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position_space</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="p">])</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">embedding</span><span class="p">(</span><span class="n">bounds_batch</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+            <span class="c1"># [[[bottom, top], [left, right]], ...] for 2D patches</span>
+            <span class="n">batch_size</span><span class="p">,</span> <span class="n">ndim</span> <span class="o">=</span> <span class="n">bounds_batch</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position_space</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">bounds_batch</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">ndim</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bounds_batch</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">-D position space doesn&#39;t match </span><span class="si">{</span><span class="n">ndim</span><span class="si">}</span><span class="s2">-D spec.&quot;</span>
+                    <span class="p">)</span>
+            <span class="k">if</span> <span class="n">bounds_batch</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Input position bounds (e.g. </span><span class="si">{</span><span class="n">bounds_batch</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">) must be 2-element ranges.&quot;</span>
+                    <span class="p">)</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">cartesian_prod</span><span class="p">(</span><span class="o">*</span><span class="p">[</span>
+                    <span class="n">b_min</span> <span class="o">+</span> <span class="p">(</span><span class="n">b_max</span> <span class="o">-</span> <span class="n">b_min</span><span class="p">)</span> <span class="o">*</span> <span class="n">patch_coords</span>
+                    <span class="k">for</span> <span class="p">(</span><span class="n">b_min</span><span class="p">,</span> <span class="n">b_max</span><span class="p">),</span> <span class="n">patch_coords</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">bounds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">patch_grid_coords</span><span class="p">)</span>
+                    <span class="p">])</span>
+                <span class="k">for</span> <span class="n">bounds</span> <span class="ow">in</span> <span class="n">bounds_batch</span>
+                <span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># 2, BHW for 2D patches</span>
+            <span class="n">embeddings</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span>
+                <span class="n">sincos_embed_coords</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">omega</span><span class="p">)</span> <span class="k">for</span> <span class="n">coords</span><span class="p">,</span> <span class="n">omega</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">omegas</span><span class="p">)</span>
+                <span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># BHW, D for 2D patches</span>
+            <span class="k">return</span> <span class="n">embeddings</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="n">batch_size</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">embed_dim</span><span class="p">])</span>  <span class="c1"># B, HW, D for 2D patches</span>
+        <span class="k">return</span> <span class="n">embedding</span></div>
+
+</pre></div>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, NERC Environmental Data Service
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>
