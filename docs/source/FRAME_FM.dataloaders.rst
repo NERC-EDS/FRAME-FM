@@ -20,14 +20,6 @@ FRAME\_FM.dataloaders.demo\_eurosat module
    :undoc-members:
    :show-inheritance:
 
-FRAME\_FM.dataloaders.demo\_geotiff\_dataloader module
-------------------------------------------------------
-
-.. automodule:: FRAME_FM.dataloaders.demo_geotiff_dataloader
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 
