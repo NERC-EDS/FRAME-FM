@@ -12,10 +12,10 @@ FRAME\_FM.models.demo\_autoencoder module
    :undoc-members:
    :show-inheritance:
 
-FRAME\_FM.models.demo\_convAE module
+FRAME\_FM.models.convae module
 ------------------------------------
 
-.. automodule:: FRAME_FM.models.demo_convAE
+.. automodule:: FRAME_FM.models.convae
    :members:
    :undoc-members:
    :show-inheritance:
