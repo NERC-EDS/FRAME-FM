@@ -248,6 +248,79 @@
         <article role="main" id="furo-main-content">
           <section id="frame-fm-datasets-package">
 <h1>FRAME_FM.datasets package<a class="headerlink" href="#frame-fm-datasets-package" title="Link to this heading">¶</a></h1>
+<p>A location for the FRAME-FM datasets, which are all sub-classes of
+<code class="docutils literal notranslate"><span class="pre">torch.utils.data.Dataset</span></code>. They all use the standard model of exposing a
+<em>dataset</em> as a generator that can be directly used by a <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code> object.
+The common interface is:</p>
+<ul class="simple">
+<li><p>construction: <code class="docutils literal notranslate"><span class="pre">__init__()</span></code></p></li>
+<li><p>length: <code class="docutils literal notranslate"><span class="pre">__len__()</span></code></p></li>
+<li><p>get item by index: <code class="docutils literal notranslate"><span class="pre">__getitem__(idx)</span></code></p></li>
+</ul>
+<section id="class-hierarchy">
+<h2>Class Hierarchy<a class="headerlink" href="#class-hierarchy" title="Link to this heading">¶</a></h2>
+<p>The class hierarchy is built as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span>
+    <span class="o">-</span> <span class="n">BaseDataset</span>
+        <span class="o">-</span> <span class="n">BaseGriddedDataset</span>
+        <span class="o">-</span> <span class="n">BaseGeoTIFFDataset</span>
+            <span class="o">-</span> <span class="n">BaseASCIIGridDataset</span>
+        <span class="o">-</span> <span class="n">BaseGriddedTimeSeriesDataset</span>
+            <span class="o">-</span> <span class="n">SoilWaterIndexGriddedTimeSeriesDataset</span>
+        <span class="o">-</span> <span class="n">BaseShapefileDataset</span>
+            <span class="o">-</span> <span class="n">TopsoilDataset</span>
+        <span class="o">-</span> <span class="n">CosmosUKDataset</span>
+    <span class="o">-</span> <span class="n">BaseShapefileDataset</span>
+    <span class="o">-</span> <span class="n">CorrespondingTilesDataset</span>
+    <span class="o">-</span> <span class="n">TransformedDataset</span>
+    <span class="o">-</span> <span class="n">TransformedInputDataset</span>
+    <span class="o">-</span> <span class="n">TransformedInputCoordsDataset</span>
+    <span class="o">-</span> <span class="n">TransformedInputTimeCoordsDataset</span>
+    <span class="o">-</span> <span class="n">ZipDataset</span>
+</pre></div>
+</div>
+</section>
+<section id="changing-datasets-using-preprocessors-and-transforms">
+<h2>Changing datasets using <code class="docutils literal notranslate"><span class="pre">preprocessors</span></code> and <code class="docutils literal notranslate"><span class="pre">transforms</span></code><a class="headerlink" href="#changing-datasets-using-preprocessors-and-transforms" title="Link to this heading">¶</a></h2>
+<p>Each <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> class can have two types of <em>operations</em> defined by arguments
+sent to the constructor:</p>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">preprocessors</span></code></dt><dd><p>A list of operations that get run when the Dataset instance is created.</p>
+<ul>
+<li><p>These get run once only.</p></li>
+<li><p>They operate sequentially, with the first taking in an <code class="docutils literal notranslate"><span class="pre">xr.Dataset</span></code>.</p></li>
+<li><p>The final object is saved in <code class="docutils literal notranslate"><span class="pre">self.data</span></code>.</p></li>
+<li><p>The resulting output should be ready for use by the standard methods:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">transforms</span></code></dt><dd><p>A list of operations that get run at training time, within the
+<code class="docutils literal notranslate"><span class="pre">__getitem__(idx)</span></code> call.</p>
+<ul>
+<li><p>These are run whenever a <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code> needs to access single items or
+batches of items with a <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> object.</p></li>
+<li><p>These are typically run like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">transform</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span><span class="p">:</span>
+    <span class="n">sample</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">FRAME_FM.transforms.transforms</span></code> module contains all the transform
+classes that can be used in either or both of the <code class="docutils literal notranslate"><span class="pre">preprocessors</span></code> and
+<code class="docutils literal notranslate"><span class="pre">transforms</span></code> lists.</p>
+</div>
+<p>See the transform examples in the unit tests: <code class="docutils literal notranslate"><span class="pre">tests/transforms/test_transforms.py</span></code></p>
+<p>See the <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> unit tests for examples: <code class="docutils literal notranslate"><span class="pre">tests/datasets/test_*.py</span></code></p>
+</section>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
 </section>
@@ -345,6 +418,8 @@ settings are finalized.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">FRAME_FM.datasets package</a><ul>
+<li><a class="reference internal" href="#class-hierarchy">Class Hierarchy</a></li>
+<li><a class="reference internal" href="#changing-datasets-using-preprocessors-and-transforms">Changing datasets using <code class="docutils literal notranslate"><span class="pre">preprocessors</span></code> and <code class="docutils literal notranslate"><span class="pre">transforms</span></code></a></li>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-FRAME_FM.datasets.ImageLabel_Dataset">FRAME_FM.datasets.ImageLabel_Dataset module</a><ul>
 <li><a class="reference internal" href="#FRAME_FM.datasets.ImageLabel_Dataset.TransformedDataset"><code class="docutils literal notranslate"><span class="pre">TransformedDataset</span></code></a></li>

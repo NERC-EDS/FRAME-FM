@@ -1,6 +1,9 @@
 FRAME\_FM.utils package
 =======================
 
+Shared utilities used across the project, such as I/O helpers, metrics, and transforms.  
+Generic code that supports models, datasets, dataloaders, and training logic.
+
 Submodules
 ----------
 
