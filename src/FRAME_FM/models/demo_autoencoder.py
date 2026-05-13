@@ -2,23 +2,25 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# src/FRAME_FM/model_code/demo_model.py
+# src/FRAME_FM/models/demo_autoencoder.py
 """
 EuroSAT Autoencoder (torchvision EuroSAT friendly)
 
 This module defines a simple convolutional autoencoder intended for use with
-torchvision.datasets.EuroSAT and a dataloader that yields batches as:
+``torchvision.datasets.EuroSAT`` and a dataloader that yields batches as::
 
     batch = (x, y)
 
 where:
-  - x is a float Tensor of shape [B, C, H, W]
-  - y is the class label Tensor [B] (not used for reconstruction loss)
 
-Important:
-- Your transforms should convert PIL -> Tensor (e.g., ToTensor()).
-- For this architecture, it's simplest to resize images to 64x64 so that
-  4x MaxPool(2) leads to a 4x4 spatial map.
+- ``x`` (Tensor): float Tensor of shape ``[B, C, H, W]``
+- ``y`` (Tensor): class label Tensor ``[B]`` (not used for reconstruction loss)
+
+.. important::
+
+    - Your transforms should convert PIL -> Tensor (e.g., ``ToTensor()``).
+    - For this architecture, it's simplest to resize images to 64x64 so that
+      4x MaxPool(2) leads to a 4x4 spatial map.
 """
 
 from __future__ import annotations
