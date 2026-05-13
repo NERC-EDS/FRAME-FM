@@ -28,6 +28,7 @@ Architecture
 
    configs
    data_wrangling
+   observability_and_logging
    transforms
 
 API Reference
