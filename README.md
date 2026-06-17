@@ -167,18 +167,18 @@ Below are the steps to run *train.py* using the default configuration:
     uv run framefm config init
     ```
 
-7. ** Configure Training **
+7. **Configure Training**
 
    Edit the file `configs/config.yaml` and choose your platform. Platform configs are stored in `configs/platforms/<platform name.yaml>`.
    By default the "jasmin-small" config is used which allocates a single GPU and 2 CPU cores on JASMIN's Orchid cluster.
 
-8. ** Run a Training Job **
+8. **Run a Training Job**
 
     ```bash
     framefm train run
     ```
 
-9. ** Monitoring Training with MLFlow **
+9. **Monitoring Training with MLFlow**
 
     If you would like to use Mlflow to record the training output, follow the
     [Logging README](./src/FRAME_FM/docs/logging_README.md).
