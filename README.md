@@ -78,7 +78,7 @@ More specifically, this directory contains:
 
 Although FRAME-FM can be run within Jupyter / Marimo notebooks or within Windows, it is designed
 to be run on Linux. Although any computer can run FRAME-FM, it is intended to be used on supercomputer
-platforms like EDS' JASMIN or the University of Bristol's Isembard. FRAME-FM is also intended for
+platforms like EDS' JASMIN or the University of Bristol's ISAMBARD-AI. FRAME-FM is also intended for
 x86 machines, but has successfully run in ARM-based machines.
 
 Machine Learning is generally GPU-intensive and GPUs are typically more costly than CPUs. The 
