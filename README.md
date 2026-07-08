@@ -41,6 +41,8 @@ knowledge to continue using PyTorch and Hydra in future projects either within o
 FRAME-FM.
 
 ---
+## FRAME-FM demo
+[![asciicast](https://asciinema.org/a/1260237.svg)](https://asciinema.org/a/1260237)
 
 ## Repository Breakdown
 
